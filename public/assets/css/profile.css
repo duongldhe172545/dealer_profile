@@ -752,10 +752,11 @@
 .tpl-2-v2 .t2-logo-s { font-size: 9px; opacity: 0.9; margin-top: 3px; letter-spacing: 0.8px; }
 .tpl-2-v2 .t2-hdr-logo .cb { border-color: #fff; }
 
-/* ============ BADGES (dark pill, cyan icon) ============ */
+/* ============ BADGES (dark pill, cyan icon) ============
+   Nằm trong cột trái header dưới tagline → align left, không center */
 .tpl-2-v2 .t2-badges {
-  display: flex; gap: 12px; justify-content: center;
-  margin-bottom: 14px; flex-wrap: wrap;
+  display: flex; gap: 8px; justify-content: flex-start;
+  margin-top: 10px; flex-wrap: wrap;
 }
 .tpl-2-v2 .t2-badge {
   display: flex; align-items: center; gap: 7px;

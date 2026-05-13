@@ -592,6 +592,11 @@
               <span class="t2-slash">//</span>
               <span>${esc(x.tagline)}</span>
             </div>
+            <div class="t2-badges">
+              <div class="t2-badge"><span class="t2-bi">${ic.shield}</span>${esc(x.b1)}</div>
+              <div class="t2-badge"><span class="t2-bi">${ic.warehouse}</span>${esc(x.b2)}</div>
+              <div class="t2-badge"><span class="t2-bi">${ic.clock}</span>${esc(x.b3)}</div>
+            </div>
           </div>
 
           <div class="t2-hdr-logo ${has(x.imgs.logo_dai_ly) ? 'has-img' : ''}">
@@ -604,13 +609,6 @@
                  ${cb}`}
           </div>
         </header>
-
-        <!-- ============ BADGES ============ -->
-        <div class="t2-badges">
-          <div class="t2-badge"><span class="t2-bi">${ic.shield}</span>${esc(x.b1)}</div>
-          <div class="t2-badge"><span class="t2-bi">${ic.warehouse}</span>${esc(x.b2)}</div>
-          <div class="t2-badge"><span class="t2-bi">${ic.clock}</span>${esc(x.b3)}</div>
-        </div>
 
         <!-- ============ CONTACT BAR (cyan band) ============ -->
         <div class="t2-contact">

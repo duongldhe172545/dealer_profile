@@ -243,13 +243,6 @@
               </div>
             </div>
           </div>
-
-          <div class="panel">
-            <div class="panel-hd"><h3>Mô tả ảnh</h3></div>
-            <div class="panel-bd">
-              <p class="text-xs text-slate-500">Mô tả các ảnh đội ngũ, kho/xưởng, công trình đã chuyển sang tab "<strong>Hình ảnh</strong>" để gõ ngay cạnh ảnh tương ứng.</p>
-            </div>
-          </div>
         </div>
 
         <!-- TAB 4: Hình ảnh -->
@@ -282,12 +275,11 @@
                     </div>
                   </div>
 
-                  <!-- Caption (textarea, Shift+Enter để xuống dòng) -->
+                  <!-- Caption (textarea) -->
                   <template x-if="slot.captionField">
                     <div class="mt-2">
                       <label class="text-[10px] text-slate-500 font-semibold">Mô tả ảnh</label>
                       <textarea x-model="profile[slot.captionField]" rows="2"
-                                placeholder="Gõ mô tả, Shift+Enter xuống dòng..."
                                 class="w-full px-2 py-1.5 mt-0.5 text-[12px] border border-slate-300 rounded outline-none focus:ring-2 focus:ring-brand-500 resize-y leading-snug"></textarea>
                     </div>
                   </template>

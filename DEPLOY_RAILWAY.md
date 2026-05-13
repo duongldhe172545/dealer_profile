@@ -252,14 +252,19 @@ Test bằng Railway shell:
 railway run ls -la /data
 ```
 
-### `better-sqlite3` build fail
+### `better-sqlite3` build fail (Python not found, node-gyp ERR!)
 
-Hiếm gặp. Nếu xảy ra, thêm file `nixpacks.toml` vào root:
-```toml
-[phases.setup]
-nixPkgs = ["python3", "gcc", "gnumake"]
-```
-Commit + push → Railway rebuild.
+Nguyên nhân: Nixpacks pick Node version quá mới (vd Node 24) mà
+`better-sqlite3@11` chưa có prebuilt binary → fallback `node-gyp` build
+→ fail vì image Nixpacks không có Python.
+
+**Đã fix sẵn trong repo**:
+- [.nvmrc](.nvmrc) pin Node `20`
+- [package.json](package.json) `engines.node: "20.x"`
+- [nixpacks.toml](nixpacks.toml) thêm `nodejs_20`, `python3`, `gcc`, `gnumake` vào setup phase (defensive)
+
+Nếu vẫn lỗi, kiểm tra log build có dòng `setup │ nodejs_20` (đúng) hay
+`nodejs_24` (sai). Nếu sai, force redeploy: Settings → ... → Redeploy.
 
 ### Mất DB sau redeploy
 

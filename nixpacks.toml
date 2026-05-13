@@ -1,0 +1,7 @@
+# Fallback build tools cho better-sqlite3 nếu prebuilt binary không match
+# (vd Railway pick Node version mới hơn binary support).
+# Phần lớn trường hợp .nvmrc + engines.node trong package.json là đủ —
+# Nixpacks sẽ pick Node 20 và prebuild-install thành công.
+
+[phases.setup]
+nixPkgs = ["nodejs_20", "python3", "gcc", "gnumake"]

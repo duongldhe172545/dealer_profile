@@ -97,6 +97,11 @@
                   class="border border-slate-300 hover:bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-50">
             📄 Xuất PDF
           </button>
+          <button @click="sendEmail()" :disabled="saving || !form.so_bao_gia" type="button"
+                  class="border border-slate-300 hover:bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-50"
+                  title="Mở app email mặc định với nội dung soạn sẵn (đại lý tự đính kèm PDF và sửa nếu cần)">
+            ✉ Gửi email
+          </button>
           <button @click="save()" :disabled="saving" type="button"
                   class="bg-brand-500 hover:bg-brand-600 text-white px-5 py-2 rounded-lg text-sm font-semibold disabled:opacity-50">
             <span x-show="!saving">Lưu báo giá</span>
@@ -115,7 +120,7 @@
         <!-- Thông tin chung -->
         <div class="panel">
           <div class="panel-hd"><h3>Thông tin chung</h3></div>
-          <div class="panel-bd grid grid-cols-2 gap-3">
+          <div class="panel-bd grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label class="field-label">Số báo giá *</label>
               <input class="field-input" x-model="form.so_bao_gia" placeholder="Tự sinh nếu trống">
@@ -241,7 +246,7 @@
             <span x-show="!editingId" class="text-xs text-amber-600">Lưu báo giá trước khi tải ảnh.</span>
           </div>
           <div class="panel-bd">
-            <div class="grid grid-cols-5 gap-2">
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
               <template x-for="slot in [1,2,3,4,5]" :key="slot">
                 <div class="img-slot">
                   <div class="img-slot-label">Ảnh <span x-text="slot"></span></div>
@@ -280,7 +285,7 @@
         <!-- Tổng kết + điều khoản -->
         <div class="panel">
           <div class="panel-hd"><h3>Tổng kết & điều khoản</h3></div>
-          <div class="panel-bd grid grid-cols-2 gap-3">
+          <div class="panel-bd grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label class="field-label">Chi phí vận chuyển (đ)</label>
               <input class="field-input tabular-nums text-right" type="text" inputmode="numeric" placeholder="0"
@@ -677,6 +682,44 @@
             }
           } catch (e) { this.error = e.message; window.scrollTo({ top: 0, behavior: 'smooth' }); }
           finally { this.saving = false; }
+        },
+
+        sendEmail() {
+          this.error = '';
+          const customer = this.customers.find(c => c.id == this.form.customer_id);
+          if (!customer) { this.error = 'Chưa chọn khách hàng cho báo giá'; return; }
+          if (!customer.email) {
+            this.error = `Khách hàng "${customer.ten_kh}" chưa có email. Vào tab Khách hàng cập nhật rồi quay lại.`;
+            return;
+          }
+          const so = this.form.so_bao_gia || '';
+          const ngay = this.form.ngay_bao_gia ? Fmt.formatDate(this.form.ngay_bao_gia) : '';
+          const tong = Fmt.formatMoney(this.totals.tong_cong);
+          const dl = this.dealer.ten_dai_ly || 'Đại lý';
+          const chu = this.dealer.chu_dai_ly || '';
+          const phone = this.dealer.phone || '';
+          const dlEmail = this.dealer.email || '';
+
+          const subject = `Báo giá ${so} - ${dl}`;
+          const body =
+`Kính gửi Anh/Chị ${customer.nguoi_lien_he || customer.ten_kh},
+
+${dl} xin gửi báo giá số ${so} ngày ${ngay} cho công trình của Quý khách.
+
+Tổng giá trị: ${tong}
+${this.form.dia_chi_cong_trinh ? 'Địa chỉ công trình: ' + this.form.dia_chi_cong_trinh : ''}
+
+Vui lòng xem file báo giá đính kèm. Mọi thắc mắc xin liên hệ:
+${chu ? '👤 ' + chu : ''}
+📞 ${phone}
+✉ ${dlEmail}
+
+Trân trọng,
+${chu || dl}`;
+
+          // mailto: chỉ trigger app email; user tự đính kèm PDF + sửa nội dung
+          const href = `mailto:${encodeURIComponent(customer.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+          window.location.href = href;
         },
 
         async exportPDF() {

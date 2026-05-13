@@ -265,7 +265,7 @@ function productsForExport() {
 
 function dealersForExport() {
   return db.prepare(`
-    SELECT d.dealer_code, d.ten_dai_ly, d.chu_dai_ly, d.phone, d.email, d.mst,
+    SELECT d.dealer_code, d.ten_dai_ly, d.chu_dai_ly, d.phone, d.email,
            d.address, d.district, d.province, d.coverage,
            d.years_experience, d.team_size, d.projects_monthly,
            d.status, d.created_at,

@@ -121,14 +121,9 @@
               <input x-model="form.phone"
                      class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm">
             </div>
-            <div>
+            <div class="col-span-2">
               <label class="block text-xs font-semibold text-slate-600 mb-1">Email</label>
               <input x-model="form.email" type="email"
-                     class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm">
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">MST</label>
-              <input x-model="form.mst"
                      class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm">
             </div>
             <div class="col-span-2">
@@ -225,7 +220,7 @@
         emptyForm() {
           return {
             dealer_code: '', ten_dai_ly: '', chu_dai_ly: '',
-            phone: '', email: '', mst: '',
+            phone: '', email: '',
             address: '', district: '', province: '', coverage: '',
             username: '', password: '',
           };
@@ -255,7 +250,7 @@
           this.form = {
             dealer_code: d.dealer_code || '', ten_dai_ly: d.ten_dai_ly || '',
             chu_dai_ly: d.chu_dai_ly || '', phone: d.phone || '', email: d.email || '',
-            mst: d.mst || '', address: d.address || '', district: d.district || '',
+            address: d.address || '', district: d.district || '',
             province: d.province || '', coverage: d.coverage || '',
           };
           this.error = '';

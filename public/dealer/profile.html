@@ -150,7 +150,7 @@
         <div x-show="activeTab === 'info'" class="panel">
           <div class="panel-hd"><h3>Thông tin chung của đại lý</h3></div>
           <div class="panel-bd space-y-3">
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div><label class="field-label">Mã đại lý</label>
                 <input class="field-input" :value="dealer.dealer_code" disabled></div>
               <div><label class="field-label">Tên đại lý *</label>
@@ -159,10 +159,8 @@
                 <input class="field-input" x-model="dealer.chu_dai_ly"></div>
               <div><label class="field-label">Số điện thoại</label>
                 <input class="field-input" x-model="dealer.phone"></div>
-              <div><label class="field-label">Email</label>
+              <div class="col-span-2"><label class="field-label">Email</label>
                 <input class="field-input" type="email" x-model="dealer.email"></div>
-              <div><label class="field-label">Mã số thuế</label>
-                <input class="field-input" x-model="dealer.mst"></div>
               <div class="col-span-2"><label class="field-label">Địa chỉ</label>
                 <input class="field-input" x-model="dealer.address"></div>
               <div><label class="field-label">Quận / Huyện</label>
@@ -199,6 +197,12 @@
               <textarea class="field-textarea" rows="2" x-model="profile.customer_quote"></textarea></div>
             <div><label class="field-label">Lời kêu gọi hành động (kèm QR)</label>
               <textarea class="field-textarea" rows="2" x-model="profile.cta_text"></textarea></div>
+            <div>
+              <label class="field-label">Câu giới thiệu khối "Đối tác chiến lược"</label>
+              <input class="field-input" x-model="profile.partners_title"
+                     :placeholder="defaultPartnersTitle()">
+              <p class="text-[11px] text-slate-500 mt-1">Bỏ trống → tự động dùng câu mặc định: <em x-text="defaultPartnersTitle()"></em>. Logo đối tác (tối đa 5) tải ở tab "Hình ảnh".</p>
+            </div>
           </div>
         </div>
 
@@ -206,7 +210,7 @@
         <div x-show="activeTab === 'highlights'" class="space-y-3">
           <div class="panel">
             <div class="panel-hd"><h3>3 huy hiệu nhanh</h3></div>
-            <div class="panel-bd grid grid-cols-3 gap-3">
+            <div class="panel-bd grid grid-cols-1 sm:grid-cols-3 gap-3">
               <input class="field-input" x-model="profile.badge1" placeholder="VD: Đã xác thực">
               <input class="field-input" x-model="profile.badge2" placeholder="VD: Có kho/xưởng">
               <input class="field-input" x-model="profile.badge3" placeholder="VD: Hỗ trợ khảo sát">
@@ -215,7 +219,7 @@
 
           <div class="panel">
             <div class="panel-hd"><h3>3 ưu điểm nổi bật</h3></div>
-            <div class="panel-bd grid grid-cols-3 gap-3">
+            <div class="panel-bd grid grid-cols-1 sm:grid-cols-3 gap-3">
               <input class="field-input" x-model="profile.usp_highlight1" placeholder="Ưu điểm 1">
               <input class="field-input" x-model="profile.usp_highlight2" placeholder="Ưu điểm 2">
               <input class="field-input" x-model="profile.usp_highlight3" placeholder="Ưu điểm 3">
@@ -224,7 +228,7 @@
 
           <div class="panel">
             <div class="panel-hd"><h3>3 chỉ số ấn tượng (KPI)</h3></div>
-            <div class="panel-bd grid grid-cols-3 gap-3">
+            <div class="panel-bd grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div class="space-y-2">
                 <input class="field-input" x-model="profile.metric1_value" placeholder="VD: 35+">
                 <input class="field-input" x-model="profile.metric1_label" placeholder="dự án/tháng">
@@ -355,6 +359,11 @@
           { key: 'cong_trinh_1', label: 'Ảnh công trình 1',      size: 'Vuông 1:1 · ~1200×1200px' },
           { key: 'cong_trinh_2', label: 'Ảnh công trình 2',      size: 'Vuông 1:1 · ~1200×1200px' },
           { key: 'cong_trinh_3', label: 'Ảnh công trình 3',      size: 'Vuông 1:1 · ~1200×1200px' },
+          { key: 'partner_logo_1', label: 'Logo đối tác 1',      size: 'Ngang ~3:1 · nền trắng' },
+          { key: 'partner_logo_2', label: 'Logo đối tác 2',      size: 'Ngang ~3:1 · nền trắng' },
+          { key: 'partner_logo_3', label: 'Logo đối tác 3',      size: 'Ngang ~3:1 · nền trắng' },
+          { key: 'partner_logo_4', label: 'Logo đối tác 4',      size: 'Ngang ~3:1 · nền trắng' },
+          { key: 'partner_logo_5', label: 'Logo đối tác 5',      size: 'Ngang ~3:1 · nền trắng' },
         ],
         templateKeys: ['t1', 't2', 't3', 't4', 't5'],
         templateLabels: window.ProfileTemplates.labels,
@@ -461,7 +470,6 @@
             this.dealer = res.data.dealer;
             this.profile = Object.assign({ selected_template: 't1' }, res.data.profile);
             this.images = res.data.images || this.images;
-            this.dirty = false;
             this.lastSavedAt = new Date();
             this.savedFlash = true;
             this._clearDraft();
@@ -469,7 +477,13 @@
           } catch (e) { this.error = e.message; }
           finally {
             this.saving = false;
-            this.$nextTick(() => { this._initializing = false; });
+            // Reset dirty + initializing trong setTimeout để chắc chắn các deep watcher
+            // trigger từ việc gán lại this.dealer/profile đã chạy xong trước đó.
+            // Nếu set dirty=false ngay sau gán, watcher fires sau sẽ set lại dirty=true.
+            setTimeout(() => {
+              this.dirty = false;
+              this._initializing = false;
+            }, 200);
           }
         },
 
@@ -575,6 +589,11 @@
             delete this.images[slot];
           } catch (e) { this.error = e.message; }
           finally { this.uploading[slot] = false; }
+        },
+
+        defaultPartnersTitle() {
+          const name = (this.dealer && this.dealer.ten_dai_ly || '').trim() || 'Đại lý';
+          return `${name} là đối tác chiến lược uy tín của nhiều thương hiệu lớn`;
         },
 
         renderPreview() {

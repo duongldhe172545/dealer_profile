@@ -54,7 +54,7 @@ function exportCSV(type) {
       break;
     case 'dealers':
       rows = adminStatsModel.dealersForExport();
-      headers = ['dealer_code', 'ten_dai_ly', 'chu_dai_ly', 'phone', 'email', 'mst',
+      headers = ['dealer_code', 'ten_dai_ly', 'chu_dai_ly', 'phone', 'email',
         'address', 'district', 'province', 'coverage',
         'years_experience', 'team_size', 'projects_monthly',
         'status', 'created_at',

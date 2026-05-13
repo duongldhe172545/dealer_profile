@@ -32,7 +32,6 @@ CREATE TABLE IF NOT EXISTS dealers (
   chu_dai_ly          TEXT,
   phone               TEXT,
   email               TEXT,
-  mst                 TEXT,
   address             TEXT,
   district            TEXT,
   province            TEXT,
@@ -76,6 +75,7 @@ CREATE TABLE IF NOT EXISTS dealer_profiles (
   project_caption1    TEXT,
   project_caption2    TEXT,
   project_caption3    TEXT,
+  partners_title      TEXT,
   selected_template   TEXT NOT NULL DEFAULT 't1' CHECK (selected_template IN ('t1','t2','t3','t4','t5')),
   updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -90,7 +90,9 @@ CREATE TABLE IF NOT EXISTS dealer_images (
   slot            TEXT NOT NULL CHECK (slot IN (
                     'logo_dai_ly', 'avatar_chu', 'hero', 'kho_xuong',
                     'doi_ngu_1', 'doi_ngu_2', 'qr_code',
-                    'cong_trinh_1', 'cong_trinh_2', 'cong_trinh_3'
+                    'cong_trinh_1', 'cong_trinh_2', 'cong_trinh_3',
+                    'partner_logo_1', 'partner_logo_2', 'partner_logo_3',
+                    'partner_logo_4', 'partner_logo_5'
                   )),
   url             TEXT NOT NULL,
   public_id       TEXT,

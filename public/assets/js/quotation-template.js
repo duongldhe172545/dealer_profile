@@ -89,7 +89,6 @@
       ].filter(has).join(', '),
       has(dealer.phone) && `📞 ${dealer.phone}`,
       has(dealer.email) && `✉️ ${dealer.email}`,
-      has(dealer.mst) && `MST: ${dealer.mst}`,
     ].filter(Boolean);
 
     return `

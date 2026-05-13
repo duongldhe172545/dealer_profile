@@ -1,7 +1,7 @@
 const db = require('../config/database');
 
 const DEALER_FIELDS = [
-  'dealer_code', 'ten_dai_ly', 'chu_dai_ly', 'phone', 'email', 'mst',
+  'dealer_code', 'ten_dai_ly', 'chu_dai_ly', 'phone', 'email',
   'address', 'district', 'province', 'coverage',
   'years_experience', 'team_size', 'projects_monthly', 'open_hours',
 ];

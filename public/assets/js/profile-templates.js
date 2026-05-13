@@ -80,7 +80,6 @@
       ['Chủ đại lý', d.chu_dai_ly],
       ['Điện thoại', d.phone],
       ['Email',      d.email],
-      ['MST',        d.mst],
       ['Địa chỉ',    addr],
       ['Khu vực',    d.coverage],
       ['Giờ mở cửa', d.open_hours],
@@ -247,8 +246,14 @@
     const coverage = has(d.coverage) ? d.coverage : '— chưa cập nhật —';
     const hours    = has(d.open_hours) ? d.open_hours : '— chưa cập nhật —';
 
-    const mst        = has(d.mst) ? d.mst : '— chưa cập nhật —';
     const projects   = has(d.projects_monthly) ? d.projects_monthly : '— chưa cập nhật —';
+
+    // Partners (5 logo + tagline auto fallback)
+    const partnerSlots = ['partner_logo_1','partner_logo_2','partner_logo_3','partner_logo_4','partner_logo_5'];
+    const partnerLogos = partnerSlots.map(k => imgs[k]).filter(has);
+    const partnersTitle = has(p.partners_title)
+      ? p.partners_title
+      : `${d.ten_dai_ly || 'Đại lý'} là đối tác chiến lược uy tín của nhiều thương hiệu lớn`;
 
     const ownerName  = has(d.chu_dai_ly) ? d.chu_dai_ly : '— chưa cập nhật —';
     const ownerPhone = has(d.phone) ? d.phone : '— chưa cập nhật —';
@@ -419,7 +424,7 @@
               <div class="t1-base-row">
                 <div class="t1-base-info">
                   <div class="t1-base-line"><span class="t1-base-ic">🏘</span><span>Khu vực ${esc(coverage)}</span></div>
-                  <div class="t1-base-line"><span class="t1-base-ic">📋</span><span>MST: ${esc(mst)}</span></div>
+                  <div class="t1-base-line"><span class="t1-base-ic">⏰</span><span>Giờ mở cửa: ${esc(hours)}</span></div>
                 </div>
                 <div class="t1-base-img-wrap">
                   <div class="t1-base-img">${has(imgs.kho_xuong) ? `<img src="${esc(imgs.kho_xuong)}" alt="">` : `${SVG.image}`}</div>
@@ -440,20 +445,591 @@
 
           </div>
         </div>
+
+        <!-- ============ ĐỐI TÁC CHIẾN LƯỢC ============ -->
+        <div class="t1-partners">
+          <div class="t1-partners-title">${esc(partnersTitle)}</div>
+          <div class="t1-partners-grid">
+            ${partnerLogos.length
+              ? partnerLogos.map(u => `<div class="t1-partner"><img src="${esc(u)}" alt="Logo đối tác"></div>`).join('')
+              : Array.from({length: 5}).map(() => `<div class="t1-partner empty"><span>LOGO ĐỐI TÁC</span></div>`).join('')
+            }
+          </div>
+        </div>
       </section>`;
   }
 
   // ============================================================
-  // MẪU 2-5 — Tạm thời clone template1 để giữ chức năng, sẽ redesign sau khi user OK T1
+  // Helper: chuẩn bị data dùng chung cho T2/T3/T4 (giảm trùng lặp)
   // ============================================================
-  function template2(data) { return template1(data); }
-  function template3(data) { return template1(data); }
-  function template4(data) { return template1(data); }
+  function prepareData({ dealer, profile, images }) {
+    const d = dealer || {};
+    const p = profile || {};
+    const imgs = images || {};
+    const fallback = '— chưa cập nhật —';
+    const titleRaw = d.ten_dai_ly || 'Tên đại lý';
+    // Partners: 5 slot logo + 1 tagline (auto fallback nếu trống)
+    const partnerSlots = ['partner_logo_1','partner_logo_2','partner_logo_3','partner_logo_4','partner_logo_5'];
+    const partnerLogos = partnerSlots.map(k => imgs[k]).filter(has);
+    const partnersTitle = has(p.partners_title)
+      ? p.partners_title
+      : `${titleRaw} là đối tác chiến lược uy tín của nhiều thương hiệu lớn`;
+    return {
+      d, p, imgs,
+      title: titleRaw.toUpperCase(),
+      titleRaw,
+      tagline: has(p.tagline) ? p.tagline : '— Thông điệp định vị —',
+      dealerCode: d.dealer_code || '',
+      addrFull: [d.address, d.district, d.province].filter(has).join(', ') || fallback,
+      coverage: has(d.coverage) ? d.coverage : fallback,
+      hours: has(d.open_hours) ? d.open_hours : fallback,
+      projects: has(d.projects_monthly) ? d.projects_monthly : '—',
+      partnerLogos,
+      partnersTitle,
+      ownerName: has(d.chu_dai_ly) ? d.chu_dai_ly : '—',
+      ownerPhone: has(d.phone) ? d.phone : '—',
+      ownerEmail: has(d.email) ? d.email : '—',
+      exp: has(d.years_experience) ? d.years_experience : '—',
+      team: has(d.team_size) ? d.team_size + ' người' : '—',
+      b1: has(p.badge1) ? p.badge1 : 'Đại lý đã xác thực',
+      b2: has(p.badge2) ? p.badge2 : 'Khảo sát 24/7',
+      b3: has(p.badge3) ? p.badge3 : 'Có kho/xưởng thực tế',
+      m1v: has(p.metric1_value) ? p.metric1_value : '—',
+      m1l: has(p.metric1_label) ? p.metric1_label : 'Dự án / tháng',
+      m2v: has(p.metric2_value) ? p.metric2_value : '—',
+      m2l: has(p.metric2_label) ? p.metric2_label : 'Phản hồi hỗ trợ',
+      m3v: has(p.metric3_value) ? p.metric3_value : '—',
+      m3l: has(p.metric3_label) ? p.metric3_label : 'Đánh giá khách',
+      hl1: has(p.usp_highlight1) ? p.usp_highlight1 : 'Ưu điểm 1 — nhập ở tab Điểm nhấn',
+      hl2: has(p.usp_highlight2) ? p.usp_highlight2 : 'Ưu điểm 2 — nhập ở tab Điểm nhấn',
+      hl3: has(p.usp_highlight3) ? p.usp_highlight3 : 'Ưu điểm 3 — nhập ở tab Điểm nhấn',
+      uspLines:     lines(p.usp_text).length        ? lines(p.usp_text)        : ['Năng lực 1 — nhập ở tab Mô tả', 'Năng lực 2', 'Năng lực 3'],
+      serviceLines: lines(p.services_text).length    ? lines(p.services_text)    : ['Sản phẩm/dịch vụ 1 — nhập ở tab Mô tả'],
+      commitLines:  lines(p.commitments_text).length ? lines(p.commitments_text) : ['Cam kết 1 — nhập ở tab Mô tả'],
+      quote: has(p.customer_quote) ? p.customer_quote : 'Phản hồi tích cực của khách hàng sẽ hiện ở đây.',
+      cta: has(p.cta_text) ? p.cta_text : 'Quét mã QR để xem thêm công trình thực tế và thông tin liên hệ.',
+      pc1: has(p.project_caption1) ? p.project_caption1 : 'Công trình 1',
+      pc2: has(p.project_caption2) ? p.project_caption2 : 'Công trình 2',
+      pc3: has(p.project_caption3) ? p.project_caption3 : 'Công trình 3',
+    };
+  }
+
+  // imgBox helper riêng cho T2-T4 (placeholder dashed nhẹ)
+  function pImg(url, label) {
+    return url
+      ? `<img src="${esc(url)}" alt="${esc(label)}">`
+      : `<div class="ph-empty">${SVG.image}<span>${esc(label)}</span></div>`;
+  }
+
+  // ============================================================
+  // MẪU 2 — Tech Modern (cyan + lime + dark ink)
+  // Layout theo template2.html (do AI image-to-code sinh ra, đã chỉnh để
+  // multi-brand: bỏ Austdoor logo và DEALER CODE khỏi header visible).
+  // Structure: header 2-col → badges → contact-bar cyan → main-grid 2-col
+  // (Hero+InfoTable | Owner+KPI+Highlights) → 3-col lists → testimonial
+  // → bottom-grid 2-col (Team+QR | Projects) → partners → footer.
+  // ============================================================
+  function template2(data) {
+    const x = prepareData(data);
+    // Corner brackets (4 góc cyan thin) — gắn vào với class .t2-cb-set
+    const cb = `<span class="cb tl"></span><span class="cb tr"></span><span class="cb bl"></span><span class="cb br"></span>`;
+    // Icons (line stroke, inherit color via currentColor)
+    const ic = {
+      shield:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>`,
+      warehouse: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-9h6v9"/></svg>`,
+      clock:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`,
+      phone:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7c.1.9 .3 1.8 .6 2.6a2 2 0 0 1-.5 2.1L7.9 9.7a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9 .3 1.7 .5 2.6 .6a2 2 0 0 1 1.7 2z"/></svg>`,
+      mail:      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/></svg>`,
+      pin:       `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7 8-13a8 8 0 0 0-16 0c0 6 8 13 8 13z"/><circle cx="12" cy="9" r="3"/></svg>`,
+      user:      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>`,
+      camera:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h3l2-3h6l2 3h3v13H4z"/><circle cx="12" cy="13" r="4"/></svg>`,
+      chart:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>`,
+      bolt:      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>`,
+      star:      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5"/></svg>`,
+      stopwatch: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 13V9M10 2h4M19 5l-2 2"/></svg>`,
+      clipChk:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 3h6v3H9z"/><path d="M9 13l2 2 4-4"/></svg>`,
+      check:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>`,
+      box:       `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4z"/><path d="M3 7v10l9 4 9-4V7"/></svg>`,
+      heart:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 1 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/></svg>`,
+      quote:     `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h4v4H7zm0 4c0 3 1 5 4 5v2c-4 0-6-3-6-7zm10-4h4v4h-4zm0 4c0 3 1 5 4 5v2c-4 0-6-3-6-7z"/></svg>`,
+      qr:        `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14h1M14 20h1M17 20h1M20 17h1M20 20h1"/></svg>`,
+    };
+
+    // Section header bar (dark band với English subtitle)
+    const secH = (vi, en) =>
+      `<div class="t2-sec-h"><span class="vi">${esc(vi)}</span><span class="en">// ${esc(en)}</span></div>`;
+
+    // Image placeholder (dark gradient + camera icon)
+    const phImg = (l1, l2 = '') => `
+      <div class="t2-img-ph">
+        <div class="t2-cam">${ic.camera}</div>
+        ${l1 ? `<div class="t2-ph-l1">${esc(l1)}</div>` : ''}
+        ${l2 ? `<div class="t2-ph-l2">${esc(l2)}</div>` : ''}
+        ${cb}
+      </div>`;
+    const imgOr = (url, l1, l2) =>
+      has(url) ? `<img src="${esc(url)}" alt="${esc(l1 || '')}">${cb}` : phImg(l1, l2);
+
+    return `
+      <section class="profile-page tpl-2-v2">
+
+        <!-- ============ HEADER (2-col) ============ -->
+        <header class="t2-hdr">
+          <div class="t2-hdr-title">
+            <h1 class="t2-h1">${esc(x.titleRaw)}</h1>
+            <div class="t2-subtitle">
+              <span class="t2-slash">//</span>
+              <span>${esc(x.tagline)}</span>
+            </div>
+          </div>
+
+          <div class="t2-hdr-logo">
+            ${has(x.imgs.logo_dai_ly)
+              ? `<img src="${esc(x.imgs.logo_dai_ly)}" alt="Logo đại lý">`
+              : `<div class="t2-logo-ph">
+                   <div class="t2-logo-t">LOGO ĐẠI LÝ</div>
+                   <div class="t2-logo-s">( PLACEHOLDER )</div>
+                 </div>`}
+            ${cb}
+          </div>
+        </header>
+
+        <!-- ============ BADGES ============ -->
+        <div class="t2-badges">
+          <div class="t2-badge"><span class="t2-bi">${ic.shield}</span>${esc(x.b1)}</div>
+          <div class="t2-badge"><span class="t2-bi">${ic.warehouse}</span>${esc(x.b2)}</div>
+          <div class="t2-badge"><span class="t2-bi">${ic.clock}</span>${esc(x.b3)}</div>
+        </div>
+
+        <!-- ============ CONTACT BAR (cyan band) ============ -->
+        <div class="t2-contact">
+          <span class="t2-c-it">${ic.phone}${esc(x.ownerPhone)}</span>
+          <span class="t2-div"></span>
+          <span class="t2-c-it">${ic.mail}${esc(x.ownerEmail)}</span>
+          <span class="t2-div"></span>
+          <span class="t2-c-it">${ic.pin}${esc(x.addrFull)}</span>
+        </div>
+
+        <!-- ============ MAIN GRID (2-col) ============ -->
+        <div class="t2-main">
+
+          <!-- LEFT: Hero + Info table -->
+          <div>
+            <div class="t2-hero">${imgOr(x.imgs.hero, 'ẢNH HERO', '( BÌA ĐẠI LÝ )')}</div>
+
+            ${secH('THÔNG TIN ĐẠI LÝ', 'PROFILE DATA')}
+            <div class="t2-info-wrap">
+              <table class="t2-info">
+                <tr><td class="lb"><span class="dot"></span>Tên đại lý</td><td>${esc(x.titleRaw)}</td></tr>
+                <tr><td class="lb"><span class="dot"></span>Chủ đại lý</td><td>${esc(x.ownerName)}</td></tr>
+                <tr><td class="lb"><span class="dot"></span>Điện thoại</td><td>${esc(x.ownerPhone)}</td></tr>
+                <tr><td class="lb"><span class="dot"></span>Email</td><td>${esc(x.ownerEmail)}</td></tr>
+                <tr><td class="lb"><span class="dot"></span>Địa chỉ</td><td>${esc(x.addrFull)}</td></tr>
+                <tr><td class="lb"><span class="dot"></span>Khu vực phủ</td><td>${esc(x.coverage)}</td></tr>
+                <tr><td class="lb"><span class="dot"></span>Giờ mở cửa</td><td>${esc(x.hours)}</td></tr>
+                <tr><td class="lb"><span class="dot"></span>Kinh nghiệm</td><td>${esc(x.exp)} năm</td></tr>
+                <tr><td class="lb"><span class="dot"></span>Quy mô đội</td><td>${esc(x.team)}</td></tr>
+                <tr><td class="lb"><span class="dot"></span>Dự án / tháng</td><td>${esc(x.projects)}</td></tr>
+              </table>
+            </div>
+          </div>
+
+          <!-- RIGHT: Owner card + stat cards + highlights -->
+          <div>
+            <div class="t2-owner">
+              <div class="t2-owner-lr">
+                <span class="cy">CHỦ ĐẠI LÝ</span>
+                <span class="cy">// OWNER</span>
+              </div>
+              <div class="t2-owner-row">
+                <div class="t2-owner-ava">
+                  ${has(x.imgs.avatar_chu)
+                    ? `<img src="${esc(x.imgs.avatar_chu)}" alt="">`
+                    : `<span class="t2-ava-ic">${ic.user}</span>`}
+                </div>
+                <div class="t2-owner-n">${esc(x.ownerName)}</div>
+              </div>
+              <div class="t2-owner-pill">CHỦ ĐẠI LÝ / OWNER DEALER</div>
+              <div class="t2-owner-ph">${ic.phone}${esc(x.ownerPhone)}</div>
+            </div>
+
+            <div class="t2-stat-grid">
+              <div class="t2-stat">
+                <div class="t2-stat-row">
+                  <div class="t2-stat-n">${esc(x.m1v)}</div>
+                  <span class="t2-stat-ic">${ic.chart}</span>
+                </div>
+                <div class="t2-stat-d">${esc(x.m1l)}</div>
+              </div>
+              <div class="t2-stat">
+                <div class="t2-stat-row">
+                  <div class="t2-stat-n">${esc(x.m2v)}</div>
+                  <span class="t2-stat-ic">${ic.bolt}</span>
+                </div>
+                <div class="t2-stat-d">${esc(x.m2l)}</div>
+              </div>
+              <div class="t2-stat">
+                <div class="t2-stat-row">
+                  <div class="t2-stat-n">${esc(x.m3v)}</div>
+                  <span class="t2-stat-ic">${ic.star}</span>
+                </div>
+                <div class="t2-stat-d">${esc(x.m3l)}</div>
+              </div>
+            </div>
+
+            ${secH('ĐIỂM NỔI BẬT', 'HIGHLIGHTS')}
+            <div class="t2-hl-body">
+              <div class="t2-hl">
+                <span class="t2-hl-num">01</span>
+                <span class="t2-hl-ic">${ic.stopwatch}</span>
+                <div class="t2-hl-t">${esc(x.hl1)}</div>
+              </div>
+              <div class="t2-hl">
+                <span class="t2-hl-num">02</span>
+                <span class="t2-hl-ic">${ic.clipChk}</span>
+                <div class="t2-hl-t">${esc(x.hl2)}</div>
+              </div>
+              <div class="t2-hl">
+                <span class="t2-hl-num">03</span>
+                <span class="t2-hl-ic">${ic.shield}</span>
+                <div class="t2-hl-t">${esc(x.hl3)}</div>
+              </div>
+            </div>
+
+            <!-- QR row — move lên đây để lấp khoảng trống dưới ĐIỂM NỔI BẬT -->
+            <div class="t2-qr-row">
+              <div class="t2-qr-l">
+                <div class="t2-qr-t">QUÉT MÃ QR</div>
+                <div class="t2-qr-s">// SCAN ME</div>
+              </div>
+              <div class="t2-qr-box">
+                ${has(x.imgs.qr_code)
+                  ? `<img src="${esc(x.imgs.qr_code)}" alt="QR">`
+                  : `<div class="t2-qr-i">${ic.qr}<span>QR CODE</span></div>`}
+              </div>
+              <div class="t2-qr-d"><span class="t2-arr">»»»</span>${esc(x.cta)}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ 3-COL LISTS ============ -->
+        <div class="t2-three">
+          <div class="t2-col">
+            <div class="t2-col-h"><span>NĂNG LỰC NỔI BẬT</span><span class="en">// STRENGTHS</span></div>
+            ${x.uspLines.slice(0, 6).map(s => `<div class="t2-chk-it"><span class="t2-cic">${ic.check}</span>${esc(s)}</div>`).join('')}
+          </div>
+          <div class="t2-col">
+            <div class="t2-col-h"><span>SẢN PHẨM &amp; DỊCH VỤ</span><span class="en">// PRODUCTS</span></div>
+            ${x.serviceLines.slice(0, 6).map(s => `<div class="t2-chk-it"><span class="t2-cic">${ic.box}</span>${esc(s)}</div>`).join('')}
+          </div>
+          <div class="t2-col">
+            <div class="t2-col-h"><span>CAM KẾT CHĂM SÓC KH</span><span class="en">// CUSTOMER CARE</span></div>
+            ${x.commitLines.slice(0, 5).map(s => `<div class="t2-chk-it"><span class="t2-cic">${ic.heart}</span>${esc(s)}</div>`).join('')}
+          </div>
+        </div>
+
+        <!-- ============ TESTIMONIAL ============ -->
+        <div class="t2-test">
+          <div class="t2-test-ava">${ic.heart}</div>
+          <div class="t2-test-lb">KHÁCH HÀNG<br>NÓI VỀ CHÚNG TÔI</div>
+          <div class="t2-test-q">"${esc(x.quote)}"</div>
+          <div class="t2-test-qm">${ic.quote}</div>
+        </div>
+
+        <!-- ============ BOTTOM GRID (2-col) ============ -->
+        <div class="t2-bottom">
+
+          <!-- LEFT: Đội ngũ & cơ sở -->
+          <div>
+            ${secH('ĐỘI NGŨ & CƠ SỞ', 'TEAM & FACILITIES')}
+            <div class="t2-img-grid">
+              <div class="t2-team-cell">
+                <div class="t2-team-it">${imgOr(x.imgs.doi_ngu_1, 'ẢNH ĐỘI NGŨ 1', '( TEAM )')}</div>
+                <div class="t2-team-cap">Đội ngũ thi công</div>
+              </div>
+              <div class="t2-team-cell">
+                <div class="t2-team-it">${imgOr(x.imgs.kho_xuong, 'KHO / XƯỞNG', '( WORKSHOP )')}</div>
+                <div class="t2-team-cap">Kho / xưởng</div>
+              </div>
+              <div class="t2-team-cell">
+                <div class="t2-team-it">${imgOr(x.imgs.doi_ngu_2, 'ẢNH ĐỘI NGŨ 2', '( TEAM )')}</div>
+                <div class="t2-team-cap">Hoạt động đội ngũ</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: Công trình -->
+          <div>
+            ${secH('CÔNG TRÌNH THỰC TẾ', 'REAL PROJECTS')}
+            <div class="t2-img-grid">
+              <div class="t2-prj-it">
+                <div class="t2-prj-img">${imgOr(x.imgs.cong_trinh_1)}</div>
+                <div class="t2-prj-cap">${esc(x.pc1)}</div>
+              </div>
+              <div class="t2-prj-it">
+                <div class="t2-prj-img">${imgOr(x.imgs.cong_trinh_2)}</div>
+                <div class="t2-prj-cap">${esc(x.pc2)}</div>
+              </div>
+              <div class="t2-prj-it">
+                <div class="t2-prj-img">${imgOr(x.imgs.cong_trinh_3)}</div>
+                <div class="t2-prj-cap">${esc(x.pc3)}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ ĐỐI TÁC CHIẾN LƯỢC (cuối trang) ============ -->
+        <div class="t2-partners">
+          <div class="t2-partners-title">${esc(x.partnersTitle)}</div>
+          <div class="t2-partners-grid">
+            ${x.partnerLogos.length
+              ? x.partnerLogos.map(u => `<div class="t2-partner"><img src="${esc(u)}" alt="Logo đối tác"></div>`).join('')
+              : Array.from({length: 5}).map(() => `<div class="t2-partner empty"><span>LOGO ĐỐI TÁC</span></div>`).join('')
+            }
+          </div>
+        </div>
+      </section>`;
+  }
+
+  // ============================================================
+  // MẪU 3 — Editorial Magazine (cream + burgundy, serif headlines)
+  // ============================================================
+  function template3(data) {
+    const x = prepareData(data);
+    return `
+      <section class="profile-page tpl-3-v2">
+        <div class="t3-pretitle">
+          <span class="t3-variant">Variant 2 — Editorial Magazine</span>
+          <span class="t3-code">${esc(x.dealerCode || '—')}</span>
+        </div>
+
+        <div class="t3-hero-row">
+          <div class="t3-title-block">
+            <h1>${esc(x.titleRaw)}</h1>
+            <p class="t3-tagline">${esc(x.tagline)}</p>
+            <div class="t3-badges">
+              <span>${esc(x.b1)}</span>
+              <span>${esc(x.b2)}</span>
+              <span>${esc(x.b3)}</span>
+            </div>
+          </div>
+          <div class="t3-hero">${pImg(x.imgs.hero, 'Ảnh bìa')}</div>
+        </div>
+
+        <div class="t3-contact-strip">
+          <span>📞 ${esc(x.ownerPhone)}</span>
+          <span>✉ ${esc(x.ownerEmail)}</span>
+          <span>📍 ${esc(x.addrFull)}</span>
+        </div>
+
+        <div class="t3-body">
+          <div class="t3-col-l">
+            <div class="t3-sec-h">THÔNG TIN ĐẠI LÝ</div>
+            <table class="t3-table">
+              <tr><th>Mã đại lý</th><td>${esc(x.dealerCode || '—')}</td></tr>
+              <tr><th>Tên đại lý</th><td>${esc(x.titleRaw)}</td></tr>
+              <tr><th>Chủ đại lý</th><td>${esc(x.ownerName)}</td></tr>
+              <tr><th>Điện thoại</th><td>${esc(x.ownerPhone)}</td></tr>
+              <tr><th>Email</th><td>${esc(x.ownerEmail)}</td></tr>
+              <tr><th>Địa chỉ</th><td>${esc(x.addrFull)}</td></tr>
+              <tr><th>Khu vực</th><td>${esc(x.coverage)}</td></tr>
+              <tr><th>Giờ mở cửa</th><td>${esc(x.hours)}</td></tr>
+              <tr><th>Kinh nghiệm</th><td>${esc(x.exp)} năm</td></tr>
+              <tr><th>Đội ngũ</th><td>${esc(x.team)}</td></tr>
+              <tr><th>Dự án / tháng</th><td>${esc(x.projects)}</td></tr>
+            </table>
+          </div>
+          <div class="t3-col-r">
+            <div class="t3-owner">
+              <div class="t3-owner-avatar">${has(x.imgs.avatar_chu) ? `<img src="${esc(x.imgs.avatar_chu)}">` : SVG.user}</div>
+              <div class="t3-owner-n">${esc(x.ownerName)}</div>
+              <div class="t3-owner-r">Chủ đại lý / người đại diện</div>
+              <div class="t3-quote-mark">"</div>
+              <div class="t3-quote-text">${esc(x.quote)}</div>
+            </div>
+            <div class="t3-kpi-row">
+              <div class="t3-kpi"><div class="v">${esc(x.m1v)}</div><div class="l">${esc(x.m1l)}</div></div>
+              <div class="t3-kpi"><div class="v">${esc(x.m2v)}</div><div class="l">${esc(x.m2l)}</div></div>
+              <div class="t3-kpi"><div class="v">${esc(x.m3v)}</div><div class="l">${esc(x.m3l)}</div></div>
+            </div>
+            <div class="t3-sec-h">3 ĐIỂM NỔI BẬT</div>
+            <div class="t3-hl"><div class="n">1</div><div class="t">${esc(x.hl1)}</div></div>
+            <div class="t3-hl"><div class="n">2</div><div class="t">${esc(x.hl2)}</div></div>
+            <div class="t3-hl"><div class="n">3</div><div class="t">${esc(x.hl3)}</div></div>
+          </div>
+        </div>
+
+        <div class="t3-row3">
+          <div class="t3-list-card">
+            <div class="t3-list-h"><span>${SVG.shieldChk}</span> NĂNG LỰC NỔI BẬT</div>
+            <ul>${x.uspLines.slice(0, 6).map(s => `<li>${esc(s)}</li>`).join('')}</ul>
+          </div>
+          <div class="t3-list-card">
+            <div class="t3-list-h"><span>${SVG.box}</span> SẢN PHẨM &amp; DỊCH VỤ</div>
+            <ul>${x.serviceLines.slice(0, 6).map(s => `<li>${esc(s)}</li>`).join('')}</ul>
+          </div>
+          <div class="t3-list-card">
+            <div class="t3-list-h"><span>${SVG.heart}</span> CAM KẾT CHĂM SÓC</div>
+            <ul>${x.commitLines.slice(0, 5).map(s => `<li>${esc(s)}</li>`).join('')}</ul>
+          </div>
+        </div>
+
+        <div class="t3-row4">
+          <div class="t3-sec-h">ĐỘI NGŨ &amp; CƠ SỞ VẬT CHẤT</div>
+          <div class="t3-gal-3">
+            <div class="t3-gal-it">${pImg(x.imgs.kho_xuong, 'Kho/xưởng')}<span>Kho &amp; xưởng thực tế</span></div>
+            <div class="t3-gal-it">${pImg(x.imgs.doi_ngu_1, 'Đội ngũ 1')}<span>Đội ngũ thi công</span></div>
+            <div class="t3-gal-it">${pImg(x.imgs.doi_ngu_2, 'Đội ngũ 2')}<span>Hoạt động đội ngũ</span></div>
+          </div>
+        </div>
+
+        <div class="t3-row4">
+          <div class="t3-sec-h">CÔNG TRÌNH THỰC TẾ</div>
+          <div class="t3-gal-3">
+            <div class="t3-gal-it">${pImg(x.imgs.cong_trinh_1, x.pc1)}<span>${esc(x.pc1)}</span></div>
+            <div class="t3-gal-it">${pImg(x.imgs.cong_trinh_2, x.pc2)}<span>${esc(x.pc2)}</span></div>
+            <div class="t3-gal-it">${pImg(x.imgs.cong_trinh_3, x.pc3)}<span>${esc(x.pc3)}</span></div>
+          </div>
+        </div>
+
+        <div class="t3-qr-row">
+          <div class="t3-cta">${esc(x.cta)}</div>
+          <div class="t3-qr">${has(x.imgs.qr_code) ? `<img src="${esc(x.imgs.qr_code)}">` : `<span>QR</span>`}</div>
+        </div>
+
+        <!-- Đối tác chiến lược -->
+        <div class="t3-partners">
+          <div class="t3-partners-title">${esc(x.partnersTitle)}</div>
+          <div class="t3-partners-grid">
+            ${x.partnerLogos.length
+              ? x.partnerLogos.map(u => `<div class="t3-partner"><img src="${esc(u)}" alt="Logo đối tác"></div>`).join('')
+              : Array.from({length: 5}).map(() => `<div class="t3-partner empty"><span>LOGO ĐỐI TÁC</span></div>`).join('')
+            }
+          </div>
+        </div>
+
+        <div class="t3-ftr">
+          <span>${esc(x.titleRaw)} · ${esc(x.dealerCode || '—')}</span>
+          <span>📞 ${esc(x.ownerPhone)} · ✉ ${esc(x.ownerEmail)}</span>
+        </div>
+      </section>`;
+  }
+
+  // ============================================================
+  // MẪU 4 — Compact Pamphlet (white + red accent, multi-section)
+  // ============================================================
+  function template4(data) {
+    const x = prepareData(data);
+    return `
+      <section class="profile-page tpl-4-v2">
+        <header class="t4-hdr">
+          <div class="t4-hdr-logo">${has(x.imgs.logo_dai_ly) ? `<img src="${esc(x.imgs.logo_dai_ly)}">` : `<div class="t4-no-logo">LOGO</div>`}</div>
+          <div class="t4-hdr-mid">
+            <div class="t4-hdr-eyebrow">SỐ ĐL CODE · TEMPLATE 4</div>
+            <h1>${esc(x.titleRaw)}</h1>
+            <p>${esc(x.tagline)}</p>
+            <div class="t4-banner-buttons">
+              <span>KHẢO SÁT 24/7</span>
+              <span>BÁO GIÁ CHÍNH XÁC TRONG 24H</span>
+            </div>
+          </div>
+          <div class="t4-hdr-right">
+            <div class="t4-code">${esc(x.dealerCode || '—')}</div>
+          </div>
+        </header>
+
+        <div class="t4-row-products">
+          <div class="t4-sec-h-red">SẢN PHẨM CHÍNH</div>
+          <ul class="t4-prod-list">
+            ${x.serviceLines.slice(0, 6).map(s => `<li>${esc(s)}</li>`).join('')}
+          </ul>
+        </div>
+
+        <div class="t4-row1">
+          <div class="t4-tieubieu">
+            <div class="t4-sec-h">TIÊU BIỂU</div>
+            <div class="t4-thumbs">
+              <div class="t4-thumb">${pImg(x.imgs.cong_trinh_1, x.pc1)}<span>${esc(x.pc1)}</span></div>
+              <div class="t4-thumb">${pImg(x.imgs.cong_trinh_2, x.pc2)}<span>${esc(x.pc2)}</span></div>
+              <div class="t4-thumb">${pImg(x.imgs.cong_trinh_3, x.pc3)}<span>${esc(x.pc3)}</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="t4-kpi-strip">
+          <div class="t4-kpi"><b>${esc(x.m1v)}</b><span>${esc(x.m1l)}</span></div>
+          <div class="t4-kpi"><b>${esc(x.m2v)}</b><span>${esc(x.m2l)}</span></div>
+          <div class="t4-kpi"><b>${esc(x.exp)} năm</b><span>Kinh nghiệm</span></div>
+          <div class="t4-kpi"><b>${esc(x.team)}</b><span>Đội ngũ</span></div>
+          <div class="t4-kpi"><b>${esc(x.projects)}</b><span>Dự án / tháng</span></div>
+          <div class="t4-kpi"><b>${esc(x.m3v)}</b><span>${esc(x.m3l)}</span></div>
+        </div>
+
+        <div class="t4-row2">
+          <div class="t4-card t4-commit">
+            <div class="t4-sec-h-red">CAM KẾT RÕ RÀNG</div>
+            <ul>${x.commitLines.slice(0, 5).map(s => `<li>${esc(s)}</li>`).join('')}</ul>
+          </div>
+          <div class="t4-card t4-nangluc">
+            <div class="t4-sec-h-red">NĂNG LỰC VƯỢT TRỘI</div>
+            <ul>${x.uspLines.slice(0, 5).map(s => `<li>${esc(s)}</li>`).join('')}</ul>
+          </div>
+        </div>
+
+        <div class="t4-row3">
+          <div class="t4-block">
+            <div class="t4-sec-h">VỀ CƠ SỞ</div>
+            <div class="t4-co-info">
+              <div>📍 ${esc(x.addrFull)}</div>
+              <div>🏘 Khu vực ${esc(x.coverage)}</div>
+              <div>🕐 Mở cửa ${esc(x.hours)}</div>
+              <div>📅 ${esc(x.exp)} năm kinh nghiệm</div>
+            </div>
+            <div class="t4-co-img">${pImg(x.imgs.kho_xuong, 'Kho/xưởng')}</div>
+          </div>
+          <div class="t4-block">
+            <div class="t4-sec-h">VỀ ĐỘI NGŨ</div>
+            <div class="t4-team-imgs">
+              <div class="t4-team-it">${pImg(x.imgs.doi_ngu_1, 'Đội ngũ 1')}<span>Đội ngũ 1</span></div>
+              <div class="t4-team-it">${pImg(x.imgs.doi_ngu_2, 'Đội ngũ 2')}<span>Đội ngũ 2</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="t4-row-bottom">
+          <div class="t4-owner-card">
+            <div class="t4-owner-avatar">${has(x.imgs.avatar_chu) ? `<img src="${esc(x.imgs.avatar_chu)}">` : SVG.user}</div>
+            <div class="t4-owner-info">
+              <div class="t4-owner-n">${esc(x.ownerName)}</div>
+              <div>📞 ${esc(x.ownerPhone)}</div>
+              <div>✉ ${esc(x.ownerEmail)}</div>
+            </div>
+          </div>
+          <div class="t4-qr-card">
+            <div class="t4-qr">${has(x.imgs.qr_code) ? `<img src="${esc(x.imgs.qr_code)}">` : `<span>QR</span>`}</div>
+            <div class="t4-qr-text">QUÉT QR ĐỂ XEM THÊM<br>${esc(x.cta)}</div>
+          </div>
+        </div>
+
+        <!-- Đối tác chiến lược -->
+        <div class="t4-partners">
+          <div class="t4-partners-title">${esc(x.partnersTitle)}</div>
+          <div class="t4-partners-grid">
+            ${x.partnerLogos.length
+              ? x.partnerLogos.map(u => `<div class="t4-partner"><img src="${esc(u)}" alt="Logo đối tác"></div>`).join('')
+              : Array.from({length: 5}).map(() => `<div class="t4-partner empty"><span>LOGO ĐỐI TÁC</span></div>`).join('')
+            }
+          </div>
+        </div>
+      </section>`;
+  }
+
+  // T5 vẫn clone T1 (đợi designer)
   function template5(data) { return template1(data); }
 
   global.ProfileTemplates = {
     renderers: { t1: template1, t2: template2, t3: template3, t4: template4, t5: template5 },
-    labels:    { t1: 'Cổ điển (navy + gold)', t2: 'Hiện đại', t3: 'Tối giản', t4: 'Nổi bật', t5: 'Cao cấp' },
+    labels:    { t1: 'Cổ điển (navy + xanh)', t2: 'Tối — Modern (dark + gold)', t3: 'Editorial (cream + burgundy)', t4: 'Compact (white + red)', t5: 'Cao cấp' },
     render(key, data) {
       const fn = this.renderers[key] || this.renderers.t1;
       return fn(data);

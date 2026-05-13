@@ -9,11 +9,13 @@ const IMAGE_SLOTS = [
   'logo_dai_ly', 'avatar_chu', 'hero', 'kho_xuong',
   'doi_ngu_1', 'doi_ngu_2', 'qr_code',
   'cong_trinh_1', 'cong_trinh_2', 'cong_trinh_3',
+  'partner_logo_1', 'partner_logo_2', 'partner_logo_3',
+  'partner_logo_4', 'partner_logo_5',
 ];
 
 // Trường đại lý tự sửa được (KHÔNG cho sửa dealer_code, status)
 const DEALER_EDITABLE = [
-  'ten_dai_ly', 'chu_dai_ly', 'phone', 'email', 'mst',
+  'ten_dai_ly', 'chu_dai_ly', 'phone', 'email',
   'address', 'district', 'province', 'coverage',
   'years_experience', 'team_size', 'projects_monthly', 'open_hours',
 ];

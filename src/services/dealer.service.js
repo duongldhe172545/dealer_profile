@@ -29,7 +29,6 @@ function normalizeDealerInput(body) {
     chu_dai_ly:       optionalText(body.chu_dai_ly),
     phone:            optionalText(body.phone, 30),
     email:            optionalText(body.email, 100),
-    mst:              optionalText(body.mst, 30),
     address:          optionalText(body.address, 300),
     district:         optionalText(body.district),
     province:         optionalText(body.province),

@@ -1,0 +1,25 @@
+{
+  "name": "dai-ly-so",
+  "version": "0.1.0",
+  "description": "Đại Lý Số — web app hồ sơ + báo giá cho đại lý ngành cửa",
+  "private": true,
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/db/migrate.js && node src/server.js",
+    "dev": "node --watch src/server.js",
+    "db:migrate": "node src/db/migrate.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "better-sqlite3": "^11.3.0",
+    "cloudinary": "^2.5.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "express-rate-limit": "^7.4.1",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1"
+  }
+}

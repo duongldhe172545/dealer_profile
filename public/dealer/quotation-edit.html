@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tạo / Sửa báo giá · Đại Lý Số</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/quotation.css">
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/common.js"></script>
+  <script src="/assets/js/dealer-shell.js"></script>
+  <script src="/assets/js/quotation-template.js"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: { brand: { 500:'#0a6fd6', 600:'#0858b3', 700:'#063f7a', 900:'#0b1f3a' } }, fontFamily: { sans: ['Be Vietnam Pro','Inter','system-ui','sans-serif'] } } } };
+    const user = Auth.guard('dealer');
+    document.addEventListener('DOMContentLoaded', () => { if (user) DealerShell.mount(user); });
+  </script>
+  <style>
+    [x-cloak]{display:none!important}
+    body { font-family: 'Be Vietnam Pro', Inter, system-ui, sans-serif; }
+    .editor-grid { display: grid; grid-template-columns: minmax(420px, 0.8fr) minmax(0, 1.2fr); gap: 16px; align-items: start; }
+    @media (max-width: 1280px) { .editor-grid { grid-template-columns: 1fr; } .preview-col { position: static !important; } }
+    .preview-col { position: sticky; top: 16px; }
+    .q-preview-stage .q-page { transform: scale(var(--pv-scale, 1)); transform-origin: top center; margin-bottom: calc(-297mm * (1 - var(--pv-scale, 1))); }
+
+    .panel { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; }
+    .panel-hd { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; }
+    .panel-hd h3 { font-size: 13px; font-weight: 700; color: #0f172a; }
+    .panel-bd { padding: 12px 14px; }
+
+    .field-label { display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px; }
+    .field-input, .field-textarea, .field-select {
+      width: 100%; padding: 7px 10px; font-size: 13px;
+      border: 1px solid #cbd5e1; border-radius: 8px;
+      outline: none; background: #fff;
+    }
+    .field-textarea { resize: vertical; min-height: 60px; }
+    .field-select { padding-right: 28px; appearance: none; }
+    .field-input:focus, .field-textarea:focus, .field-select:focus { border-color: #0a6fd6; box-shadow: 0 0 0 3px rgba(10,111,214,0.12); }
+    .field-input:disabled { background: #f1f5f9; }
+
+    .items-table { width: 100%; min-width: 1180px; border-collapse: collapse; font-size: 12px; }
+
+    /* Slot upload ảnh báo giá (compact, 5 cột) */
+    .img-slot { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px; }
+    .img-slot-label { font-size: 10px; font-weight: 700; color: #475569; margin-bottom: 4px; text-align: center; }
+    .img-thumb { aspect-ratio: 4/3; background: #f1f5f9; border-radius: 6px; overflow: hidden; }
+    .img-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .img-empty-btn {
+      width: 100%; aspect-ratio: 4/3;
+      border: 2px dashed #cbd5e1; border-radius: 6px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: #94a3b8; transition: .15s; background: #fafbfd; cursor: pointer;
+    }
+    .img-empty-btn:hover:not(:disabled) { border-color: #0a6fd6; color: #0a6fd6; background: #f4f9ff; }
+    .img-empty-btn:disabled { cursor: not-allowed; }
+    .items-table th, .items-table td { padding: 6px 5px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+    .items-table th {
+      font-size: 10.5px; text-transform: uppercase; color: #475569;
+      font-weight: 700; background: #f8fafc; text-align: left;
+      white-space: nowrap;
+    }
+    .items-table .field-input { font-size: 12px; padding: 5px 7px; width: 100%; }
+    .items-table .num { text-align: right; }
+
+    .action-bar { position: sticky; top: 0; z-index: 20; background: rgba(248,250,252,0.96); backdrop-filter: blur(8px); padding: 10px 0; border-bottom: 1px solid #e2e8f0; margin-bottom: 14px; }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50">
+  <div id="dealer-shell"></div>
+
+  <main class="max-w-[1480px] mx-auto px-4 py-6" x-data="quoteForm()" x-init="init()">
+    <!-- Action bar -->
+    <div class="action-bar">
+      <div class="flex items-center justify-between gap-3 flex-wrap">
+        <div>
+          <h2 class="text-xl font-bold text-slate-800">
+            <span x-show="editingId" x-text="'Báo giá #' + (form.so_bao_gia || '')"></span>
+            <span x-show="!editingId">Tạo báo giá mới</span>
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5">
+            <a href="/dealer/quotations.html" class="hover:text-brand-600">← Quay lại danh sách</a>
+          </p>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <span x-show="form.status && form.status !== 'draft'" x-cloak
+                class="text-xs px-2 py-1 rounded font-semibold"
+                :class="form.status === 'sent' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-700'"
+                x-text="statusLabel(form.status)"></span>
+          <span x-show="savedFlash" x-cloak class="text-sm text-green-600 font-semibold">✓ Đã lưu</span>
+          <button @click="exportPDF()" :disabled="saving || !form.so_bao_gia" type="button"
+                  class="border border-slate-300 hover:bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-50">
+            📄 Xuất PDF
+          </button>
+          <button @click="save()" :disabled="saving" type="button"
+                  class="bg-brand-500 hover:bg-brand-600 text-white px-5 py-2 rounded-lg text-sm font-semibold disabled:opacity-50">
+            <span x-show="!saving">Lưu báo giá</span>
+            <span x-show="saving" x-cloak>Đang lưu...</span>
+          </button>
+        </div>
+      </div>
+      <div x-show="error" x-cloak class="mt-2 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2" x-text="error"></div>
+    </div>
+
+    <div x-show="loading" class="text-center text-slate-400 py-12">Đang tải...</div>
+
+    <div x-show="!loading" class="editor-grid">
+      <!-- =========== CỘT TRÁI: FORM =========== -->
+      <div class="space-y-3">
+        <!-- Thông tin chung -->
+        <div class="panel">
+          <div class="panel-hd"><h3>Thông tin chung</h3></div>
+          <div class="panel-bd grid grid-cols-2 gap-3">
+            <div>
+              <label class="field-label">Số báo giá *</label>
+              <input class="field-input" x-model="form.so_bao_gia" placeholder="Tự sinh nếu trống">
+            </div>
+            <div>
+              <label class="field-label">Ngày báo giá *</label>
+              <input class="field-input" type="date" x-model="form.ngay_bao_gia">
+            </div>
+            <div class="col-span-2">
+              <label class="field-label">Khách hàng *</label>
+              <div class="flex gap-2">
+                <select class="field-select flex-1" x-model.number="form.customer_id" @change="onCustomerChange()">
+                  <option value="">— Chọn khách hàng —</option>
+                  <template x-for="c in customers" :key="c.id">
+                    <option :value="c.id" x-text="c.ten_kh + ' (' + c.ma_kh + ')'"></option>
+                  </template>
+                </select>
+                <button type="button" @click="openNewCustomer()"
+                        class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-sm font-semibold whitespace-nowrap">
+                  + KH mới
+                </button>
+              </div>
+            </div>
+            <div class="col-span-2">
+              <label class="field-label">Địa chỉ công trình</label>
+              <input class="field-input" x-model="form.dia_chi_cong_trinh">
+            </div>
+            <div class="col-span-2">
+              <label class="field-label">Ghi chú hồ sơ</label>
+              <textarea class="field-textarea" rows="2" x-model="form.ghi_chu_ho_so"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Line items -->
+        <div class="panel">
+          <div class="panel-hd flex items-center justify-between">
+            <h3>Dòng sản phẩm <span class="text-xs font-normal text-slate-500" x-text="'(' + form.items.length + ')'"></span></h3>
+            <button @click="addItem()" type="button" class="text-xs bg-brand-500 hover:bg-brand-600 text-white px-3 py-1.5 rounded font-semibold">+ Thêm dòng</button>
+          </div>
+          <div class="panel-bd overflow-x-auto">
+            <!-- 1 datalist global cho mã SP — không filter trong HTML.
+                 Để filter theo nhóm: tạo dynamic mỗi row trong vòng x-for bên dưới (datalist riêng). -->
+            <datalist id="nhom-datalist">
+              <template x-for="g in productGroups" :key="g">
+                <option :value="g"></option>
+              </template>
+            </datalist>
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th style="width:30px">#</th>
+                  <th style="width:130px">Nhóm SP</th>
+                  <th style="width:140px">Mã SP</th>
+                  <th style="min-width:200px">Mô tả</th>
+                  <th style="width:90px">Rộng (mm)</th>
+                  <th style="width:90px">Dài (mm)</th>
+                  <th style="width:70px">SL *</th>
+                  <th style="width:80px">ĐVT *</th>
+                  <th style="width:140px" class="num">Đơn giá (đ) *</th>
+                  <th style="width:120px" class="num">Thành tiền</th>
+                  <th style="width:32px"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <template x-for="(it, idx) in form.items" :key="idx">
+                  <tr>
+                    <td class="text-center text-slate-500" x-text="idx + 1"></td>
+                    <td>
+                      <input class="field-input" x-model="it.nhom_sp" list="nhom-datalist" placeholder="VD: Cửa nhôm">
+                    </td>
+                    <td>
+                      <!-- Datalist riêng cho mỗi row, filter theo nhom_sp đã chọn -->
+                      <datalist :id="'pd-' + idx">
+                        <template x-for="p in productsByGroup(it.nhom_sp)" :key="p.id">
+                          <option :value="p.ma_sp" :label="p.mo_ta || ''"></option>
+                        </template>
+                      </datalist>
+                      <input class="field-input font-mono" x-model="it.ma_sp" :list="'pd-' + idx"
+                             @input.debounce.200ms="onMaSpChange(idx)" @change="onMaSpChange(idx)"
+                             placeholder="VD: NA-X01">
+                    </td>
+                    <td>
+                      <input class="field-input" x-model="it.mo_ta" placeholder="Mô tả ngắn">
+                    </td>
+                    <td>
+                      <input class="field-input" type="number" x-model.number="it.rong" placeholder="—">
+                    </td>
+                    <td>
+                      <input class="field-input" type="number" x-model.number="it.cao" placeholder="—">
+                    </td>
+                    <td>
+                      <input class="field-input" type="number" x-model.number="it.sl" @input="recalcItem(idx)" placeholder="1">
+                    </td>
+                    <td>
+                      <input class="field-input" x-model="it.dvt" placeholder="bộ/m²/cái">
+                    </td>
+                    <td class="num">
+                      <input class="field-input num" type="text" inputmode="numeric" placeholder="0"
+                             :value="Fmt.formatMoneyInput(it.don_gia)"
+                             @input="it.don_gia = Fmt.parseMoneyInput($event.target.value); recalcItem(idx)">
+                    </td>
+                    <td class="num">
+                      <span class="font-bold tabular-nums text-brand-700" x-text="Fmt.formatMoney(it.thanh_tien)" style="word-break:break-word"></span>
+                    </td>
+                    <td class="text-center">
+                      <button @click="removeItem(idx)" type="button" class="text-red-500 hover:text-red-700 text-lg leading-none">×</button>
+                    </td>
+                  </tr>
+                </template>
+                <tr x-show="form.items.length === 0">
+                  <td colspan="11" class="text-center text-slate-400 py-6 italic">Chưa có dòng sản phẩm. Bấm "+ Thêm dòng".</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Ảnh đính kèm báo giá (tối đa 5) -->
+        <div class="panel">
+          <div class="panel-hd">
+            <h3>Ảnh đính kèm <span class="text-xs font-normal text-slate-500">(tối đa 5 · jpg/png/webp ≤ 5MB)</span></h3>
+            <span x-show="!editingId" class="text-xs text-amber-600">Lưu báo giá trước khi tải ảnh.</span>
+          </div>
+          <div class="panel-bd">
+            <div class="grid grid-cols-5 gap-2">
+              <template x-for="slot in [1,2,3,4,5]" :key="slot">
+                <div class="img-slot">
+                  <div class="img-slot-label">Ảnh <span x-text="slot"></span></div>
+                  <div class="text-[10px] text-slate-500 mb-1 italic">Ngang 4:3 · ~1200×900px</div>
+                  <template x-if="getQImg(slot)">
+                    <div>
+                      <div class="img-thumb mb-1"><img :src="getQImg(slot).url" :alt="'Ảnh ' + slot"></div>
+                      <input type="text" maxlength="200"
+                             :value="getQImg(slot).caption || ''"
+                             @blur="saveCaption(slot, $event.target.value)"
+                             placeholder="Chú thích (tuỳ chọn)"
+                             class="w-full text-[10px] px-2 py-1 mb-1 border border-slate-200 rounded outline-none focus:border-brand-500">
+                      <div class="flex gap-1">
+                        <button @click="pickQuotationImage(slot)" type="button" :disabled="!editingId || qImgUploading[slot]"
+                                class="flex-1 text-[10px] bg-slate-100 hover:bg-slate-200 px-1.5 py-1 rounded font-semibold disabled:opacity-50">Đổi</button>
+                        <button @click="deleteQuotationImage(slot)" type="button" :disabled="!editingId || qImgUploading[slot]"
+                                class="text-[10px] bg-red-50 hover:bg-red-100 text-red-700 px-1.5 py-1 rounded font-semibold disabled:opacity-50">Xoá</button>
+                      </div>
+                    </div>
+                  </template>
+                  <template x-if="!getQImg(slot)">
+                    <button @click="pickQuotationImage(slot)" type="button" :disabled="!editingId || qImgUploading[slot]"
+                            class="img-empty-btn disabled:opacity-50">
+                      <span x-show="!qImgUploading[slot]" class="text-xl leading-none">+</span>
+                      <span x-show="!qImgUploading[slot]" class="text-[10px] font-semibold mt-0.5">Chọn ảnh</span>
+                      <span x-show="qImgUploading[slot]" x-cloak class="text-[10px]">Đang tải...</span>
+                    </button>
+                  </template>
+                </div>
+              </template>
+            </div>
+            <p x-show="!editingId" class="text-xs text-slate-500 mt-2 italic">Sau khi bấm "Lưu báo giá" sẽ mở chức năng tải ảnh.</p>
+          </div>
+        </div>
+
+        <!-- Tổng kết + điều khoản -->
+        <div class="panel">
+          <div class="panel-hd"><h3>Tổng kết & điều khoản</h3></div>
+          <div class="panel-bd grid grid-cols-2 gap-3">
+            <div>
+              <label class="field-label">Chi phí vận chuyển (đ)</label>
+              <input class="field-input tabular-nums text-right" type="text" inputmode="numeric" placeholder="0"
+                     :value="Fmt.formatMoneyInput(form.chi_phi_van_chuyen)"
+                     @input="form.chi_phi_van_chuyen = Fmt.parseMoneyInput($event.target.value); recalcAll()">
+            </div>
+            <div>
+              <label class="field-label">Chi phí lắp đặt (đ)</label>
+              <input class="field-input tabular-nums text-right" type="text" inputmode="numeric" placeholder="0"
+                     :value="Fmt.formatMoneyInput(form.chi_phi_lap_dat)"
+                     @input="form.chi_phi_lap_dat = Fmt.parseMoneyInput($event.target.value); recalcAll()">
+            </div>
+            <div>
+              <label class="field-label">VAT (%)</label>
+              <input class="field-input" type="number" step="1" min="0" max="100" x-model.number="form.vat_percent" @input="recalcAll()">
+            </div>
+            <div class="bg-brand-900 text-white rounded-lg p-3 col-span-1">
+              <div class="text-xs opacity-80">Tổng cộng</div>
+              <div class="text-xl font-black tabular-nums" x-text="Fmt.formatMoney(totals.tong_cong)"></div>
+            </div>
+
+            <div class="col-span-2">
+              <label class="field-label">Ghi chú thương mại</label>
+              <textarea class="field-textarea" rows="2" x-model="form.ghi_chu_thuong_mai"></textarea>
+            </div>
+
+            <div>
+              <label class="field-label">Thanh toán</label>
+              <input class="field-input" x-model="form.thanh_toan" placeholder="VD: Đặt cọc 40% · 50% khi giao · 10% nghiệm thu">
+            </div>
+            <div>
+              <label class="field-label">Tiến độ</label>
+              <input class="field-input" x-model="form.tien_do" placeholder="VD: 12-18 ngày làm việc">
+            </div>
+            <div class="col-span-2">
+              <label class="field-label">Bảo hành</label>
+              <input class="field-input" x-model="form.bao_hanh" placeholder="VD: Bảo hành 24 tháng theo chính sách hãng">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =========== CỘT PHẢI: PREVIEW =========== -->
+      <div class="preview-col">
+        <div class="panel">
+          <div class="panel-hd">
+            <h3>Xem trước · Báo giá</h3>
+          </div>
+          <div class="panel-bd">
+            <div class="q-preview-shell">
+              <div class="q-preview-stage" x-html="renderPreview()"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Thêm KH mới inline (nằm TRONG x-data="quoteForm" để truy cập state) -->
+    <div x-show="newCustOpen" x-cloak @keydown.escape.window="newCustOpen=false"
+         class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md" @click.outside="newCustOpen=false">
+        <div class="px-6 py-4 border-b border-slate-200">
+          <h3 class="text-lg font-bold text-slate-800">Thêm khách hàng mới</h3>
+          <p class="text-xs text-slate-500 mt-0.5">KH sẽ được lưu vào danh bạ + tự chọn vào báo giá này.</p>
+        </div>
+        <div class="px-6 py-5 space-y-3">
+          <div>
+            <label class="field-label">Tên khách hàng *</label>
+            <input class="field-input" x-model="newCust.ten_kh" autofocus>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="field-label">Người liên hệ</label>
+              <input class="field-input" x-model="newCust.nguoi_lien_he">
+            </div>
+            <div>
+              <label class="field-label">Số điện thoại</label>
+              <input class="field-input" x-model="newCust.phone">
+            </div>
+          </div>
+          <div>
+            <label class="field-label">Email</label>
+            <input class="field-input" type="email" x-model="newCust.email">
+          </div>
+          <div>
+            <label class="field-label">Địa chỉ</label>
+            <input class="field-input" x-model="newCust.dia_chi">
+          </div>
+          <div x-show="newCustError" x-cloak class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2" x-text="newCustError"></div>
+        </div>
+        <div class="px-6 py-4 border-t border-slate-200 flex justify-end gap-2">
+          <button @click="newCustOpen=false" type="button" class="px-4 py-2 text-sm rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">Huỷ</button>
+          <button @click="submitNewCustomer()" :disabled="newCustSaving" type="button"
+                  class="px-4 py-2 text-sm rounded-lg bg-brand-500 hover:bg-brand-600 text-white font-semibold disabled:opacity-50">
+            <span x-show="!newCustSaving">Thêm & chọn</span>
+            <span x-show="newCustSaving" x-cloak>Đang lưu...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="q-print-root" style="display:none"></div>
+
+  <script>
+    function quoteForm() {
+      return {
+        loading: true, saving: false, savedFlash: false, error: '',
+        editingId: null,
+        dealer: {}, profile: {}, images: {},
+        customers: [], products: [],
+        get productGroups() {
+          const s = new Set();
+          for (const p of this.products) if (p.nhom_sp) s.add(p.nhom_sp);
+          return Array.from(s).sort();
+        },
+        productsByGroup(nhom) {
+          if (!nhom) return this.products;
+          return this.products.filter(p => (p.nhom_sp || '').trim() === nhom.trim());
+        },
+        form: emptyForm(),
+        Fmt: window.Fmt, PRICING_MODES: window.PRICING_MODES,
+
+        // Ảnh đính kèm báo giá
+        quotationImages: [], qImgUploading: {},
+
+        // Inline tạo KH mới
+        newCustOpen: false, newCustSaving: false, newCustError: '',
+        newCust: { ten_kh: '', nguoi_lien_he: '', phone: '', email: '', dia_chi: '' },
+
+        openNewCustomer() {
+          this.newCust = { ten_kh: '', nguoi_lien_he: '', phone: '', email: '', dia_chi: '' };
+          this.newCustError = '';
+          this.newCustOpen = true;
+        },
+        async submitNewCustomer() {
+          this.newCustError = '';
+          if (!this.newCust.ten_kh || !this.newCust.ten_kh.trim()) {
+            this.newCustError = 'Vui lòng nhập tên khách hàng'; return;
+          }
+          this.newCustSaving = true;
+          try {
+            const r = await API.post('/api/dealer/customers', this.newCust);
+            // Refresh customer list + select KH mới + autofill địa chỉ công trình nếu trống
+            await this.loadCustomers();
+            this.form.customer_id = r.data.id;
+            if (!this.form.dia_chi_cong_trinh && r.data.dia_chi) this.form.dia_chi_cong_trinh = r.data.dia_chi;
+            this.newCustOpen = false;
+          } catch (e) { this.newCustError = e.message; }
+          finally { this.newCustSaving = false; }
+        },
+
+        async init() {
+          this.editingId = new URLSearchParams(location.search).get('id');
+          try {
+            await Promise.all([this.loadProfile(), this.loadCustomers(), this.loadProducts()]);
+            if (this.editingId) {
+              await this.loadQuotation(this.editingId);
+            } else {
+              // tạo mới: gợi ý số BG
+              const ngay = this.form.ngay_bao_gia;
+              const r = await API.get('/api/dealer/quotations/suggest-number?ngay_bao_gia=' + ngay);
+              this.form.so_bao_gia = r.so_bao_gia;
+            }
+            this.recalcAll();
+            this.$nextTick(() => this.setupAutoFit());
+          } catch (e) { this.error = e.message; }
+          finally { this.loading = false; }
+        },
+
+        async loadProfile() {
+          const r = await API.get('/api/dealer/profile');
+          this.dealer = r.data.dealer || {};
+          this.profile = r.data.profile || {};
+          this.images = r.data.images || {};
+        },
+        async loadCustomers() {
+          const r = await API.get('/api/dealer/customers');
+          this.customers = r.data || [];
+        },
+        async loadProducts() {
+          const r = await API.get('/api/dealer/products?active=1');
+          this.products = r.data || [];
+        },
+        async loadQuotation(id) {
+          const r = await API.get('/api/dealer/quotations/' + id);
+          const q = r.data;
+          this.form = {
+            so_bao_gia: q.so_bao_gia, ngay_bao_gia: q.ngay_bao_gia,
+            customer_id: q.customer_id || '',
+            dia_chi_cong_trinh: q.dia_chi_cong_trinh || '',
+            ghi_chu_ho_so: q.ghi_chu_ho_so || '',
+            ghi_chu_thuong_mai: q.ghi_chu_thuong_mai || '',
+            chi_phi_van_chuyen: q.chi_phi_van_chuyen || 0,
+            chi_phi_lap_dat: q.chi_phi_lap_dat || 0,
+            vat_percent: q.vat_percent || 0,
+            thanh_toan: q.thanh_toan || '',
+            tien_do: q.tien_do || '',
+            bao_hanh: q.bao_hanh || '',
+            status: q.status,
+            items: (q.items || []).map(it => ({
+              product_id: it.product_id, ma_sp: it.ma_sp || '', nhom_sp: it.nhom_sp || '', mo_ta: it.mo_ta || '',
+              rong: it.rong, cao: it.cao,
+              sl: it.sl, dvt: it.dvt || '', don_gia: it.don_gia || 0, thanh_tien: it.thanh_tien || 0,
+            })),
+          };
+          this.quotationImages = q.images || [];
+        },
+
+        getQImg(slot) { return this.quotationImages.find(i => i.slot === slot); },
+
+        pickQuotationImage(slot) {
+          if (!this.editingId) return;
+          const input = document.createElement('input');
+          input.type = 'file';
+          input.accept = 'image/jpeg,image/png,image/webp';
+          input.style.display = 'none';
+          input.onchange = async (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (!file) { input.remove(); return; }
+            this.qImgUploading[slot] = true;
+            try {
+              // Resize trước khi upload (tái dùng logic profile)
+              let toUpload = file;
+              if (file.type.startsWith('image/') && file.size > 200 * 1024) {
+                toUpload = await this._compressImage(file, 1600, 0.82);
+              }
+              const fd = new FormData();
+              fd.append('file', toUpload);
+              const res = await fetch(`/api/dealer/quotations/${this.editingId}/images/${slot}`, {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + API.getToken() },
+                body: fd,
+              });
+              const data = await res.json();
+              if (!res.ok) throw new Error(data.error || 'Tải ảnh thất bại');
+              // Update local state
+              const existing = this.quotationImages.find(i => i.slot === slot);
+              if (existing) Object.assign(existing, { url: data.data.url, public_id: data.data.public_id });
+              else this.quotationImages.push({ slot, url: data.data.url, public_id: data.data.public_id, caption: null });
+            } catch (err) {
+              alert(err.message);
+            } finally {
+              this.qImgUploading[slot] = false;
+              input.remove();
+            }
+          };
+          document.body.appendChild(input);
+          input.click();
+        },
+
+        async saveCaption(slot, value) {
+          const img = this.getQImg(slot);
+          if (!img) return;
+          const newCaption = (value || '').trim();
+          if ((img.caption || '') === newCaption) return; // không đổi → không gọi API
+          try {
+            await API.patch(`/api/dealer/quotations/${this.editingId}/images/${slot}`, { caption: newCaption });
+            // Replace array → trigger Alpine reactivity, preview re-render với caption mới
+            this.quotationImages = this.quotationImages.map(i =>
+              i.slot === slot ? { ...i, caption: newCaption || null } : i
+            );
+          } catch (e) { alert('Không lưu được chú thích: ' + e.message); }
+        },
+
+        async deleteQuotationImage(slot) {
+          if (!confirm('Xoá ảnh này?')) return;
+          this.qImgUploading[slot] = true;
+          try {
+            await API.delete(`/api/dealer/quotations/${this.editingId}/images/${slot}`);
+            this.quotationImages = this.quotationImages.filter(i => i.slot !== slot);
+          } catch (e) { alert(e.message); }
+          finally { this.qImgUploading[slot] = false; }
+        },
+
+        _compressImage(file, maxDim, quality) {
+          return new Promise((resolve, reject) => {
+            const img = new Image();
+            const url = URL.createObjectURL(file);
+            img.onload = () => {
+              let w = img.naturalWidth, h = img.naturalHeight;
+              if (w > maxDim || h > maxDim) {
+                const r = Math.min(maxDim / w, maxDim / h);
+                w = Math.round(w * r); h = Math.round(h * r);
+              }
+              const canvas = document.createElement('canvas');
+              canvas.width = w; canvas.height = h;
+              canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+              canvas.toBlob(blob => {
+                URL.revokeObjectURL(url);
+                if (!blob) return canvas.toBlob(b => resolve(new File([b], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' })), 'image/jpeg', quality);
+                const ext = blob.type === 'image/webp' ? '.webp' : '.jpg';
+                resolve(new File([blob], file.name.replace(/\.[^.]+$/, ext), { type: blob.type }));
+              }, 'image/webp', quality);
+            };
+            img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Không đọc được ảnh')); };
+            img.src = url;
+          });
+        },
+
+        addItem() {
+          this.form.items.push({
+            product_id: null, ma_sp: '', nhom_sp: '', mo_ta: '',
+            rong: null, cao: null,
+            sl: 1, dvt: 'cái', don_gia: 0, thanh_tien: 0,
+          });
+          this.recalcAll();
+        },
+        removeItem(idx) {
+          this.form.items.splice(idx, 1);
+          this.recalcAll();
+        },
+        // Khi nhập/chọn Mã SP khớp catalog → autofill các field còn lại từ catalog
+        onMaSpChange(idx) {
+          const it = this.form.items[idx];
+          if (!it.ma_sp) { it.product_id = null; return; }
+          const p = this.products.find(x => x.ma_sp === it.ma_sp);
+          if (!p) { it.product_id = null; return; }
+          it.product_id = p.id;
+          it.nhom_sp    = p.nhom_sp || '';
+          it.mo_ta      = p.mo_ta   || '';
+          it.dvt        = p.dvt_mac_dinh || it.dvt || 'cái';
+          it.don_gia    = p.don_gia_mac_dinh || 0;
+          if (!it.sl) it.sl = 1;
+          this.recalcItem(idx);
+        },
+        onCustomerChange() {
+          const c = this.customers.find(x => x.id == this.form.customer_id);
+          if (c && !this.form.dia_chi_cong_trinh) this.form.dia_chi_cong_trinh = c.dia_chi || '';
+        },
+
+        recalcItem(idx) {
+          const it = this.form.items[idx];
+          it.thanh_tien = this._lineTotal(it);
+        },
+        recalcAll() {
+          this.form.items.forEach(it => { it.thanh_tien = this._lineTotal(it); });
+        },
+        // Thành tiền = SL × Đơn giá. ĐVT là chuẩn để tính. Rộng/Dài chỉ hiển thị.
+        _lineTotal(it) {
+          return Math.round(Number(it.sl || 0) * Number(it.don_gia || 0));
+        },
+
+        get totals() {
+          const tam_tinh = this.form.items.reduce((s, it) => s + (it.thanh_tien || 0), 0);
+          const sub = tam_tinh + (this.form.chi_phi_van_chuyen || 0) + (this.form.chi_phi_lap_dat || 0);
+          const vat_amount = Math.round(sub * (this.form.vat_percent || 0) / 100);
+          return { tam_tinh, vat_amount, tong_cong: sub + vat_amount };
+        },
+
+        renderPreview() {
+          const t = this.totals;
+          const customer = this.customers.find(c => c.id == this.form.customer_id) || null;
+          return window.QuotationTemplate.render({
+            dealer: this.dealer, profile: this.profile, images: this.images,
+            customer,
+            quotation: {
+              ...this.form,
+              tam_tinh: t.tam_tinh,
+              vat_amount: t.vat_amount,
+              tong_cong: t.tong_cong,
+            },
+            items: this.form.items,
+            quotationImages: this.quotationImages,
+          });
+        },
+
+        async save() {
+          this.error = '';
+          // Loại dòng trống hoàn toàn; chặn dòng có data nhưng thiếu ĐVT/Đơn giá
+          const items = this.form.items.filter(it =>
+            it.ma_sp || it.mo_ta || it.don_gia || it.sl
+          );
+          const bad = items.findIndex(it => !it.dvt || !it.sl);
+          if (bad >= 0) {
+            this.error = `Dòng ${bad + 1}: cần nhập SL + ĐVT (hoặc xoá dòng nếu không dùng).`;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+          }
+          this.saving = true;
+          try {
+            const payload = { ...this.form, items };
+            let res;
+            if (this.editingId) res = await API.put('/api/dealer/quotations/' + this.editingId, payload);
+            else res = await API.post('/api/dealer/quotations', payload);
+            const id = res.data.id;
+            this.savedFlash = true;
+            setTimeout(() => { this.savedFlash = false; }, 2000);
+            if (!this.editingId) {
+              window.location.replace('/dealer/quotation-edit.html?id=' + id);
+            } else {
+              await this.loadQuotation(id);
+              this.recalcAll();
+            }
+          } catch (e) { this.error = e.message; window.scrollTo({ top: 0, behavior: 'smooth' }); }
+          finally { this.saving = false; }
+        },
+
+        async exportPDF() {
+          if (!this.form.so_bao_gia) { this.error = 'Lưu báo giá trước khi xuất PDF'; return; }
+          this.error = '';
+          const root = document.querySelector('.q-print-root');
+          root.innerHTML = this.renderPreview();
+          root.style.display = 'block';
+          try {
+            await this._waitForImages(root);
+            if (document.fonts && document.fonts.ready) await document.fonts.ready;
+
+            const page = root.querySelector('.q-page');
+            const heightPx = page.scrollHeight;
+            const heightMm = Math.ceil(heightPx / 96 * 25.4) + 5;
+
+            let styleEl = document.getElementById('print-page-size');
+            if (!styleEl) {
+              styleEl = document.createElement('style');
+              styleEl.id = 'print-page-size';
+              document.head.appendChild(styleEl);
+            }
+            styleEl.textContent = `@media print { @page { size: 210mm ${heightMm}mm; margin: 0; } }`;
+
+            await new Promise(r => setTimeout(r, 200));
+            const originalTitle = document.title;
+            const fileSlug = (this.form.so_bao_gia || 'BG').toLowerCase().replace(/[^a-z0-9-]/g, '-');
+            document.title = `bao-gia-${fileSlug}`;
+
+            window.print();
+
+            setTimeout(() => {
+              document.title = originalTitle;
+              root.style.display = 'none';
+              root.innerHTML = '';
+              styleEl && styleEl.remove();
+            }, 1000);
+          } catch (e) {
+            console.error(e);
+            this.error = 'Lỗi in: ' + e.message;
+            root.style.display = 'none';
+            root.innerHTML = '';
+          }
+        },
+
+        _waitForImages(container) {
+          const imgs = Array.from(container.querySelectorAll('img'));
+          if (!imgs.length) return Promise.resolve();
+          return Promise.all(imgs.map(img => {
+            if (img.complete && img.naturalHeight !== 0) return Promise.resolve();
+            return new Promise(r => {
+              img.addEventListener('load', r, { once: true });
+              img.addEventListener('error', r, { once: true });
+              setTimeout(r, 3000);
+            });
+          }));
+        },
+
+        setupAutoFit() {
+          const stage = document.querySelector('.q-preview-stage');
+          if (!stage) return;
+          const frame = stage.closest('.q-preview-shell');
+          if (!frame) return;
+          const recalc = () => {
+            const w = frame.clientWidth - 8;
+            const s = Math.min(1.5, Math.max(0.3, w / 794));
+            document.documentElement.style.setProperty('--pv-scale', s.toFixed(3));
+          };
+          recalc();
+          new ResizeObserver(recalc).observe(frame);
+        },
+
+        statusLabel(s) {
+          return ({ draft: 'Bản nháp', sent: 'Đã gửi', confirmed: 'Đã xác nhận', cancelled: 'Đã huỷ' })[s] || s;
+        },
+      };
+    }
+    function emptyForm() {
+      return {
+        so_bao_gia: '', ngay_bao_gia: new Date().toISOString().slice(0, 10),
+        customer_id: '', dia_chi_cong_trinh: '',
+        ghi_chu_ho_so: '', ghi_chu_thuong_mai: 'Giá đã bao gồm tư vấn kỹ thuật. Vận chuyển và lắp đặt có thể tách riêng theo phạm vi công trình.',
+        chi_phi_van_chuyen: 0, chi_phi_lap_dat: 0, vat_percent: 10,
+        thanh_toan: 'Đặt cọc 40% · 50% khi giao hàng · 10% sau nghiệm thu',
+        tien_do: '12 - 18 ngày làm việc tuỳ cấu hình',
+        bao_hanh: 'Bảo hành 24 tháng theo chính sách của hãng và đại lý',
+        status: 'draft',
+        items: [],
+      };
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hồ sơ đại lý · Đại Lý Số</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/profile.css">
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/dealer-shell.js"></script>
+  <script src="/assets/js/profile-templates.js"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: { brand: { 500:'#0a6fd6', 600:'#0858b3', 700:'#063f7a', 900:'#0b1f3a' } }, fontFamily: { sans: ['Be Vietnam Pro','Inter','system-ui','sans-serif'] } } } };
+    const user = Auth.guard('dealer');
+    document.addEventListener('DOMContentLoaded', () => { if (user) DealerShell.mount(user); });
+  </script>
+  <style>
+    [x-cloak]{display:none!important}
+    body { font-family: 'Be Vietnam Pro', Inter, system-ui, sans-serif; }
+
+    /* Layout 2 cột; preview sticky bên phải, rộng hơn form */
+    .editor-grid { display: grid; grid-template-columns: minmax(380px, 0.7fr) minmax(0, 1.4fr); gap: 16px; align-items: start; }
+    @media (max-width: 1280px) { .editor-grid { grid-template-columns: 1fr; } .preview-col { position: static !important; } }
+    .preview-col { position: sticky; top: 16px; }
+
+    /* Preview auto-fit: page A4 tự co dãn khít với khung preview */
+    .preview-frame { background: linear-gradient(180deg,#eef5ff,#d8e7f5); border-radius: 16px; padding: 10px; overflow: hidden; }
+    .preview-stage { display: flex; justify-content: center; }
+    .preview-stage .profile-page {
+      transform: scale(var(--pv-scale, 1));
+      transform-origin: top center;
+      margin-bottom: calc(-297mm * (1 - var(--pv-scale, 1)));
+      /* Khi xem trước: co theo content, không ép full A4 */
+      min-height: 0 !important;
+    }
+
+    @media print {
+      body > main, body > #dealer-shell { display: none !important; }
+    }
+
+    /* Form panels */
+    .panel { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; }
+    .panel-hd { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .panel-hd h3 { font-size: 13px; font-weight: 700; color: #0f172a; }
+    .panel-bd { padding: 14px 16px; }
+
+    .field-label { display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px; letter-spacing: 0.01em; }
+    .field-input, .field-textarea {
+      width: 100%; padding: 8px 10px; font-size: 13px;
+      border: 1px solid #cbd5e1; border-radius: 8px;
+      outline: none; background: #fff;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .field-input:focus, .field-textarea:focus { border-color: #0a6fd6; box-shadow: 0 0 0 3px rgba(10,111,214,.12); }
+    .field-input:disabled { background: #f1f5f9; color: #64748b; }
+    .field-textarea { resize: vertical; min-height: 70px; line-height: 1.5; }
+
+    /* Tab nav (form bên trái) */
+    .tab-nav { display: flex; gap: 4px; border-bottom: 1px solid #e2e8f0; margin-bottom: 12px; overflow-x: auto; }
+    .tab-btn { padding: 9px 14px; font-size: 12.5px; font-weight: 600; color: #64748b; border-bottom: 2px solid transparent; white-space: nowrap; }
+    .tab-btn.active { color: #053b7a; border-bottom-color: #0a6fd6; font-weight: 700; }
+
+    /* Template picker */
+    .tpl-pick { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+    .tpl-pick-btn {
+      border: 2px solid #e2e8f0; border-radius: 10px; padding: 8px 4px;
+      text-align: center; transition: .15s;
+      background: #fff;
+    }
+    .tpl-pick-btn:hover { border-color: #cbd5e1; }
+    .tpl-pick-btn.active {
+      border-color: #0a6fd6;
+      background: linear-gradient(180deg,#eef5ff,#fff);
+      box-shadow: 0 0 0 3px rgba(10,111,214,.15);
+    }
+    .tpl-pick-btn .tpl-key { font-size: 13px; font-weight: 900; color: #0b1f3a; }
+    .tpl-pick-btn .tpl-label { font-size: 10.5px; color: #64748b; margin-top: 2px; }
+
+    /* Image grid trong form */
+    .img-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    @media (min-width: 640px) { .img-grid { grid-template-columns: repeat(3, 1fr); } }
+    .img-slot { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; }
+    .img-slot-label { font-size: 11px; font-weight: 700; color: #334155; margin-bottom: 6px; }
+    .img-thumb { aspect-ratio: 4/3; background: #f1f5f9; border-radius: 8px; overflow: hidden; }
+    .img-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .img-empty-btn {
+      width: 100%; aspect-ratio: 4/3;
+      border: 2px dashed #cbd5e1; border-radius: 8px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: #94a3b8; transition: .15s; background: #fafbfd;
+      cursor: pointer;
+    }
+    .img-empty-btn:hover { border-color: #0a6fd6; color: #0a6fd6; background: #f4f9ff; }
+
+    /* Sticky action bar */
+    .action-bar {
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(248, 250, 252, 0.95);
+      backdrop-filter: blur(8px);
+      padding: 10px 0;
+      border-bottom: 1px solid #e2e8f0;
+      margin-bottom: 14px;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50">
+  <div id="dealer-shell"></div>
+
+  <main class="max-w-[1480px] mx-auto px-4 py-6" x-data="profilePage()" x-init="load(); $watch('previewKey', () => {});">
+    <!-- Action bar -->
+    <div class="action-bar">
+      <div class="flex items-center justify-between gap-3">
+        <div>
+          <h2 class="text-xl font-bold text-slate-800">Hồ sơ đại lý</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Mỗi thay đổi sẽ <strong>lưu tạm vào trình duyệt</strong> (F5/mất mạng không mất). Bấm <strong>"Lưu hồ sơ"</strong> để cập nhật vào hệ thống thật.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs" :class="statusClass()" x-text="statusText()" title="Hệ thống tự lưu sau 1.5 giây khi bạn ngừng gõ"></span>
+          <button @click="printProfile()" class="border border-slate-300 hover:bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold">
+            📄 Xuất PDF
+          </button>
+          <button @click="save()" :disabled="saving || (!dirty && lastSavedAt)" type="button"
+                  class="bg-brand-500 hover:bg-brand-600 text-white px-5 py-2 rounded-lg text-sm font-semibold disabled:opacity-50"
+                  title="Đẩy thay đổi lên server. Trước đó dữ liệu chỉ lưu nháp trên trình duyệt.">
+            <span x-show="!saving">Lưu hồ sơ</span>
+            <span x-show="saving" x-cloak>Đang lưu...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div x-show="loading" class="text-center text-slate-400 py-12">Đang tải...</div>
+
+    <div x-show="!loading" class="editor-grid">
+      <!-- ============================== CỘT TRÁI: FORM ============================== -->
+      <div class="space-y-3">
+        <!-- Tab nav -->
+        <div class="tab-nav">
+          <template x-for="t in tabs" :key="t.key">
+            <button class="tab-btn" :class="{ 'active': activeTab === t.key }" @click="activeTab = t.key" x-text="t.label"></button>
+          </template>
+        </div>
+
+        <!-- TAB 1: Thông tin chung -->
+        <div x-show="activeTab === 'info'" class="panel">
+          <div class="panel-hd"><h3>Thông tin chung của đại lý</h3></div>
+          <div class="panel-bd space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+              <div><label class="field-label">Mã đại lý</label>
+                <input class="field-input" :value="dealer.dealer_code" disabled></div>
+              <div><label class="field-label">Tên đại lý *</label>
+                <input class="field-input" x-model="dealer.ten_dai_ly"></div>
+              <div><label class="field-label">Chủ đại lý</label>
+                <input class="field-input" x-model="dealer.chu_dai_ly"></div>
+              <div><label class="field-label">Số điện thoại</label>
+                <input class="field-input" x-model="dealer.phone"></div>
+              <div><label class="field-label">Email</label>
+                <input class="field-input" type="email" x-model="dealer.email"></div>
+              <div><label class="field-label">Mã số thuế</label>
+                <input class="field-input" x-model="dealer.mst"></div>
+              <div class="col-span-2"><label class="field-label">Địa chỉ</label>
+                <input class="field-input" x-model="dealer.address"></div>
+              <div><label class="field-label">Quận / Huyện</label>
+                <input class="field-input" x-model="dealer.district"></div>
+              <div><label class="field-label">Tỉnh / TP</label>
+                <input class="field-input" x-model="dealer.province"></div>
+              <div class="col-span-2"><label class="field-label">Khu vực phụ trách</label>
+                <input class="field-input" x-model="dealer.coverage" placeholder="VD: Hà Nội · Hà Nam · Hưng Yên"></div>
+              <div><label class="field-label">Số năm kinh nghiệm</label>
+                <input class="field-input" x-model="dealer.years_experience" placeholder="VD: 8+"></div>
+              <div><label class="field-label">Quy mô đội ngũ</label>
+                <input class="field-input" x-model="dealer.team_size" placeholder="VD: 12"></div>
+              <div><label class="field-label">Dự án / tháng</label>
+                <input class="field-input" x-model="dealer.projects_monthly" placeholder="VD: 35+"></div>
+              <div><label class="field-label">Giờ mở cửa</label>
+                <input class="field-input" x-model="dealer.open_hours" placeholder="VD: 08:00 - 20:00"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: Mô tả & năng lực -->
+        <div x-show="activeTab === 'description'" class="panel">
+          <div class="panel-hd"><h3>Mô tả & năng lực</h3></div>
+          <div class="panel-bd space-y-3">
+            <div><label class="field-label">Thông điệp định vị (tagline)</label>
+              <textarea class="field-textarea" rows="3" x-model="profile.tagline" placeholder="Câu giới thiệu ngắn..."></textarea></div>
+            <div><label class="field-label">Năng lực nổi bật (mỗi dòng 1 ý)</label>
+              <textarea class="field-textarea" rows="5" x-model="profile.usp_text" placeholder="Khảo sát tận nơi 24h&#10;Báo giá rõ vật tư - nhân công&#10;Đội ngũ có checklist hiện trường"></textarea></div>
+            <div><label class="field-label">Sản phẩm & dịch vụ (mỗi dòng 1 ý)</label>
+              <textarea class="field-textarea" rows="5" x-model="profile.services_text" placeholder="Cửa cuốn&#10;Cửa nhôm - kính&#10;Motor, lưu điện, phụ kiện"></textarea></div>
+            <div><label class="field-label">Cam kết chăm sóc khách hàng (mỗi dòng 1 ý)</label>
+              <textarea class="field-textarea" rows="4" x-model="profile.commitments_text"></textarea></div>
+            <div><label class="field-label">Nhận xét / phản hồi khách hàng</label>
+              <textarea class="field-textarea" rows="2" x-model="profile.customer_quote"></textarea></div>
+            <div><label class="field-label">Lời kêu gọi hành động (kèm QR)</label>
+              <textarea class="field-textarea" rows="2" x-model="profile.cta_text"></textarea></div>
+          </div>
+        </div>
+
+        <!-- TAB 3: Điểm nhấn & KPI -->
+        <div x-show="activeTab === 'highlights'" class="space-y-3">
+          <div class="panel">
+            <div class="panel-hd"><h3>3 huy hiệu nhanh</h3></div>
+            <div class="panel-bd grid grid-cols-3 gap-3">
+              <input class="field-input" x-model="profile.badge1" placeholder="VD: Đã xác thực">
+              <input class="field-input" x-model="profile.badge2" placeholder="VD: Có kho/xưởng">
+              <input class="field-input" x-model="profile.badge3" placeholder="VD: Hỗ trợ khảo sát">
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-hd"><h3>3 ưu điểm nổi bật</h3></div>
+            <div class="panel-bd grid grid-cols-3 gap-3">
+              <input class="field-input" x-model="profile.usp_highlight1" placeholder="Ưu điểm 1">
+              <input class="field-input" x-model="profile.usp_highlight2" placeholder="Ưu điểm 2">
+              <input class="field-input" x-model="profile.usp_highlight3" placeholder="Ưu điểm 3">
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-hd"><h3>3 chỉ số ấn tượng (KPI)</h3></div>
+            <div class="panel-bd grid grid-cols-3 gap-3">
+              <div class="space-y-2">
+                <input class="field-input" x-model="profile.metric1_value" placeholder="VD: 35+">
+                <input class="field-input" x-model="profile.metric1_label" placeholder="dự án/tháng">
+              </div>
+              <div class="space-y-2">
+                <input class="field-input" x-model="profile.metric2_value" placeholder="VD: 24h">
+                <input class="field-input" x-model="profile.metric2_label" placeholder="phản hồi">
+              </div>
+              <div class="space-y-2">
+                <input class="field-input" x-model="profile.metric3_value" placeholder="VD: 4.8/5">
+                <input class="field-input" x-model="profile.metric3_label" placeholder="đánh giá">
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-hd"><h3>Mô tả 3 ảnh công trình</h3></div>
+            <div class="panel-bd space-y-2">
+              <input class="field-input" x-model="profile.project_caption1" placeholder="Mô tả ảnh công trình 1">
+              <input class="field-input" x-model="profile.project_caption2" placeholder="Mô tả ảnh công trình 2">
+              <input class="field-input" x-model="profile.project_caption3" placeholder="Mô tả ảnh công trình 3">
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: Hình ảnh -->
+        <div x-show="activeTab === 'images'" class="panel">
+          <div class="panel-hd"><h3>Hình ảnh hồ sơ</h3>
+            <span class="text-[11px] text-slate-500">Tối đa 5MB/ảnh · JPG, PNG, WEBP</span>
+          </div>
+          <div class="panel-bd">
+            <div class="img-grid">
+              <template x-for="slot in imageSlots" :key="slot.key">
+                <div class="img-slot">
+                  <div class="img-slot-label" x-text="slot.label"></div>
+                  <div class="text-[10px] text-slate-500 mb-1.5 italic" x-text="slot.size"></div>
+
+                  <!-- Chưa có ảnh: chỉ nút Chọn ảnh -->
+                  <button x-show="!images[slot.key]" @click="pickFile(slot.key)" type="button" class="img-empty-btn">
+                    <span class="text-2xl leading-none">+</span>
+                    <span class="text-[11px] font-semibold mt-1" x-text="uploading[slot.key] ? 'Đang tải...' : 'Chọn ảnh'"></span>
+                  </button>
+
+                  <!-- Đã có ảnh: thumbnail + nút Đổi / Xoá -->
+                  <div x-show="images[slot.key]">
+                    <div class="img-thumb mb-2"><img :src="images[slot.key]" :alt="slot.label"></div>
+                    <div class="flex gap-1.5">
+                      <button @click="pickFile(slot.key)" type="button"
+                              class="flex-1 text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1.5 rounded font-semibold"
+                              x-text="uploading[slot.key] ? 'Đang tải...' : 'Đổi'"></button>
+                      <button @click="deleteImage(slot.key)" type="button"
+                              class="text-[11px] bg-red-50 hover:bg-red-100 text-red-700 px-2 py-1.5 rounded font-semibold">Xoá</button>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
+
+        <div x-show="error" x-cloak class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2" x-text="error"></div>
+      </div>
+
+      <!-- ============================== CỘT PHẢI: PREVIEW ============================== -->
+      <div class="preview-col">
+        <div class="panel">
+          <div class="panel-hd">
+            <h3>Xem trước · <span class="text-brand-700" x-text="templateLabels[profile.selected_template || 't1']"></span></h3>
+            <div class="flex items-center gap-2 text-[11px] text-slate-500">
+              <input type="range" min="0.3" max="1.5" step="0.05"
+                     :value="previewScale"
+                     @input="applyScale(parseFloat($event.target.value), true)"
+                     class="w-28 accent-brand-500">
+              <span x-text="Math.round(previewScale*100) + '%'" class="w-10 text-right tabular-nums"></span>
+              <button @click="applyScale(autoScale)" type="button"
+                      class="text-brand-600 hover:underline" title="Khớp với khung">Khớp khung</button>
+            </div>
+          </div>
+          <div class="panel-bd">
+            <!-- Chọn mẫu -->
+            <div class="tpl-pick mb-3">
+              <template x-for="key in templateKeys" :key="key">
+                <button class="tpl-pick-btn" :class="{ 'active': (profile.selected_template || 't1') === key }"
+                        @click="profile.selected_template = key">
+                  <div class="tpl-key" x-text="key.toUpperCase()"></div>
+                  <div class="tpl-label" x-text="templateLabels[key]"></div>
+                </button>
+              </template>
+            </div>
+
+            <div class="preview-frame">
+              <div class="preview-stage" x-html="renderPreview()"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Vùng in PDF: ẩn trên màn hình, chỉ hiện khi print -->
+  <div class="print-root" style="display:none"></div>
+
+  <script>
+    function profilePage() {
+      return {
+        loading: true, saving: false, savedFlash: false, error: '',
+        dealer: {}, profile: { selected_template: 't1' }, images: {},
+        uploading: {},
+        dirty: false, lastSavedAt: null, hasDraft: false,
+        _initializing: true, _draftTimer: null,
+        activeTab: 'info',
+        previewScale: 1,
+        autoScale: 1,
+        tabs: [
+          { key: 'info',        label: '1. Thông tin chung' },
+          { key: 'description', label: '2. Mô tả & năng lực' },
+          { key: 'highlights',  label: '3. Điểm nhấn & KPI' },
+          { key: 'images',      label: '4. Hình ảnh' },
+        ],
+        imageSlots: [
+          { key: 'logo_dai_ly',  label: 'Logo đại lý',           size: 'Vuông 1:1 · ~500×500px' },
+          { key: 'avatar_chu',   label: 'Ảnh chủ đại lý',        size: 'Vuông 1:1 · ~600×600px' },
+          { key: 'hero',         label: 'Ảnh nổi bật đầu trang', size: 'Ngang 21:9 · ~1920×820px' },
+          { key: 'kho_xuong',    label: 'Ảnh kho / xưởng',       size: 'Ngang 4:3 · ~1600×1200px' },
+          { key: 'doi_ngu_1',    label: 'Ảnh đội ngũ 1',         size: 'Ngang 4:3 · ~1200×900px' },
+          { key: 'doi_ngu_2',    label: 'Ảnh đội ngũ 2',         size: 'Ngang 4:3 · ~1200×900px' },
+          { key: 'qr_code',      label: 'Mã QR liên hệ',         size: 'Vuông 1:1 · ~500×500px' },
+          { key: 'cong_trinh_1', label: 'Ảnh công trình 1',      size: 'Vuông 1:1 · ~1200×1200px' },
+          { key: 'cong_trinh_2', label: 'Ảnh công trình 2',      size: 'Vuông 1:1 · ~1200×1200px' },
+          { key: 'cong_trinh_3', label: 'Ảnh công trình 3',      size: 'Vuông 1:1 · ~1200×1200px' },
+        ],
+        templateKeys: ['t1', 't2', 't3', 't4', 't5'],
+        templateLabels: window.ProfileTemplates.labels,
+
+        get _draftKey() { return 'dls_profile_draft_' + (Auth.getUser()?.dealer_id || 'x'); },
+
+        async load() {
+          this.loading = true;
+          this._initializing = true;
+          try {
+            const res = await API.get('/api/dealer/profile');
+            this.dealer = res.data.dealer || {};
+            this.profile = Object.assign({ selected_template: 't1' }, res.data.profile || {});
+            this.images = res.data.images || {};
+
+            // Khôi phục draft từ localStorage (nếu có) — F5/mất mạng không mất việc đang gõ
+            const draft = this._readDraft();
+            if (draft) {
+              this.dealer = Object.assign({}, this.dealer, draft.dealer || {});
+              this.profile = Object.assign({}, this.profile, draft.profile || {});
+              this.hasDraft = true;
+            }
+
+            this.$nextTick(() => {
+              this.setupAutoFit();
+              this.setupAutoSave();
+              this._initializing = false;
+            });
+          } catch (e) { this.error = e.message; }
+          finally { this.loading = false; }
+        },
+
+        setupAutoSave() {
+          // Mỗi thay đổi → đánh dấu dirty + lưu nháp vào localStorage (KHÔNG gửi server)
+          this.$watch('dealer',  () => this.markDirty(), { deep: true });
+          this.$watch('profile', () => this.markDirty(), { deep: true });
+
+          // Cảnh báo khi rời trang nếu còn thay đổi chưa lưu vào hệ thống
+          window.addEventListener('beforeunload', (e) => {
+            if (this.dirty) { e.preventDefault(); e.returnValue = ''; }
+          });
+        },
+
+        markDirty() {
+          if (this._initializing) return;
+          this.dirty = true;
+          this.savedFlash = false;
+          if (this._draftTimer) clearTimeout(this._draftTimer);
+          this._draftTimer = setTimeout(() => this._writeDraft(), 600);
+        },
+
+        _writeDraft() {
+          try {
+            localStorage.setItem(this._draftKey, JSON.stringify({
+              dealer: this.dealer, profile: this.profile,
+              savedAt: new Date().toISOString(),
+            }));
+            this.hasDraft = true;
+          } catch (e) { console.warn('Lưu nháp thất bại:', e.message); }
+        },
+        _readDraft() {
+          try {
+            const raw = localStorage.getItem(this._draftKey);
+            return raw ? JSON.parse(raw) : null;
+          } catch { return null; }
+        },
+        _clearDraft() {
+          try { localStorage.removeItem(this._draftKey); this.hasDraft = false; } catch {}
+        },
+
+        setupAutoFit() {
+          const stage = document.querySelector('.preview-stage');
+          if (!stage) return;
+          const frame = stage.closest('.preview-frame');
+          if (!frame) return;
+          const PAGE_W = 794;
+          const recalc = () => {
+            const w = frame.clientWidth - 4;
+            const s = Math.min(1.5, Math.max(0.3, w / PAGE_W));
+            this.autoScale = s;
+            // Chỉ auto-apply khi user CHƯA kéo slider — tránh ResizeObserver
+            // "ăn cướp" giá trị manual mỗi khi layout có chút thay đổi
+            if (!this._manualScale) this.applyScale(s, false);
+          };
+          recalc();
+          if (!this._roSet) {
+            new ResizeObserver(recalc).observe(frame);
+            this._roSet = true;
+          }
+        },
+
+        applyScale(s, isManual = false) {
+          this.previewScale = s;
+          this._manualScale = isManual;
+          document.documentElement.style.setProperty('--pv-scale', s.toFixed(3));
+        },
+
+        async save() {
+          this.error = '';
+          this.saving = true;
+          this._initializing = true; // Tránh watch trigger khi gán lại data từ server
+          try {
+            const res = await API.put('/api/dealer/profile', { dealer: this.dealer, profile: this.profile });
+            this.dealer = res.data.dealer;
+            this.profile = Object.assign({ selected_template: 't1' }, res.data.profile);
+            this.images = res.data.images || this.images;
+            this.dirty = false;
+            this.lastSavedAt = new Date();
+            this.savedFlash = true;
+            this._clearDraft();
+            setTimeout(() => { this.savedFlash = false; }, 2500);
+          } catch (e) { this.error = e.message; }
+          finally {
+            this.saving = false;
+            this.$nextTick(() => { this._initializing = false; });
+          }
+        },
+
+        statusText() {
+          if (this.saving) return 'Đang lưu vào hệ thống...';
+          if (this.savedFlash) return '✓ Đã lưu vào hệ thống';
+          if (this.dirty && this.hasDraft) return '● Có nháp chưa lưu (bấm "Lưu" để cập nhật)';
+          if (this.dirty) return '● Chưa lưu';
+          if (this.lastSavedAt) return '✓ Đã lưu lúc ' + this.lastSavedAt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+          return '';
+        },
+        statusClass() {
+          if (this.saving) return 'text-slate-500';
+          if (this.savedFlash) return 'text-green-600 font-semibold';
+          if (this.dirty) return 'text-amber-600 font-semibold';
+          return 'text-slate-400';
+        },
+
+        pickFile(slot) {
+          console.log('[upload] pickFile', slot);
+          const input = document.createElement('input');
+          input.type = 'file';
+          input.accept = 'image/jpeg,image/png,image/webp';
+          input.style.display = 'none';
+          const self = this;
+          input.addEventListener('change', function (e) {
+            const file = e.target.files && e.target.files[0];
+            console.log('[upload] selected file', file && file.name);
+            self.uploadImage(slot, file);
+            setTimeout(() => input.remove(), 500);
+          });
+          document.body.appendChild(input);
+          input.click();
+        },
+
+        async uploadImage(slot, file) {
+          if (!file) return;
+          this.error = '';
+          this.uploading[slot] = true;
+          const t0 = performance.now();
+          try {
+            // Resize + chuyển WebP ở browser (giảm 5MB → ~200KB)
+            let toUpload = file;
+            if (file.type && file.type.startsWith('image/') && file.size > 200 * 1024) {
+              console.log('[upload] compressing', (file.size/1024).toFixed(0) + 'KB');
+              toUpload = await this._compress(file, 1600, 0.82);
+              console.log('[upload] →', (toUpload.size/1024).toFixed(0) + 'KB', '('+ toUpload.type +')');
+            }
+            const fd = new FormData();
+            fd.append('file', toUpload);
+            const res = await fetch('/api/dealer/profile/images/' + slot, {
+              method: 'POST',
+              headers: { 'Authorization': 'Bearer ' + API.getToken() },
+              body: fd,
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Tải ảnh thất bại');
+            this.images[slot] = data.data.url;
+            console.log('[upload] done in', Math.round(performance.now() - t0) + 'ms');
+          } catch (e) { this.error = e.message; }
+          finally { this.uploading[slot] = false; }
+        },
+
+        // Resize + convert sang WebP (fallback JPEG nếu browser không hỗ trợ)
+        _compress(file, maxDim, quality) {
+          return new Promise((resolve, reject) => {
+            const img = new Image();
+            const url = URL.createObjectURL(file);
+            img.onload = () => {
+              let w = img.naturalWidth, h = img.naturalHeight;
+              if (w > maxDim || h > maxDim) {
+                const r = Math.min(maxDim / w, maxDim / h);
+                w = Math.round(w * r); h = Math.round(h * r);
+              }
+              const canvas = document.createElement('canvas');
+              canvas.width = w; canvas.height = h;
+              canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+
+              const tryEncode = (mime, ext) => new Promise(res => {
+                canvas.toBlob(blob => res(blob ? { blob, ext, mime } : null), mime, quality);
+              });
+
+              (async () => {
+                let out = await tryEncode('image/webp', 'webp');
+                if (!out) out = await tryEncode('image/jpeg', 'jpg');
+                URL.revokeObjectURL(url);
+                if (!out) return reject(new Error('Không nén được ảnh'));
+                const name = file.name.replace(/\.[^.]+$/, '.' + out.ext);
+                resolve(new File([out.blob], name, { type: out.mime }));
+              })();
+            };
+            img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Không đọc được ảnh')); };
+            img.src = url;
+          });
+        },
+
+        async deleteImage(slot) {
+          if (!confirm('Xoá ảnh này?')) return;
+          this.error = '';
+          this.uploading[slot] = true;
+          try {
+            await API.delete('/api/dealer/profile/images/' + slot);
+            delete this.images[slot];
+          } catch (e) { this.error = e.message; }
+          finally { this.uploading[slot] = false; }
+        },
+
+        renderPreview() {
+          const key = this.profile.selected_template || 't1';
+          return window.ProfileTemplates.render(key, {
+            dealer: this.dealer,
+            profile: this.profile,
+            images: this.images,
+          });
+        },
+
+        async printProfile() {
+          this.error = '';
+          const root = document.querySelector('.print-root');
+          root.innerHTML = this.renderPreview();
+          root.style.display = 'block';
+
+          try {
+            // Đợi ảnh + font load xong (in ra sẽ đúng metrics, không lệch)
+            await this._waitForImages(root);
+            if (document.fonts && document.fonts.ready) await document.fonts.ready;
+
+            // Đo chiều cao thật của trang để inject @page size khít content (1 trang duy nhất)
+            const page = root.querySelector('.profile-page');
+            const heightPx = page.scrollHeight;
+            const heightMm = Math.ceil(heightPx / 96 * 25.4) + 5;
+
+            let styleEl = document.getElementById('print-page-size');
+            if (!styleEl) {
+              styleEl = document.createElement('style');
+              styleEl.id = 'print-page-size';
+              document.head.appendChild(styleEl);
+            }
+            styleEl.textContent = `@media print { @page { size: 210mm ${heightMm}mm; margin: 0; } }`;
+
+            await new Promise(r => setTimeout(r, 200));
+            // Gợi ý tên file qua title (Chrome dùng làm tên mặc định khi Save as PDF)
+            const originalTitle = document.title;
+            const dealerSlug = (this.dealer.dealer_code || 'dai-ly').toLowerCase().replace(/[^a-z0-9-]/g, '-');
+            document.title = `ho-so-${dealerSlug}`;
+
+            window.print();
+
+            // Dọn dẹp sau khi user đóng print dialog
+            setTimeout(() => {
+              document.title = originalTitle;
+              root.style.display = 'none';
+              root.innerHTML = '';
+              styleEl && styleEl.remove();
+            }, 1000);
+          } catch (e) {
+            console.error('Print error:', e);
+            this.error = 'Lỗi in: ' + e.message;
+            root.style.display = 'none';
+            root.innerHTML = '';
+          }
+        },
+
+        _waitForImages(container) {
+          const imgs = Array.from(container.querySelectorAll('img'));
+          if (!imgs.length) return Promise.resolve();
+          return Promise.all(imgs.map(img => {
+            if (img.complete && img.naturalHeight !== 0) return Promise.resolve();
+            return new Promise(resolve => {
+              img.addEventListener('load', resolve, { once: true });
+              img.addEventListener('error', resolve, { once: true });
+              setTimeout(resolve, 3000); // safety timeout
+            });
+          }));
+        },
+      };
+    }
+  </script>
+</body>
+</html>

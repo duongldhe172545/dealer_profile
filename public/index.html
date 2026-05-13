@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Đăng nhập · Đại Lý Số</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50:'#eff6ff', 500:'#0a6fd6', 600:'#0858b3', 700:'#063f7a', 900:'#0f2744' }
+          }
+        }
+      }
+    };
+    // Nếu đã đăng nhập, chuyển thẳng tới trang chính.
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = Auth.getUser();
+      if (user && API.getToken()) window.location.replace(Auth.homePathFor(user));
+    });
+  </script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-blue-100 flex items-center justify-center p-4">
+  <main class="w-full max-w-md" x-data="loginForm()">
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+      <div class="bg-brand-900 text-white px-8 py-6">
+        <h1 class="text-2xl font-bold">Đại Lý Số</h1>
+        <p class="text-sm text-blue-100 mt-1">Quản lý hồ sơ và báo giá đại lý</p>
+      </div>
+
+      <form @submit.prevent="submit" class="px-8 py-8 space-y-5">
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">Tên đăng nhập</label>
+          <input x-model="username" type="text" autocomplete="username" autofocus
+                 class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+                 placeholder="vd: duongle">
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">Mật khẩu</label>
+          <input x-model="password" type="password" autocomplete="current-password"
+                 class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+        </div>
+
+        <div x-show="error" x-cloak
+             class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-2.5"
+             x-text="error"></div>
+
+        <button type="submit" :disabled="loading"
+                class="w-full bg-brand-500 hover:bg-brand-600 text-white font-semibold py-2.5 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed">
+          <span x-show="!loading">Đăng nhập</span>
+          <span x-show="loading" x-cloak>Đang đăng nhập...</span>
+        </button>
+      </form>
+
+      <div class="px-8 py-3 bg-slate-50 border-t border-slate-200 text-xs text-slate-500 text-center">
+        Tài khoản do quản trị viên cấp.
+      </div>
+    </div>
+  </main>
+
+  <style>[x-cloak]{display:none!important}</style>
+
+  <script>
+    function loginForm() {
+      return {
+        username: '', password: '', error: '', loading: false,
+        async submit() {
+          this.error = '';
+          if (!this.username || !this.password) {
+            this.error = 'Vui lòng nhập tên đăng nhập và mật khẩu';
+            return;
+          }
+          this.loading = true;
+          try {
+            const res = await API.post('/api/auth/login', { username: this.username, password: this.password });
+            Auth.setSession(res.token, res.user);
+            window.location.replace(Auth.homePathFor(res.user));
+          } catch (e) {
+            this.error = e.message || 'Đăng nhập thất bại';
+          } finally {
+            this.loading = false;
+          }
+        }
+      };
+    }
+  </script>
+</body>
+</html>

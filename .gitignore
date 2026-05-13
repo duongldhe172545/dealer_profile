@@ -1,0 +1,20 @@
+node_modules/
+data/
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
+.env
+.env.local
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+dist/
+build/
+coverage/
+
+# Template HTML cũ sếp đưa (chỉ tham khảo, không deploy)
+Báo giá.html
+ho_so_template.html

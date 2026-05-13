@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Khách hàng · Đại Lý Số</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/common.js"></script>
+  <script src="/assets/js/dealer-shell.js"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: { brand: { 500:'#0a6fd6', 600:'#0858b3', 700:'#063f7a', 900:'#0b1f3a' } } } } };
+    const user = Auth.guard('dealer');
+    document.addEventListener('DOMContentLoaded', () => { if (user) DealerShell.mount(user); });
+  </script>
+  <style>[x-cloak]{display:none!important}</style>
+</head>
+<body class="min-h-screen bg-slate-50">
+  <div id="dealer-shell"></div>
+
+  <main class="max-w-6xl mx-auto px-6 py-8" x-data="customersPage()" x-init="load()">
+    <div class="flex items-center justify-between mb-6 gap-4">
+      <div>
+        <h2 class="text-2xl font-bold text-slate-800">Khách hàng</h2>
+        <p class="text-sm text-slate-500 mt-0.5">Quản lý danh sách khách hàng. Tái sử dụng khi tạo báo giá.</p>
+      </div>
+      <button @click="openCreate()" class="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-semibold">
+        + Thêm khách hàng
+      </button>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-xl p-4 mb-4">
+      <input x-model="search" @input.debounce.400ms="load()" type="text" placeholder="Tìm theo tên / mã / SĐT / người liên hệ..."
+             class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm">
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 border-b border-slate-200 text-slate-600">
+          <tr>
+            <th class="px-4 py-3 text-left font-semibold">Mã KH</th>
+            <th class="px-4 py-3 text-left font-semibold">Tên KH</th>
+            <th class="px-4 py-3 text-left font-semibold">Người liên hệ</th>
+            <th class="px-4 py-3 text-left font-semibold">SĐT</th>
+            <th class="px-4 py-3 text-left font-semibold">Địa chỉ</th>
+            <th class="px-4 py-3 text-center font-semibold">Báo giá</th>
+            <th class="px-4 py-3 text-right font-semibold">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <template x-for="c in customers" :key="c.id">
+            <tr class="hover:bg-slate-50">
+              <td class="px-4 py-3 font-mono text-xs" x-text="c.ma_kh"></td>
+              <td class="px-4 py-3 font-semibold text-slate-800" x-text="c.ten_kh"></td>
+              <td class="px-4 py-3" x-text="c.nguoi_lien_he || '—'"></td>
+              <td class="px-4 py-3" x-text="c.phone || '—'"></td>
+              <td class="px-4 py-3 text-slate-600 text-xs" x-text="c.dia_chi || '—'"></td>
+              <td class="px-4 py-3 text-center tabular-nums" x-text="c.quotations_count"></td>
+              <td class="px-4 py-3 text-right space-x-2">
+                <a x-show="c.quotations_count > 0"
+                   :href="'/dealer/quotations.html?customer_id=' + c.id"
+                   class="text-slate-600 hover:text-slate-800 text-sm">Xem báo giá</a>
+                <button @click="openEdit(c)" class="text-brand-600 hover:text-brand-700 text-sm font-semibold">Sửa</button>
+              </td>
+            </tr>
+          </template>
+          <tr x-show="!loading && customers.length === 0">
+            <td colspan="7" class="px-4 py-12 text-center text-slate-400">Chưa có khách hàng. Bấm "Thêm khách hàng" để bắt đầu.</td>
+          </tr>
+          <tr x-show="loading">
+            <td colspan="7" class="px-4 py-12 text-center text-slate-400">Đang tải...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Modal -->
+    <div x-show="formOpen" x-cloak @keydown.escape.window="formOpen=false"
+         class="fixed inset-0 bg-black/50 flex items-start justify-center p-4 overflow-y-auto z-50">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl my-8" @click.outside="formOpen=false">
+        <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+          <h3 class="text-lg font-bold text-slate-800" x-text="editingId ? 'Sửa khách hàng' : 'Thêm khách hàng'"></h3>
+          <button @click="formOpen=false" class="text-slate-400 hover:text-slate-600 text-2xl leading-none">&times;</button>
+        </div>
+
+        <form @submit.prevent="submit()" class="px-6 py-5 space-y-3">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Mã KH</label>
+              <input x-model="form.ma_kh" :placeholder="suggestedCode || 'Tự động'"
+                     class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm font-mono">
+              <p class="text-xs text-slate-500 mt-1">Để trống → tự sinh</p>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Tên khách hàng *</label>
+              <input x-model="form.ten_kh" required
+                     class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Người liên hệ</label>
+              <input x-model="form.nguoi_lien_he"
+                     class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Số điện thoại</label>
+              <input x-model="form.phone"
+                     class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm">
+            </div>
+            <div class="col-span-2">
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Email</label>
+              <input x-model="form.email" type="email"
+                     class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm">
+            </div>
+            <div class="col-span-2">
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Địa chỉ</label>
+              <input x-model="form.dia_chi"
+                     class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm">
+            </div>
+            <div class="col-span-2">
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Ghi chú</label>
+              <textarea x-model="form.ghi_chu" rows="2"
+                        class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm"></textarea>
+            </div>
+          </div>
+
+          <div x-show="error" x-cloak class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2" x-text="error"></div>
+        </form>
+
+        <div class="px-6 py-4 border-t border-slate-200 flex justify-end gap-2">
+          <button @click="formOpen=false" class="px-4 py-2 text-sm rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">Huỷ</button>
+          <button @click="submit()" :disabled="saving"
+                  class="px-4 py-2 text-sm rounded-lg bg-brand-500 hover:bg-brand-600 text-white font-semibold disabled:opacity-50">
+            <span x-show="!saving" x-text="editingId ? 'Lưu' : 'Thêm'"></span>
+            <span x-show="saving" x-cloak>Đang lưu...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function customersPage() {
+      return {
+        customers: [], loading: false, error: '', saving: false,
+        search: '',
+        formOpen: false, editingId: null, form: emptyForm(),
+        suggestedCode: '',
+        Fmt: window.Fmt,
+
+        async load() {
+          this.loading = true;
+          try {
+            const q = this.search ? '?search=' + encodeURIComponent(this.search) : '';
+            const res = await API.get('/api/dealer/customers' + q);
+            this.customers = res.data;
+          } catch (e) { alert(e.message); }
+          finally { this.loading = false; }
+        },
+
+        async openCreate() {
+          this.editingId = null;
+          this.form = emptyForm();
+          this.error = '';
+          try { const r = await API.get('/api/dealer/customers/suggest-code'); this.suggestedCode = r.ma_kh; } catch {}
+          this.formOpen = true;
+        },
+        openEdit(c) {
+          this.editingId = c.id;
+          this.form = {
+            ma_kh: c.ma_kh || '', ten_kh: c.ten_kh || '', nguoi_lien_he: c.nguoi_lien_he || '',
+            phone: c.phone || '', email: c.email || '', dia_chi: c.dia_chi || '', ghi_chu: c.ghi_chu || '',
+          };
+          this.suggestedCode = '';
+          this.error = '';
+          this.formOpen = true;
+        },
+        async submit() {
+          this.error = '';
+          this.saving = true;
+          try {
+            if (this.editingId) await API.put('/api/dealer/customers/' + this.editingId, this.form);
+            else await API.post('/api/dealer/customers', this.form);
+            this.formOpen = false;
+            await this.load();
+          } catch (e) { this.error = e.message; }
+          finally { this.saving = false; }
+        },
+      };
+    }
+    function emptyForm() {
+      return { ma_kh: '', ten_kh: '', nguoi_lien_he: '', phone: '', email: '', dia_chi: '', ghi_chu: '' };
+    }
+  </script>
+</body>
+</html>

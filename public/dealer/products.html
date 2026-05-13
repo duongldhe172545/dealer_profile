@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sản phẩm · Đại Lý Số</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/common.js"></script>
+  <script src="/assets/js/dealer-shell.js"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: { brand: { 500:'#0a6fd6', 600:'#0858b3', 700:'#063f7a', 900:'#0b1f3a' } } } } };
+    const user = Auth.guard('dealer');
+    document.addEventListener('DOMContentLoaded', () => { if (user) DealerShell.mount(user); });
+  </script>
+  <style>[x-cloak]{display:none!important}</style>
+</head>
+<body class="min-h-screen bg-slate-50">
+  <div id="dealer-shell"></div>
+
+  <main class="max-w-6xl mx-auto px-6 py-8" x-data="productsPage()" x-init="load()">
+    <div class="flex items-center justify-between mb-6 gap-4">
+      <div>
+        <h2 class="text-2xl font-bold text-slate-800">Sản phẩm</h2>
+        <p class="text-sm text-slate-500 mt-0.5">Danh mục sản phẩm dùng để tạo báo giá. Có thể nhập tự do mỗi lần báo giá nếu không muốn lưu vào đây.</p>
+      </div>
+      <button @click="openCreate()" class="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-semibold">
+        + Thêm sản phẩm
+      </button>
+    </div>
+
+    <!-- Filter -->
+    <div class="bg-white border border-slate-200 rounded-xl p-4 mb-4 flex flex-wrap gap-3">
+      <input x-model="search" @input.debounce.400ms="load()" type="text" placeholder="Tìm theo mã / mô tả / nhóm..."
+             class="flex-1 min-w-[200px] px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm">
+      <select x-model="filterGroup" @change="load()" class="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
+        <option value="">Tất cả nhóm</option>
+        <template x-for="g in groups" :key="g">
+          <option :value="g" x-text="g"></option>
+        </template>
+      </select>
+      <select x-model="filterActive" @change="load()" class="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
+        <option value="">Tất cả trạng thái</option>
+        <option value="1">Đang bán</option>
+        <option value="0">Ngừng bán</option>
+      </select>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 border-b border-slate-200 text-slate-600">
+          <tr>
+            <th class="px-4 py-3 text-left font-semibold">Mã SP</th>
+            <th class="px-4 py-3 text-left font-semibold">Nhóm</th>
+            <th class="px-4 py-3 text-left font-semibold">Mô tả</th>
+            <th class="px-4 py-3 text-center font-semibold">ĐVT</th>
+            <th class="px-4 py-3 text-right font-semibold">Đơn giá</th>
+            <th class="px-4 py-3 text-center font-semibold">TT</th>
+            <th class="px-4 py-3 text-right font-semibold">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <template x-for="p in products" :key="p.id">
+            <tr class="hover:bg-slate-50">
+              <td class="px-4 py-3 font-mono text-xs font-semibold" x-text="p.ma_sp"></td>
+              <td class="px-4 py-3" x-text="p.nhom_sp || '—'"></td>
+              <td class="px-4 py-3 text-slate-700" x-text="p.mo_ta || '—'"></td>
+              <td class="px-4 py-3 text-xs text-center text-slate-600" x-text="p.dvt_mac_dinh || '—'"></td>
+              <td class="px-4 py-3 text-right tabular-nums font-semibold" x-text="Fmt.formatMoney(p.don_gia_mac_dinh)"></td>
+              <td class="px-4 py-3 text-center">
+                <span x-show="p.active" class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-semibold">Bán</span>
+                <span x-show="!p.active" class="px-2 py-0.5 bg-slate-200 text-slate-600 rounded text-xs font-semibold">Ngừng</span>
+              </td>
+              <td class="px-4 py-3 text-right space-x-2">
+                <button @click="openEdit(p)" class="text-brand-600 hover:text-brand-700 text-sm font-semibold">Sửa</button>
+                <button @click="remove(p)" class="text-red-600 hover:text-red-700 text-sm">Xoá</button>
+              </td>
+            </tr>
+          </template>
+          <tr x-show="!loading && products.length === 0">
+            <td colspan="7" class="px-4 py-12 text-center text-slate-400">Chưa có sản phẩm. Bấm "Thêm sản phẩm" để bắt đầu.</td>
+          </tr>
+          <tr x-show="loading">
+            <td colspan="7" class="px-4 py-12 text-center text-slate-400">Đang tải...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Modal create/edit -->
+    <div x-show="formOpen" x-cloak @keydown.escape.window="formOpen=false"
+         class="fixed inset-0 bg-black/50 flex items-start justify-center p-4 overflow-y-auto z-50">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl my-8" @click.outside="formOpen=false">
+        <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+          <h3 class="text-lg font-bold text-slate-800" x-text="editingId ? 'Sửa sản phẩm' : 'Thêm sản phẩm'"></h3>
+          <button @click="formOpen=false" class="text-slate-400 hover:text-slate-600 text-2xl leading-none">&times;</button>
+        </div>
+
+        <form @submit.prevent="submit()" class="px-6 py-5 space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Mã sản phẩm *</label>
+              <input x-model="form.ma_sp" required placeholder="VD: NA-XINGFA01"
+                     class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm font-mono">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Nhóm sản phẩm</label>
+              <input x-model="form.nhom_sp" placeholder="VD: Cửa nhôm"
+                     list="group-list"
+                     class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm">
+              <datalist id="group-list">
+                <template x-for="g in groups" :key="g"><option :value="g"></option></template>
+              </datalist>
+            </div>
+            <div class="col-span-2">
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Mô tả</label>
+              <textarea x-model="form.mo_ta" rows="2" placeholder="VD: Hệ nhôm cầu cách nhiệt, kính hộp Low-E"
+                        class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm"></textarea>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Đơn vị tính *</label>
+              <input x-model="form.dvt_mac_dinh" placeholder="VD: bộ, m², kg, cái, mét" required
+                     class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm">
+              <p class="text-xs text-slate-500 mt-1">Đơn vị tính = chuẩn để tính tiền (Thành tiền = SL × Đơn giá).</p>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Đơn giá mặc định (đ)</label>
+              <input type="text" inputmode="numeric" placeholder="0"
+                     :value="Fmt.formatMoneyInput(form.don_gia_mac_dinh)"
+                     @input="form.don_gia_mac_dinh = Fmt.parseMoneyInput($event.target.value)"
+                     class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm tabular-nums text-right">
+            </div>
+            <div class="col-span-2 flex items-center gap-2">
+              <input type="checkbox" id="active" x-model="form.active" class="w-4 h-4">
+              <label for="active" class="text-sm text-slate-700">Đang bán (có thể thêm vào báo giá)</label>
+            </div>
+          </div>
+
+          <div x-show="error" x-cloak class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2" x-text="error"></div>
+        </form>
+
+        <div class="px-6 py-4 border-t border-slate-200 flex justify-end gap-2">
+          <button @click="formOpen=false" class="px-4 py-2 text-sm rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">Huỷ</button>
+          <button @click="submit()" :disabled="saving"
+                  class="px-4 py-2 text-sm rounded-lg bg-brand-500 hover:bg-brand-600 text-white font-semibold disabled:opacity-50">
+            <span x-show="!saving" x-text="editingId ? 'Lưu' : 'Thêm'"></span>
+            <span x-show="saving" x-cloak>Đang lưu...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function productsPage() {
+      return {
+        products: [], groups: [], loading: false, error: '', saving: false,
+        search: '', filterGroup: '', filterActive: '',
+        formOpen: false, editingId: null, form: emptyForm(),
+        PRICING_MODES: window.PRICING_MODES,
+        Fmt: window.Fmt,
+
+        async load() {
+          this.loading = true;
+          try {
+            const q = new URLSearchParams();
+            if (this.search) q.set('search', this.search);
+            if (this.filterGroup) q.set('nhom_sp', this.filterGroup);
+            if (this.filterActive !== '') q.set('active', this.filterActive);
+            const res = await API.get('/api/dealer/products' + (q.toString() ? '?' + q : ''));
+            this.products = res.data;
+            this.groups = res.groups;
+          } catch (e) { alert(e.message); }
+          finally { this.loading = false; }
+        },
+
+        openCreate() {
+          this.editingId = null;
+          this.form = emptyForm();
+          this.error = '';
+          this.formOpen = true;
+        },
+        openEdit(p) {
+          this.editingId = p.id;
+          this.form = {
+            ma_sp: p.ma_sp || '', nhom_sp: p.nhom_sp || '', mo_ta: p.mo_ta || '',
+            dvt_mac_dinh: p.dvt_mac_dinh || '',
+            don_gia_mac_dinh: p.don_gia_mac_dinh || 0, active: !!p.active,
+          };
+          this.error = '';
+          this.formOpen = true;
+        },
+        async submit() {
+          this.error = '';
+          this.saving = true;
+          try {
+            const payload = { ...this.form, active: this.form.active ? 1 : 0 };
+            if (this.editingId) await API.put('/api/dealer/products/' + this.editingId, payload);
+            else await API.post('/api/dealer/products', payload);
+            this.formOpen = false;
+            await this.load();
+          } catch (e) { this.error = e.message; }
+          finally { this.saving = false; }
+        },
+        async remove(p) {
+          if (!confirm(`Xoá sản phẩm "${p.ma_sp}"?`)) return;
+          try { await API.delete('/api/dealer/products/' + p.id); await this.load(); }
+          catch (e) { alert(e.message); }
+        },
+      };
+    }
+    function emptyForm() {
+      return { ma_sp: '', nhom_sp: '', mo_ta: '', dvt_mac_dinh: 'cái', don_gia_mac_dinh: 0, active: true };
+    }
+  </script>
+</body>
+</html>

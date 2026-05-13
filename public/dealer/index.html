@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trang chính · Đại Lý Số</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/dealer-shell.js"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: { brand: { 500:'#0a6fd6', 600:'#0858b3', 700:'#063f7a', 900:'#0f2744' } } } } };
+    const user = Auth.guard('dealer');
+    document.addEventListener('DOMContentLoaded', () => { if (user) DealerShell.mount(user); });
+  </script>
+</head>
+<body class="min-h-screen bg-slate-50">
+  <div id="dealer-shell"></div>
+
+  <main class="max-w-6xl mx-auto px-6 py-10">
+    <h2 class="text-2xl font-bold text-slate-800 mb-6">Chào mừng đến Đại Lý Số</h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <a href="/dealer/profile.html" class="block bg-white rounded-2xl border border-slate-200 hover:border-brand-500 hover:shadow-md transition p-6">
+        <div class="text-3xl mb-3">📋</div>
+        <h3 class="font-bold text-slate-800">Hồ sơ đại lý</h3>
+        <p class="text-sm text-slate-500 mt-1">Giới thiệu năng lực, kho/xưởng, công trình, đội ngũ.</p>
+      </a>
+
+      <a href="/dealer/products.html" class="block bg-white rounded-2xl border border-slate-200 hover:border-brand-500 hover:shadow-md transition p-6">
+        <div class="text-3xl mb-3">📦</div>
+        <h3 class="font-bold text-slate-800">Sản phẩm</h3>
+        <p class="text-sm text-slate-500 mt-1">Danh mục sản phẩm — tái dùng khi tạo báo giá.</p>
+      </a>
+
+      <a href="/dealer/customers.html" class="block bg-white rounded-2xl border border-slate-200 hover:border-brand-500 hover:shadow-md transition p-6">
+        <div class="text-3xl mb-3">👥</div>
+        <h3 class="font-bold text-slate-800">Khách hàng</h3>
+        <p class="text-sm text-slate-500 mt-1">Quản lý danh sách khách hàng.</p>
+      </a>
+
+      <a href="/dealer/quotations.html" class="block bg-white rounded-2xl border border-slate-200 hover:border-brand-500 hover:shadow-md transition p-6">
+        <div class="text-3xl mb-3">📝</div>
+        <h3 class="font-bold text-slate-800">Báo giá</h3>
+        <p class="text-sm text-slate-500 mt-1">Tạo báo giá gửi khách + xuất PDF.</p>
+      </a>
+    </div>
+  </main>
+</body>
+</html>

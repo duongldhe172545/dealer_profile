@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chi tiết đại lý · Đại Lý Số</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/common.js"></script>
+  <script src="/assets/js/admin-shell.js"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: { brand: { 500:'#0a6fd6', 600:'#0858b3', 700:'#063f7a', 900:'#0b1f3a' } } } } };
+    const user = Auth.guard('admin');
+    document.addEventListener('DOMContentLoaded', () => { if (user) AdminShell.mount(user); });
+  </script>
+  <style>[x-cloak]{display:none!important}</style>
+</head>
+<body class="min-h-screen bg-slate-50">
+  <div id="admin-shell"></div>
+
+  <main class="max-w-7xl mx-auto px-6 py-8" x-data="detail()" x-init="load()">
+    <div x-show="loading" class="text-center text-slate-400 py-12">Đang tải...</div>
+
+    <div x-show="!loading && dealer">
+      <div class="flex items-center justify-between mb-6 gap-4 flex-wrap">
+        <div>
+          <p class="text-xs text-slate-500"><a href="/admin/dealers.html" class="hover:text-brand-600">← Tất cả đại lý</a></p>
+          <h2 class="text-2xl font-bold text-slate-800 mt-1" x-text="dealer.ten_dai_ly"></h2>
+          <p class="text-sm text-slate-500 mt-0.5">
+            <span class="font-mono" x-text="dealer.dealer_code"></span> · Username <span class="font-mono" x-text="dealer.username"></span>
+            <span x-show="dealer.last_login_at"> · Last login <span x-text="Fmt.formatDateTime(dealer.last_login_at)"></span></span>
+          </p>
+        </div>
+        <div class="flex gap-2 flex-wrap">
+          <div class="bg-white border border-slate-200 rounded-lg px-4 py-2">
+            <div class="text-xs text-slate-500">Tổng báo giá</div>
+            <div class="text-xl font-bold text-brand-700 tabular-nums" x-text="totals.quotations_count"></div>
+          </div>
+          <div class="bg-white border border-slate-200 rounded-lg px-4 py-2">
+            <div class="text-xs text-slate-500">Doanh số</div>
+            <div class="text-xl font-bold text-green-700 tabular-nums" x-text="Fmt.formatMoney(totals.revenue)"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab nav -->
+      <div class="flex gap-1 mb-4 border-b border-slate-200 overflow-x-auto">
+        <template x-for="t in tabs" :key="t.key">
+          <button class="px-4 py-2.5 text-sm font-medium whitespace-nowrap" :class="active === t.key ? 'text-brand-700 border-b-2 border-brand-500 font-bold' : 'text-slate-500 hover:text-slate-700'" @click="active = t.key" x-text="t.label"></button>
+        </template>
+      </div>
+
+      <!-- Thông tin -->
+      <section x-show="active === 'info'" class="bg-white border border-slate-200 rounded-xl p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 text-sm">
+          <div><div class="text-xs text-slate-500 font-semibold uppercase">Tên đại lý</div><div class="font-semibold" x-text="dealer.ten_dai_ly || '—'"></div></div>
+          <div><div class="text-xs text-slate-500 font-semibold uppercase">Chủ đại lý</div><div class="font-semibold" x-text="dealer.chu_dai_ly || '—'"></div></div>
+          <div><div class="text-xs text-slate-500 font-semibold uppercase">Điện thoại</div><div x-text="dealer.phone || '—'"></div></div>
+          <div><div class="text-xs text-slate-500 font-semibold uppercase">Email</div><div x-text="dealer.email || '—'"></div></div>
+          <div><div class="text-xs text-slate-500 font-semibold uppercase">MST</div><div x-text="dealer.mst || '—'"></div></div>
+          <div><div class="text-xs text-slate-500 font-semibold uppercase">Trạng thái</div><div class="font-semibold" x-text="dealer.status === 'active' ? 'Hoạt động' : 'Đã khoá'"></div></div>
+          <div class="md:col-span-2"><div class="text-xs text-slate-500 font-semibold uppercase">Địa chỉ</div><div x-text="addressFull"></div></div>
+          <div><div class="text-xs text-slate-500 font-semibold uppercase">Khu vực phụ trách</div><div x-text="dealer.coverage || '—'"></div></div>
+          <div><div class="text-xs text-slate-500 font-semibold uppercase">Giờ mở cửa</div><div x-text="dealer.open_hours || '—'"></div></div>
+          <div><div class="text-xs text-slate-500 font-semibold uppercase">Kinh nghiệm</div><div x-text="dealer.years_experience ? dealer.years_experience + ' năm' : '—'"></div></div>
+          <div><div class="text-xs text-slate-500 font-semibold uppercase">Quy mô</div><div x-text="scaleText"></div></div>
+        </div>
+
+        <div x-show="profile" class="mt-8 pt-6 border-t border-slate-200">
+          <h3 class="text-sm font-bold text-slate-700 mb-3">Mô tả & năng lực</h3>
+          <div class="space-y-3 text-sm">
+            <div><div class="text-xs text-slate-500 font-semibold uppercase">Tagline</div><div x-text="profile?.tagline || '—'"></div></div>
+            <div><div class="text-xs text-slate-500 font-semibold uppercase">Năng lực</div><pre class="whitespace-pre-wrap font-sans" x-text="profile?.usp_text || '—'"></pre></div>
+            <div><div class="text-xs text-slate-500 font-semibold uppercase">Dịch vụ</div><pre class="whitespace-pre-wrap font-sans" x-text="profile?.services_text || '—'"></pre></div>
+            <div><div class="text-xs text-slate-500 font-semibold uppercase">Cam kết</div><pre class="whitespace-pre-wrap font-sans" x-text="profile?.commitments_text || '—'"></pre></div>
+          </div>
+        </div>
+
+        <div x-show="Object.keys(images).length > 0" class="mt-8 pt-6 border-t border-slate-200">
+          <h3 class="text-sm font-bold text-slate-700 mb-3">Ảnh hồ sơ (<span x-text="Object.keys(images).length"></span>)</h3>
+          <div class="grid grid-cols-3 md:grid-cols-5 gap-3">
+            <template x-for="(url, slot) in images" :key="slot">
+              <div class="bg-slate-50 border border-slate-200 rounded-lg p-2">
+                <img :src="url" :alt="slot" class="w-full aspect-square object-cover rounded">
+                <div class="text-xs text-slate-500 mt-1 text-center" x-text="slot"></div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </section>
+
+      <!-- Báo giá -->
+      <section x-show="active === 'quotations'" class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 text-slate-600 border-b border-slate-200">
+            <tr>
+              <th class="px-4 py-2 text-left font-semibold">Số BG</th>
+              <th class="px-4 py-2 text-left font-semibold">Ngày</th>
+              <th class="px-4 py-2 text-left font-semibold">Khách hàng</th>
+              <th class="px-4 py-2 text-right font-semibold">Tổng cộng</th>
+              <th class="px-4 py-2 text-center font-semibold">Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <template x-for="q in quotations" :key="q.id">
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-2 font-mono text-xs font-bold" x-text="q.so_bao_gia"></td>
+                <td class="px-4 py-2" x-text="Fmt.formatDate(q.ngay_bao_gia)"></td>
+                <td class="px-4 py-2" x-text="q.customer_name || '—'"></td>
+                <td class="px-4 py-2 text-right font-semibold tabular-nums" x-text="Fmt.formatMoney(q.tong_cong)"></td>
+                <td class="px-4 py-2 text-center">
+                  <span :class="statusClass(q.status)" x-text="statusLabel(q.status)" class="px-2 py-0.5 rounded text-xs font-semibold inline-block"></span>
+                </td>
+              </tr>
+            </template>
+            <tr x-show="quotations.length === 0"><td colspan="5" class="px-4 py-12 text-center text-slate-400">Chưa có báo giá nào.</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- KH -->
+      <section x-show="active === 'customers'" class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 text-slate-600 border-b border-slate-200">
+            <tr>
+              <th class="px-4 py-2 text-left font-semibold">Mã</th>
+              <th class="px-4 py-2 text-left font-semibold">Tên KH</th>
+              <th class="px-4 py-2 text-left font-semibold">SĐT</th>
+              <th class="px-4 py-2 text-left font-semibold">Email</th>
+              <th class="px-4 py-2 text-center font-semibold">Báo giá</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <template x-for="c in customers" :key="c.id">
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-2 font-mono text-xs" x-text="c.ma_kh"></td>
+                <td class="px-4 py-2 font-semibold" x-text="c.ten_kh"></td>
+                <td class="px-4 py-2" x-text="c.phone || '—'"></td>
+                <td class="px-4 py-2" x-text="c.email || '—'"></td>
+                <td class="px-4 py-2 text-center tabular-nums" x-text="c.q_count"></td>
+              </tr>
+            </template>
+            <tr x-show="customers.length === 0"><td colspan="5" class="px-4 py-12 text-center text-slate-400">Chưa có KH nào.</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- SP -->
+      <section x-show="active === 'products'" class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 text-slate-600 border-b border-slate-200">
+            <tr>
+              <th class="px-4 py-2 text-left font-semibold">Mã</th>
+              <th class="px-4 py-2 text-left font-semibold">Nhóm</th>
+              <th class="px-4 py-2 text-left font-semibold">Mô tả</th>
+              <th class="px-4 py-2 text-left font-semibold">Cách tính</th>
+              <th class="px-4 py-2 text-right font-semibold">Đơn giá</th>
+              <th class="px-4 py-2 text-center font-semibold">TT</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <template x-for="p in products" :key="p.id">
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-2 font-mono text-xs font-bold" x-text="p.ma_sp"></td>
+                <td class="px-4 py-2" x-text="p.nhom_sp || '—'"></td>
+                <td class="px-4 py-2 text-slate-700" x-text="p.mo_ta || '—'"></td>
+                <td class="px-4 py-2 text-xs text-slate-600" x-text="(window.PRICING_MODES[p.cach_tinh_gia] || {}).label || p.cach_tinh_gia"></td>
+                <td class="px-4 py-2 text-right tabular-nums font-semibold" x-text="Fmt.formatMoney(p.don_gia_mac_dinh)"></td>
+                <td class="px-4 py-2 text-center">
+                  <span x-show="p.active" class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-semibold">Bán</span>
+                  <span x-show="!p.active" class="px-2 py-0.5 bg-slate-200 text-slate-600 rounded text-xs font-semibold">Ngừng</span>
+                </td>
+              </tr>
+            </template>
+            <tr x-show="products.length === 0"><td colspan="6" class="px-4 py-12 text-center text-slate-400">Chưa có SP nào.</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    function detail() {
+      return {
+        loading: true, dealer: null, profile: null, images: {},
+        quotations: [], customers: [], products: [], totals: { quotations_count: 0, revenue: 0 },
+        active: 'info', tabs: [
+          { key: 'info',       label: 'Thông tin & Hồ sơ' },
+          { key: 'quotations', label: 'Báo giá' },
+          { key: 'customers',  label: 'Khách hàng' },
+          { key: 'products',   label: 'Sản phẩm' },
+        ],
+        Fmt: window.Fmt,
+        async load() {
+          const id = new URLSearchParams(location.search).get('id');
+          if (!id) { alert('Thiếu id'); return; }
+          try {
+            const r = await API.get('/api/admin/dealers/' + id + '/full');
+            this.dealer = r.data.dealer;
+            this.profile = r.data.profile;
+            this.images = r.data.images || {};
+            this.quotations = r.data.quotations || [];
+            this.customers = r.data.customers || [];
+            this.products = r.data.products || [];
+            this.totals = r.data.totals;
+          } catch (e) { alert(e.message); }
+          finally { this.loading = false; }
+        },
+        get addressFull() {
+          return [this.dealer?.address, this.dealer?.district, this.dealer?.province].filter(Boolean).join(', ') || '—';
+        },
+        get scaleText() {
+          return [
+            this.dealer?.team_size && this.dealer.team_size + ' người',
+            this.dealer?.projects_monthly && this.dealer.projects_monthly + ' dự án/tháng',
+          ].filter(Boolean).join(' · ') || '—';
+        },
+        statusLabel(s) { return ({ draft: 'Bản nháp', sent: 'Đã gửi', confirmed: 'Đã chốt', cancelled: 'Đã huỷ' })[s] || s; },
+        statusClass(s) {
+          return ({ draft: 'bg-slate-100', sent: 'bg-blue-100 text-blue-700',
+                    confirmed: 'bg-green-100 text-green-700',
+                    cancelled: 'bg-red-100 text-red-700' })[s] || 'bg-slate-100';
+        },
+      };
+    }
+  </script>
+</body>
+</html>

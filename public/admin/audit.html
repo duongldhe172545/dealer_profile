@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Audit log · Đại Lý Số</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/common.js"></script>
+  <script src="/assets/js/admin-shell.js"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: { brand: { 500:'#0a6fd6', 600:'#0858b3', 700:'#063f7a', 900:'#0b1f3a' } } } } };
+    const user = Auth.guard('admin');
+    document.addEventListener('DOMContentLoaded', () => { if (user) AdminShell.mount(user); });
+  </script>
+  <style>[x-cloak]{display:none!important}</style>
+</head>
+<body class="min-h-screen bg-slate-50">
+  <div id="admin-shell"></div>
+
+  <main class="max-w-7xl mx-auto px-6 py-8" x-data="auditPage()" x-init="load()">
+    <div class="mb-6">
+      <h2 class="text-2xl font-bold text-slate-800">Audit log</h2>
+      <p class="text-sm text-slate-500 mt-0.5">Lịch sử các thao tác quan trọng. Chỉ log 5 action: tạo đại lý / tạo KH / tạo báo giá / gửi báo giá / chốt báo giá.</p>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-xl p-4 mb-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+      <select x-model="filterAction" @change="load()" class="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
+        <option value="">Tất cả hành động</option>
+        <option value="dealer.create">Tạo đại lý</option>
+        <option value="customer.create">Tạo khách hàng</option>
+        <option value="quotation.create">Tạo báo giá</option>
+        <option value="quotation.send">Gửi báo giá</option>
+        <option value="quotation.confirm">Chốt báo giá</option>
+      </select>
+      <input x-model="filterFrom" @change="load()" type="date" class="px-3 py-2 border border-slate-300 rounded-lg text-sm" title="Từ ngày">
+      <input x-model="filterTo" @change="load()" type="date" class="px-3 py-2 border border-slate-300 rounded-lg text-sm" title="Đến ngày">
+      <select x-model.number="filterLimit" @change="load()" class="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
+        <option value="100">100 dòng gần nhất</option>
+        <option value="500">500 dòng</option>
+        <option value="2000">2000 dòng</option>
+      </select>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 border-b border-slate-200 text-slate-600">
+          <tr>
+            <th class="px-4 py-3 text-left font-semibold">Thời gian</th>
+            <th class="px-4 py-3 text-left font-semibold">Người dùng</th>
+            <th class="px-4 py-3 text-left font-semibold">Đại lý</th>
+            <th class="px-4 py-3 text-left font-semibold">Hành động</th>
+            <th class="px-4 py-3 text-left font-semibold">Chi tiết</th>
+            <th class="px-4 py-3 text-left font-semibold">IP</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <template x-for="row in items" :key="row.id">
+            <tr class="hover:bg-slate-50">
+              <td class="px-4 py-3 text-xs text-slate-600 whitespace-nowrap" x-text="Fmt.formatDateTime(row.created_at)"></td>
+              <td class="px-4 py-3">
+                <div class="font-semibold text-slate-800" x-text="row.username"></div>
+                <div class="text-xs text-slate-500" x-text="row.role"></div>
+              </td>
+              <td class="px-4 py-3">
+                <template x-if="row.dealer_id">
+                  <a :href="'/admin/dealer-detail.html?id=' + row.dealer_id" class="text-slate-700 hover:text-brand-600">
+                    <span x-text="row.ten_dai_ly"></span>
+                    <span class="text-xs text-slate-500 font-mono" x-text="row.dealer_code"></span>
+                  </a>
+                </template>
+                <template x-if="!row.dealer_id"><span class="text-slate-400">—</span></template>
+              </td>
+              <td class="px-4 py-3">
+                <span :class="actionClass(row.action)" x-text="actionLabel(row.action)" class="px-2 py-0.5 rounded text-xs font-semibold inline-block"></span>
+              </td>
+              <td class="px-4 py-3 text-xs text-slate-600" x-text="formatMeta(row.meta_json)"></td>
+              <td class="px-4 py-3 text-xs text-slate-500 font-mono" x-text="row.ip || '—'"></td>
+            </tr>
+          </template>
+          <tr x-show="!loading && items.length === 0">
+            <td colspan="6" class="px-4 py-12 text-center text-slate-400">Chưa có log nào.</td>
+          </tr>
+          <tr x-show="loading">
+            <td colspan="6" class="px-4 py-12 text-center text-slate-400">Đang tải...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    function auditPage() {
+      return {
+        items: [], loading: false,
+        filterAction: '', filterFrom: '', filterTo: '', filterLimit: 100,
+        Fmt: window.Fmt,
+        ACTION_MAP: {
+          'dealer.create':      { label: 'Tạo đại lý',     cls: 'bg-purple-100 text-purple-700' },
+          'customer.create':    { label: 'Tạo KH',         cls: 'bg-blue-100 text-blue-700' },
+          'quotation.create':   { label: 'Tạo báo giá',    cls: 'bg-slate-200 text-slate-700' },
+          'quotation.send':     { label: 'Gửi báo giá',    cls: 'bg-amber-100 text-amber-700' },
+          'quotation.confirm':  { label: 'KH chốt báo giá', cls: 'bg-green-100 text-green-700' },
+        },
+        async load() {
+          this.loading = true;
+          try {
+            const q = new URLSearchParams();
+            if (this.filterAction) q.set('action', this.filterAction);
+            if (this.filterFrom)   q.set('from', this.filterFrom);
+            if (this.filterTo)     q.set('to', this.filterTo);
+            q.set('limit', this.filterLimit);
+            const r = await API.get('/api/admin/audit?' + q.toString());
+            this.items = r.data;
+          } catch (e) { alert(e.message); }
+          finally { this.loading = false; }
+        },
+        actionLabel(a) { return (this.ACTION_MAP[a] || {}).label || a; },
+        actionClass(a) { return (this.ACTION_MAP[a] || {}).cls || 'bg-slate-100'; },
+        formatMeta(json) {
+          if (!json) return '—';
+          try {
+            const obj = JSON.parse(json);
+            return Object.entries(obj).map(([k, v]) => `${k}: ${v}`).join(' · ');
+          } catch { return json; }
+        },
+      };
+    }
+  </script>
+</body>
+</html>

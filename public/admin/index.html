@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tổng quan · Đại Lý Số</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/common.js"></script>
+  <script src="/assets/js/admin-shell.js"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: { brand: { 500:'#0a6fd6', 600:'#0858b3', 700:'#063f7a', 900:'#0b1f3a' }, gold: { 500:'#d4a55b', 600:'#b8893c' } } } } };
+    const user = Auth.guard('admin');
+    document.addEventListener('DOMContentLoaded', () => { if (user) AdminShell.mount(user); });
+  </script>
+  <style>[x-cloak]{display:none!important}</style>
+</head>
+<body class="min-h-screen bg-slate-50">
+  <div id="admin-shell"></div>
+
+  <main class="max-w-7xl mx-auto px-6 py-8" x-data="dashboard()" x-init="load()">
+    <div class="flex items-center justify-between mb-6 gap-4">
+      <div>
+        <h2 class="text-2xl font-bold text-slate-800">Tổng quan</h2>
+        <p class="text-sm text-slate-500 mt-0.5">Toàn cảnh hoạt động của hệ thống đại lý.</p>
+      </div>
+      <div class="flex gap-2 flex-wrap">
+        <button @click="exportCSV('dealers')" class="text-sm bg-white border border-slate-300 hover:bg-slate-100 px-3 py-1.5 rounded-lg font-semibold">⬇ Excel Đại lý</button>
+        <button @click="exportCSV('quotations')" class="text-sm bg-white border border-slate-300 hover:bg-slate-100 px-3 py-1.5 rounded-lg font-semibold">⬇ Excel Báo giá</button>
+        <button @click="exportCSV('customers')" class="text-sm bg-white border border-slate-300 hover:bg-slate-100 px-3 py-1.5 rounded-lg font-semibold">⬇ Excel KH</button>
+        <button @click="exportCSV('products')" class="text-sm bg-white border border-slate-300 hover:bg-slate-100 px-3 py-1.5 rounded-lg font-semibold">⬇ Excel SP</button>
+      </div>
+    </div>
+
+    <div x-show="loading" class="text-center text-slate-400 py-12">Đang tải...</div>
+
+    <div x-show="!loading" class="space-y-6">
+      <!-- KPI Cards -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div class="bg-white border border-slate-200 rounded-xl p-4">
+          <div class="text-xs text-slate-500 font-semibold uppercase">Đại lý hoạt động</div>
+          <div class="text-3xl font-black text-brand-700 mt-2 tabular-nums" x-text="kpi.dealers_active"></div>
+          <div class="text-xs text-slate-400 mt-1">trên tổng <span x-text="kpi.dealers_total"></span></div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-4">
+          <div class="text-xs text-slate-500 font-semibold uppercase">Báo giá tháng</div>
+          <div class="text-3xl font-black text-brand-700 mt-2 tabular-nums" x-text="kpi.quotations_month"></div>
+          <div class="text-xs text-slate-400 mt-1">đã gửi: <span x-text="kpi.sent_month"></span></div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-4">
+          <div class="text-xs text-slate-500 font-semibold uppercase">Doanh số tháng</div>
+          <div class="text-2xl font-black text-green-700 mt-2 tabular-nums" x-text="Fmt.formatMoney(kpi.revenue_month)"></div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-4">
+          <div class="text-xs text-slate-500 font-semibold uppercase">Cơ sở dữ liệu</div>
+          <div class="text-sm text-slate-700 mt-2 space-y-0.5">
+            <div>KH: <span class="font-bold tabular-nums" x-text="kpi.customers_total"></span></div>
+            <div>SP: <span class="font-bold tabular-nums" x-text="kpi.products_total"></span></div>
+            <div>Báo giá: <span class="font-bold tabular-nums" x-text="kpi.quotations_total"></span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart Monthly Revenue -->
+      <div class="bg-white border border-slate-200 rounded-xl p-5">
+        <h3 class="text-sm font-bold text-slate-700 mb-3">Doanh số 12 tháng gần nhất</h3>
+        <div class="h-72"><canvas id="chart-monthly"></canvas></div>
+      </div>
+
+      <!-- Top dealers + Top products -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="bg-white border border-slate-200 rounded-xl">
+          <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
+            <h3 class="text-sm font-bold text-slate-700">Top 5 đại lý theo doanh số</h3>
+            <a href="/admin/dealers.html" class="text-xs text-brand-600 hover:underline">Xem tất cả →</a>
+          </div>
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-600">
+              <tr>
+                <th class="px-4 py-2 text-left font-semibold">Đại lý</th>
+                <th class="px-4 py-2 text-right font-semibold">Báo giá</th>
+                <th class="px-4 py-2 text-right font-semibold">Doanh số</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <template x-for="d in topDealers" :key="d.id">
+                <tr class="hover:bg-slate-50">
+                  <td class="px-4 py-2">
+                    <a :href="'/admin/dealer-detail.html?id=' + d.id" class="font-semibold text-slate-800 hover:text-brand-600" x-text="d.ten_dai_ly"></a>
+                    <div class="text-xs text-slate-500 font-mono" x-text="d.dealer_code + ' · ' + (d.province || '')"></div>
+                  </td>
+                  <td class="px-4 py-2 text-right tabular-nums" x-text="d.quotations_count"></td>
+                  <td class="px-4 py-2 text-right tabular-nums font-bold text-green-700" x-text="Fmt.formatMoney(d.revenue)"></td>
+                </tr>
+              </template>
+              <tr x-show="topDealers.length === 0">
+                <td colspan="3" class="px-4 py-8 text-center text-slate-400">Chưa có dữ liệu</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-xl">
+          <div class="px-5 py-3 border-b border-slate-100">
+            <h3 class="text-sm font-bold text-slate-700">Top 10 sản phẩm xuất hiện nhiều nhất</h3>
+          </div>
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-600">
+              <tr>
+                <th class="px-4 py-2 text-left font-semibold">Mã / Nhóm</th>
+                <th class="px-4 py-2 text-right font-semibold">Lần dùng</th>
+                <th class="px-4 py-2 text-right font-semibold">Giá TB</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <template x-for="p in topProducts" :key="p.ma_sp">
+                <tr class="hover:bg-slate-50">
+                  <td class="px-4 py-2">
+                    <div class="font-mono font-bold text-xs" x-text="p.ma_sp"></div>
+                    <div class="text-xs text-slate-500" x-text="p.nhom_sp || '—'"></div>
+                  </td>
+                  <td class="px-4 py-2 text-right tabular-nums" x-text="p.times_used"></td>
+                  <td class="px-4 py-2 text-right tabular-nums" x-text="Fmt.formatMoney(p.avg_price)"></td>
+                </tr>
+              </template>
+              <tr x-show="topProducts.length === 0">
+                <td colspan="3" class="px-4 py-8 text-center text-slate-400">Chưa có dữ liệu</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Price range by group -->
+      <div class="bg-white border border-slate-200 rounded-xl" x-show="priceGroups.length > 0">
+        <div class="px-5 py-3 border-b border-slate-100">
+          <h3 class="text-sm font-bold text-slate-700">Range giá thị trường theo nhóm sản phẩm</h3>
+          <p class="text-xs text-slate-500 mt-0.5">Tổng hợp từ catalog của tất cả đại lý.</p>
+        </div>
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 text-slate-600">
+            <tr>
+              <th class="px-4 py-2 text-left font-semibold">Nhóm SP</th>
+              <th class="px-4 py-2 text-center font-semibold">Số SP</th>
+              <th class="px-4 py-2 text-right font-semibold">Thấp nhất</th>
+              <th class="px-4 py-2 text-right font-semibold">Trung bình</th>
+              <th class="px-4 py-2 text-right font-semibold">Cao nhất</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <template x-for="g in priceGroups" :key="g.nhom_sp">
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-2 font-semibold" x-text="g.nhom_sp"></td>
+                <td class="px-4 py-2 text-center tabular-nums" x-text="g.sp_count"></td>
+                <td class="px-4 py-2 text-right tabular-nums" x-text="Fmt.formatMoney(g.min_price)"></td>
+                <td class="px-4 py-2 text-right tabular-nums font-bold text-brand-700" x-text="Fmt.formatMoney(g.avg_price)"></td>
+                <td class="px-4 py-2 text-right tabular-nums" x-text="Fmt.formatMoney(g.max_price)"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function dashboard() {
+      return {
+        loading: false, kpi: {}, topDealers: [], topProducts: [], priceGroups: [], monthly: [],
+        Fmt: window.Fmt,
+        async load() {
+          this.loading = true;
+          try {
+            const r = await API.get('/api/admin/stats/overview');
+            this.kpi = r.data.kpi;
+            this.monthly = r.data.monthly;
+            this.topDealers = r.data.top_dealers;
+            this.topProducts = r.data.top_products;
+            this.priceGroups = r.data.price_groups;
+            this.$nextTick(() => this.drawChart());
+          } catch (e) { alert(e.message); }
+          finally { this.loading = false; }
+        },
+        drawChart() {
+          const ctx = document.getElementById('chart-monthly');
+          if (!ctx) return;
+          if (this._chart) this._chart.destroy();
+          // Fill 12 tháng từ data
+          const map = Object.fromEntries(this.monthly.map(m => [m.ym, m]));
+          const labels = [];
+          const counts = [];
+          const revenues = [];
+          for (let i = 11; i >= 0; i--) {
+            const d = new Date(); d.setMonth(d.getMonth() - i);
+            const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+            labels.push(`T${d.getMonth()+1}/${d.getFullYear().toString().slice(-2)}`);
+            const r = map[ym];
+            counts.push(r ? r.count : 0);
+            revenues.push(r ? Math.round(r.revenue / 1e6) : 0);
+          }
+          this._chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels,
+              datasets: [
+                { label: 'Doanh số (triệu đ)', data: revenues, backgroundColor: '#0a6fd6', yAxisID: 'y' },
+                { label: 'Số báo giá', data: counts, type: 'line', borderColor: '#d4a55b', backgroundColor: '#d4a55b', tension: 0.3, yAxisID: 'y1' },
+              ]
+            },
+            options: {
+              responsive: true, maintainAspectRatio: false,
+              scales: {
+                y:  { position: 'left',  title: { display: true, text: 'Doanh số (triệu đ)' } },
+                y1: { position: 'right', title: { display: true, text: 'Số báo giá' }, grid: { drawOnChartArea: false } },
+              },
+              plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } }
+            }
+          });
+        },
+        async exportCSV(type) {
+          try {
+            const res = await fetch('/api/admin/export/' + type, { headers: { 'Authorization': 'Bearer ' + API.getToken() } });
+            if (!res.ok) throw new Error('Export thất bại');
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `${type}-${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 500);
+          } catch (e) { alert(e.message); }
+        },
+      };
+    }
+  </script>
+</body>
+</html>

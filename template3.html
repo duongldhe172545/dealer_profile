@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đại Lý Minh Tâm Austdoor — Editorial</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css">
+<style>
+  :root {
+    --cream: #F2E8D4;
+    --cream-soft: #EFE3CC;
+    --cream-deep: #E8DBC1;
+    --wine: #7B2330;
+    --wine-dark: #5E1A24;
+    --wine-soft: #9B3A47;
+    --ink: #2D2520;
+    --ink-2: #5C5048;
+    --muted: #8A7F73;
+    --line: #D8C9AC;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #E5D9BD;
+    color: var(--ink);
+    padding: 32px 16px;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .serif { font-family: 'Playfair Display', Georgia, serif; }
+
+  .page {
+    background: var(--cream);
+    max-width: 1060px;
+    width: 100%;
+    padding: 30px 36px;
+    box-shadow: 0 12px 50px rgba(0,0,0,0.12);
+    position: relative;
+  }
+
+  /* ====== TOP STRIP (variant label) ====== */
+  .top-strip {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    font-size: 11px;
+    color: var(--ink-2);
+    margin-bottom: 12px;
+  }
+  .variant-label { font-weight: 500; letter-spacing: 0.3px; }
+
+  /* ====== HERO GRID ====== */
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 42% 1fr;
+    gap: 28px;
+    margin-bottom: 24px;
+  }
+
+  /* LEFT - branding block */
+  .brand-row {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+  .austdoor-mini {
+    width: 56px;
+    height: 56px;
+    border: 1.5px solid var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 8px;
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: 0.3px;
+  }
+  .dl-code {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--ink);
+  }
+  .display-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 76px;
+    font-weight: 500;
+    line-height: 0.98;
+    color: var(--wine);
+    letter-spacing: -1.5px;
+    margin-bottom: 22px;
+  }
+  .hero-subtitle {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-style: italic;
+    font-size: 18px;
+    color: var(--ink);
+    line-height: 1.35;
+    margin-bottom: 24px;
+    max-width: 90%;
+  }
+  .badges {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 18px;
+    border: 1.5px solid var(--wine);
+    border-radius: 100px;
+    color: var(--wine);
+    font-size: 12px;
+    font-weight: 500;
+    background: transparent;
+  }
+  .badge .ic {
+    width: 18px; height: 18px;
+    border: 1.5px solid var(--wine);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .badge .ic i { color: var(--wine); font-size: 11px; }
+
+  /* RIGHT - hero image + logo dai ly */
+  .hero-right {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .logo-dl-box {
+    align-self: flex-end;
+    width: 175px;
+    height: 50px;
+    border: 1.5px solid var(--wine);
+    background: var(--cream);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: 0.5px;
+  }
+  .hero-image {
+    flex: 1;
+    background: var(--cream-deep);
+    border: 1px solid var(--line);
+    min-height: 420px;
+    position: relative;
+    background-image:
+      repeating-linear-gradient(45deg, transparent, transparent 14px, rgba(123,35,48,0.04) 14px, rgba(123,35,48,0.04) 28px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .hero-image .ph-icon {
+    color: var(--muted);
+    font-size: 48px;
+    opacity: 0.4;
+  }
+  .anh-tag {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: var(--wine);
+    color: #fff;
+    padding: 4px 12px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+
+  /* ====== CONTACT BAR ====== */
+  .contact-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 14px 6px;
+    border-top: 1.5px solid var(--wine);
+    border-bottom: 1.5px solid var(--wine);
+    margin-bottom: 26px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .contact-bar .item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--ink);
+  }
+  .contact-bar i { color: var(--wine); font-size: 18px; }
+  .contact-bar .vline { width: 1px; height: 22px; background: var(--wine); opacity: 0.5; }
+
+  /* ====== MIDDLE GRID (3 cols) ====== */
+  .middle-grid {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr 1.4fr;
+    gap: 32px;
+    margin-bottom: 30px;
+  }
+
+  /* Column section title */
+  .col-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--wine);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--wine);
+    margin-bottom: 14px;
+  }
+
+  /* Info table */
+  .info-table { font-size: 12.5px; }
+  .info-table .row {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 12px;
+    padding: 7px 0;
+    border-bottom: 1px dotted var(--line);
+  }
+  .info-table .row:last-child { border-bottom: none; }
+  .info-table .lbl { color: var(--ink-2); }
+  .info-table .val { color: var(--ink); font-weight: 500; }
+
+  /* Owner middle column */
+  .owner-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .avatar-wrap {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin-bottom: 14px;
+  }
+  .avatar {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: var(--cream-deep);
+    border: 1.5px solid var(--line);
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .avatar i { color: var(--muted); font-size: 100px; margin-bottom: -10px; }
+  .avatar-tag {
+    position: absolute;
+    bottom: 4px;
+    right: -4px;
+    background: var(--wine);
+    color: #fff;
+    padding: 3px 10px;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+  .owner-name {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 26px;
+    color: var(--wine);
+    line-height: 1.1;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .owner-role {
+    font-size: 12px;
+    color: var(--ink-2);
+    margin-bottom: 10px;
+  }
+  .owner-phone {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 20px;
+  }
+  .owner-phone i { color: var(--wine); font-size: 16px; }
+
+  .pull-quote {
+    position: relative;
+    padding: 0 18px;
+    text-align: center;
+    margin-top: 4px;
+  }
+  .pull-quote .qmark {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 60px;
+    line-height: 0.3;
+    color: var(--wine);
+  }
+  .pull-quote .qmark.open { display: block; text-align: left; margin-bottom: 14px; }
+  .pull-quote .qmark.close { display: block; text-align: right; margin-top: 2px; transform: rotate(180deg); }
+  .pull-quote p {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-style: italic;
+    font-size: 17px;
+    line-height: 1.35;
+    color: var(--ink);
+  }
+
+  /* Stats and highlights column */
+  .stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+  .stat {
+    border: 1.5px solid var(--wine);
+    padding: 16px 10px 22px;
+    text-align: center;
+    position: relative;
+    background: var(--cream);
+  }
+  .stat .ic-circle {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--wine);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px;
+  }
+  .stat .ic-circle i { font-size: 18px; }
+  .stat .num {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 36px;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat .desc {
+    font-size: 11px;
+    color: var(--ink-2);
+    line-height: 1.3;
+  }
+  .stat .anh-tag {
+    bottom: 6px;
+    right: 6px;
+    padding: 2px 8px;
+    font-size: 8px;
+  }
+
+  /* Highlights */
+  .hl-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 12px;
+  }
+  .hl-list { display: flex; flex-direction: column; gap: 12px; }
+  .hl-row {
+    display: grid;
+    grid-template-columns: 28px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px dotted var(--line);
+  }
+  .hl-row:last-child { border-bottom: none; }
+  .hl-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--wine);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .hl-text { font-size: 12.5px; color: var(--ink); font-weight: 500; }
+  .hl-tag {
+    background: var(--wine);
+    color: #fff;
+    padding: 3px 9px;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+  }
+
+  /* ====== FEATURES (3-col with icon-headed sections) ====== */
+  .features-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 28px;
+    padding-top: 18px;
+    border-top: 1px dotted var(--line);
+  }
+  .feat-h {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .feat-h .badge-ic {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--wine);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .feat-h .badge-ic i { font-size: 15px; }
+  .feat-h .feat-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--wine);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .feat-list {
+    list-style: none;
+    padding-top: 8px;
+    border-top: 1px dotted var(--line);
+  }
+  .feat-list li {
+    position: relative;
+    padding: 5px 0 5px 18px;
+    font-size: 12.5px;
+    color: var(--ink);
+    line-height: 1.4;
+  }
+  .feat-list li::before {
+    content: '•';
+    position: absolute;
+    left: 4px;
+    color: var(--wine);
+    font-weight: 700;
+  }
+
+  /* ====== BOTTOM (TEAM/PROJECTS + QR) ====== */
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 175px;
+    gap: 20px;
+    margin-bottom: 22px;
+  }
+  .section-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--wine);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+    margin-top: 8px;
+  }
+  .img-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  .img-cell {
+    display: flex;
+    flex-direction: column;
+  }
+  .img-placeholder {
+    background: var(--cream-deep);
+    border: 1px solid var(--line);
+    aspect-ratio: 16/10;
+    position: relative;
+    background-image:
+      repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(123,35,48,0.04) 10px, rgba(123,35,48,0.04) 20px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .img-placeholder i { color: var(--muted); font-size: 30px; opacity: 0.4; }
+  .img-placeholder .anh-tag {
+    bottom: 6px;
+    left: 6px;
+    right: auto;
+    padding: 3px 9px;
+    font-size: 9px;
+  }
+  .img-caption {
+    margin-top: 7px;
+    font-size: 12px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  /* QR vertical card */
+  .qr-card {
+    border: 3px solid var(--wine);
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background: var(--cream);
+    position: relative;
+  }
+  .qr-box {
+    width: 100%;
+    aspect-ratio: 1;
+    background: #fff;
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+    position: relative;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-2);
+    letter-spacing: 0.5px;
+  }
+  .qr-box .anh-tag {
+    bottom: 6px;
+    right: 6px;
+    padding: 2px 7px;
+    font-size: 8px;
+  }
+  .qr-divider {
+    width: 80%;
+    border-top: 1px dashed var(--wine);
+    margin: 14px 0;
+  }
+  .qr-text {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--ink);
+    line-height: 1.4;
+    margin-bottom: 10px;
+  }
+  .qr-arrow {
+    margin-top: 6px;
+    color: var(--wine);
+  }
+  .qr-arrow svg { width: 50px; height: 36px; }
+
+  /* ====== FOOTER ====== */
+  .footer {
+    background: var(--wine);
+    color: var(--cream);
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    margin: 0 -36px -30px;
+  }
+  .footer .item { display: flex; align-items: center; gap: 8px; }
+  .footer i { color: var(--cream); font-size: 14px; }
+
+  /* ====== RESPONSIVE ====== */
+  @media (max-width: 900px) {
+    .hero-grid { grid-template-columns: 1fr; }
+    .middle-grid { grid-template-columns: 1fr; gap: 24px; }
+    .features-grid { grid-template-columns: 1fr; gap: 20px; }
+    .bottom-grid { grid-template-columns: 1fr; }
+    .display-title { font-size: 52px; }
+    .img-row { grid-template-columns: 1fr 1fr; }
+    .contact-bar { flex-direction: column; gap: 8px; align-items: flex-start; }
+    .contact-bar .vline { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ===== TOP STRIP ===== -->
+  <div class="top-strip">
+    <span class="variant-label">Variant 2 — Editorial Magazine</span>
+  </div>
+
+  <!-- ===== HERO GRID ===== -->
+  <div class="hero-grid">
+    <!-- LEFT: Branding & Title -->
+    <div>
+      <div class="brand-row">
+        <div class="austdoor-mini">LOGO<br>AUSTDOOR</div>
+        <span class="dl-code">DL-001</span>
+      </div>
+      <h1 class="display-title">Đại Lý<br>Minh Tâm<br>Austdoor</h1>
+      <p class="hero-subtitle">Khảo sát hôm nay, lắp đặt ngày mai,<br>đồng hành mãi mãi.</p>
+      <div class="badges">
+        <span class="badge"><span class="ic"><i class="ti ti-check"></i></span>Đại lý đã xác thực</span>
+        <span class="badge"><span class="ic"><i class="ti ti-building"></i></span>Có kho/xưởng thực tế</span>
+        <span class="badge"><span class="ic"><i class="ti ti-clock"></i></span>Hỗ trợ 24h</span>
+      </div>
+    </div>
+
+    <!-- RIGHT: Logo placeholder & Hero image -->
+    <div class="hero-right">
+      <div class="logo-dl-box">LOGO ĐẠI LÝ</div>
+      <div class="hero-image">
+        <i class="ti ti-photo ph-icon"></i>
+        <span class="anh-tag">ẢNH 1</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CONTACT BAR ===== -->
+  <div class="contact-bar">
+    <div class="item"><i class="ti ti-phone"></i>+84 90 123 4567</div>
+    <div class="vline"></div>
+    <div class="item"><i class="ti ti-mail"></i>minhtam@austdoor-dealer.vn</div>
+    <div class="vline"></div>
+    <div class="item"><i class="ti ti-map-pin"></i>123 Quốc lộ 1A, Phường 7, TP. Bến Tre</div>
+  </div>
+
+  <!-- ===== MIDDLE 3-COL ===== -->
+  <div class="middle-grid">
+
+    <!-- COL 1: Info table -->
+    <div>
+      <div class="col-title">Thông tin đại lý</div>
+      <div class="info-table">
+        <div class="row"><span class="lbl">Mã đại lý</span><span class="val">DL-001</span></div>
+        <div class="row"><span class="lbl">Tên đại lý</span><span class="val">Đại Lý Minh Tâm Austdoor</span></div>
+        <div class="row"><span class="lbl">Chủ đại lý</span><span class="val">Nguyễn Văn Cường</span></div>
+        <div class="row"><span class="lbl">Điện thoại</span><span class="val">+84 90 123 4567</span></div>
+        <div class="row"><span class="lbl">Email</span><span class="val">minhtam@austdoor-dealer.vn</span></div>
+        <div class="row"><span class="lbl">Mã số thuế</span><span class="val">0101234567</span></div>
+        <div class="row"><span class="lbl">Địa chỉ</span><span class="val">123 Quốc lộ 1A, Phường 7, TP. Bến Tre</span></div>
+        <div class="row"><span class="lbl">Quận / Huyện</span><span class="val">TP. Bến Tre</span></div>
+        <div class="row"><span class="lbl">Tỉnh / Thành</span><span class="val">Bến Tre</span></div>
+        <div class="row"><span class="lbl">Khu vực phục vụ</span><span class="val">Bến Tre · Mỏ Cày · Châu Thành</span></div>
+        <div class="row"><span class="lbl">Giờ làm việc</span><span class="val">08:00 — 20:00</span></div>
+        <div class="row"><span class="lbl">Kinh nghiệm</span><span class="val">8+ năm</span></div>
+        <div class="row"><span class="lbl">Quy mô đội ngũ</span><span class="val">12 người</span></div>
+        <div class="row"><span class="lbl">Số dự án mỗi tháng</span><span class="val">35+</span></div>
+      </div>
+    </div>
+
+    <!-- COL 2: Owner + pull quote -->
+    <div class="owner-block">
+      <div class="avatar-wrap">
+        <div class="avatar"><i class="ti ti-user"></i></div>
+        <span class="avatar-tag">ẢNH 2</span>
+      </div>
+      <div class="owner-name serif">Nguyễn Văn<br>Cường</div>
+      <div class="owner-role">Chủ đại lý / Người đại diện</div>
+      <div class="owner-phone"><i class="ti ti-phone"></i>+84 90 123 4567</div>
+
+      <div class="pull-quote">
+        <span class="qmark open">"</span>
+        <p>Khách chọn vì thấy năng lực thật, ảnh thật và công trình thật.</p>
+        <span class="qmark close">"</span>
+      </div>
+    </div>
+
+    <!-- COL 3: Stats + Highlights -->
+    <div>
+      <div class="stats-row">
+        <div class="stat">
+          <div class="ic-circle"><i class="ti ti-chart-bar"></i></div>
+          <div class="num">35+</div>
+          <div class="desc">/ dự án<br>mỗi tháng</div>
+          <span class="anh-tag">ẢNH 3</span>
+        </div>
+        <div class="stat">
+          <div class="ic-circle"><i class="ti ti-clock"></i></div>
+          <div class="num">24h</div>
+          <div class="desc">/ phản hồi<br>hỗ trợ</div>
+          <span class="anh-tag">ẢNH 4</span>
+        </div>
+        <div class="stat">
+          <div class="ic-circle"><i class="ti ti-star"></i></div>
+          <div class="num">4.8/5</div>
+          <div class="desc">/ đánh giá<br>khách hàng</div>
+          <span class="anh-tag">ẢNH 5</span>
+        </div>
+      </div>
+
+      <div class="hl-title serif">3 điểm nổi bật</div>
+      <div class="hl-list">
+        <div class="hl-row">
+          <div class="hl-num">1</div>
+          <div class="hl-text">Khảo sát tận nơi trong 24 giờ</div>
+          <span class="hl-tag">ẢNH 6</span>
+        </div>
+        <div class="hl-row">
+          <div class="hl-num">2</div>
+          <div class="hl-text">Đội thi công có checklist hiện trường</div>
+          <span class="hl-tag">ẢNH 7</span>
+        </div>
+        <div class="hl-row">
+          <div class="hl-num">3</div>
+          <div class="hl-text">Bảo hành 24 tháng, hậu mãi rõ ràng</div>
+          <span class="hl-tag">ẢNH 8</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== FEATURES (3-col) ===== -->
+  <div class="features-grid">
+    <div>
+      <div class="feat-h">
+        <div class="badge-ic"><i class="ti ti-settings"></i></div>
+        <div class="feat-title">Năng lực nổi bật</div>
+      </div>
+      <ul class="feat-list">
+        <li>Khảo sát tận nơi miễn phí</li>
+        <li>Báo giá minh bạch vật tư – nhân công – phụ kiện</li>
+        <li>Đội ngũ thi công có quy trình</li>
+        <li>Kho hàng sẵn, giao nhanh</li>
+        <li>Bảo hành 24 tháng theo hãng</li>
+        <li>Hỗ trợ sau bán rõ ràng</li>
+      </ul>
+    </div>
+    <div>
+      <div class="feat-h">
+        <div class="badge-ic"><i class="ti ti-settings-2"></i></div>
+        <div class="feat-title">Sản phẩm &amp; dịch vụ</div>
+      </div>
+      <ul class="feat-list">
+        <li>Cửa cuốn Austdoor</li>
+        <li>Cửa nhôm – kính</li>
+        <li>Motor và lưu điện</li>
+        <li>Phụ kiện đồng bộ</li>
+        <li>Bảo trì – sửa chữa</li>
+        <li>Lắp đặt tại công trình</li>
+      </ul>
+    </div>
+    <div>
+      <div class="feat-h">
+        <div class="badge-ic"><i class="ti ti-heart-handshake"></i></div>
+        <div class="feat-title">Cam kết chăm sóc khách hàng</div>
+      </div>
+      <ul class="feat-list">
+        <li>Giải thích chi phí rõ ràng trước khi chốt</li>
+        <li>Bàn giao đầy đủ sau thi công</li>
+        <li>Theo dõi bảo trì định kỳ</li>
+        <li>Phản hồi mọi khiếu nại trong 24h</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== BOTTOM: TEAM/PROJECTS + QR ===== -->
+  <div class="bottom-grid">
+    <div>
+      <!-- Team -->
+      <div class="section-label">Đội ngũ &amp; cơ sở vật chất</div>
+      <div class="img-row">
+        <div class="img-cell">
+          <div class="img-placeholder"><i class="ti ti-photo"></i><span class="anh-tag">ẢNH 9</span></div>
+          <div class="img-caption">Kho hàng &amp; xưởng thực tế</div>
+        </div>
+        <div class="img-cell">
+          <div class="img-placeholder"><i class="ti ti-photo"></i><span class="anh-tag">ẢNH 10</span></div>
+          <div class="img-caption">Đội ngũ thi công 1</div>
+        </div>
+        <div class="img-cell">
+          <div class="img-placeholder"><i class="ti ti-photo"></i><span class="anh-tag">ẢNH 11</span></div>
+          <div class="img-caption">Đội ngũ thi công 2</div>
+        </div>
+      </div>
+
+      <!-- Projects -->
+      <div class="section-label">Công trình thực tế</div>
+      <div class="img-row" style="margin-bottom: 0;">
+        <div class="img-cell">
+          <div class="img-placeholder"><i class="ti ti-photo"></i><span class="anh-tag">ẢNH 12</span></div>
+          <div class="img-caption">Mặt tiền nhà phố hoàn thiện cửa cuốn</div>
+        </div>
+        <div class="img-cell">
+          <div class="img-placeholder"><i class="ti ti-photo"></i><span class="anh-tag">ẢNH 13</span></div>
+          <div class="img-caption">Cải tạo biệt thự hiện đại</div>
+        </div>
+        <div class="img-cell">
+          <div class="img-placeholder"><i class="ti ti-photo"></i><span class="anh-tag">ẢNH 14</span></div>
+          <div class="img-caption">Dự án dân dụng đúng tiến độ</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QR vertical card -->
+    <div class="qr-card">
+      <div class="qr-box">
+        QR CODE
+        <span class="anh-tag">ẢNH 15</span>
+      </div>
+      <div class="qr-divider"></div>
+      <div class="qr-text">Quét mã QR để xem thêm công trình và liên hệ tư vấn miễn phí.</div>
+      <div class="qr-arrow">
+        <svg viewBox="0 0 50 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 8 Q 15 4, 25 16 T 42 28" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          <path d="M38 22 L42 28 L36 30" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== FOOTER ===== -->
+  <div class="footer">
+    <div class="item"><i class="ti ti-bookmark"></i>Đại Lý Minh Tâm Austdoor</div>
+    <div class="item">DL-001</div>
+    <div class="item"><i class="ti ti-phone"></i>+84 90 123 4567</div>
+    <div class="item"><i class="ti ti-mail"></i>minhtam@austdoor-dealer.vn</div>
+  </div>
+
+</div>
+
+</body>
+</html>

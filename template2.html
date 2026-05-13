@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đại Lý Minh Tâm Austdoor — DL-001</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css">
+<style>
+  :root {
+    --cyan: #1ECBED;
+    --cyan-dark: #0FB8DA;
+    --lime: #B4FF39;
+    --ink: #0A0F14;
+    --ink-2: #1F2937;
+    --gray: #6B7280;
+    --gray-light: #9CA3AF;
+    --border: #E5E7EB;
+    --row-alt: #F9FAFB;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #ECEEF1;
+    color: var(--ink);
+    padding: 32px 16px;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 28px;
+    max-width: 1080px;
+    width: 100%;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Decorative circuit lines on the left edge */
+  .circuit {
+    position: absolute;
+    top: 120px;
+    left: 0;
+    width: 280px;
+    height: 80px;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  /* Corner brackets utility */
+  .with-brackets { position: relative; }
+  .with-brackets > .cb {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    pointer-events: none;
+  }
+  .with-brackets > .cb.tl { top: 6px; left: 6px; border-top: 2px solid var(--bracket-color, var(--cyan)); border-left: 2px solid var(--bracket-color, var(--cyan)); }
+  .with-brackets > .cb.tr { top: 6px; right: 6px; border-top: 2px solid var(--bracket-color, var(--cyan)); border-right: 2px solid var(--bracket-color, var(--cyan)); }
+  .with-brackets > .cb.bl { bottom: 6px; left: 6px; border-bottom: 2px solid var(--bracket-color, var(--cyan)); border-left: 2px solid var(--bracket-color, var(--cyan)); }
+  .with-brackets > .cb.br { bottom: 6px; right: 6px; border-bottom: 2px solid var(--bracket-color, var(--cyan)); border-right: 2px solid var(--bracket-color, var(--cyan)); }
+
+  /* ===== HEADER ===== */
+  .header {
+    display: grid;
+    grid-template-columns: 220px 1fr 180px;
+    gap: 24px;
+    align-items: stretch;
+    margin-bottom: 20px;
+  }
+  .austdoor-logo {
+    background: var(--ink);
+    border-radius: 12px;
+    padding: 22px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+  }
+  .austdoor-logo .mark {
+    width: 36px; height: 36px;
+    background: var(--cyan);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .austdoor-logo .mark i { color: var(--ink); font-size: 24px; }
+  .austdoor-logo .brand-name { color: #fff; font-size: 19px; font-weight: 700; letter-spacing: 0.5px; }
+  .austdoor-logo .brand-name sup { font-size: 9px; color: var(--cyan); }
+  .austdoor-logo .tagline { font-size: 9px; letter-spacing: 1.6px; color: var(--cyan); margin-top: 3px; font-weight: 500; }
+
+  .title-block { padding-top: 4px; }
+  .title-block .dealer-code-label {
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    color: var(--gray);
+    font-weight: 500;
+  }
+  .title-block .dealer-code {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--cyan);
+    line-height: 1;
+    margin: 4px 0 10px;
+  }
+  .title-block h1 {
+    font-size: 30px;
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.5px;
+    margin-bottom: 10px;
+  }
+  .subtitle {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13px;
+    font-style: italic;
+    color: #374151;
+  }
+  .subtitle .slash { color: var(--cyan); font-weight: 700; font-style: normal; font-size: 18px; line-height: 1; }
+
+  .logo-placeholder {
+    background: var(--cyan);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-align: center;
+    position: relative;
+    --bracket-color: #fff;
+  }
+  .logo-placeholder .ph-title { font-size: 14px; font-weight: 700; letter-spacing: 1.2px; }
+  .logo-placeholder .ph-sub { font-size: 10px; opacity: 0.9; margin-top: 4px; letter-spacing: 0.8px; }
+
+  /* ===== BADGES ===== */
+  .badges {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    margin-bottom: 18px;
+  }
+  .badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--ink);
+    color: #fff;
+    padding: 8px 18px;
+    border-radius: 24px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .badge i { color: var(--cyan); font-size: 17px; }
+
+  /* ===== CONTACT BAR ===== */
+  .contact-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    background: var(--cyan);
+    color: #fff;
+    padding: 11px 20px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .contact-bar .item { display: flex; align-items: center; gap: 8px; }
+  .contact-bar i { font-size: 15px; }
+  .contact-bar .divider { width: 1px; height: 16px; background: rgba(255,255,255,0.55); }
+
+  /* ===== MAIN GRID ===== */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  /* Hero image */
+  .hero {
+    background: linear-gradient(135deg, #1F2937 0%, #111827 100%);
+    height: 230px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--cyan);
+    position: relative;
+    margin-bottom: 14px;
+  }
+  .hero i { font-size: 56px; }
+  .hero .h-title { font-size: 14px; font-weight: 700; letter-spacing: 2px; margin-top: 10px; }
+  .hero .h-sub { font-size: 11px; opacity: 0.7; margin-top: 4px; letter-spacing: 1px; }
+
+  /* Section header bar (dark) */
+  .sec-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--ink);
+    color: #fff;
+    padding: 9px 14px;
+    border-radius: 8px 8px 0 0;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+  }
+  .sec-header .en { color: var(--cyan); font-size: 11px; letter-spacing: 1.8px; font-weight: 600; }
+
+  /* Info table */
+  .info-table {
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    overflow: hidden;
+  }
+  .info-table table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .info-table td { padding: 8px 14px; }
+  .info-table td.label { color: var(--gray); width: 38%; }
+  .info-table td.value { font-weight: 500; }
+  .info-table tr:nth-child(even) { background: var(--row-alt); }
+  .info-table .dot {
+    display: inline-block;
+    width: 5px; height: 5px;
+    background: var(--cyan);
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  /* Owner card */
+  .owner-card {
+    background: var(--ink);
+    color: #fff;
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 12px;
+  }
+  .owner-card .label-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+  }
+  .owner-card .label-row .cy { color: var(--cyan); }
+  .owner-card .row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .owner-card .avatar {
+    width: 54px; height: 54px;
+    border-radius: 50%;
+    background: var(--ink-2);
+    border: 2px solid var(--cyan);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .owner-card .avatar i { color: var(--gray-light); font-size: 30px; }
+  .owner-card .name { font-size: 20px; font-weight: 700; }
+  .owner-card .role-pill {
+    margin-top: 10px;
+    background: var(--ink-2);
+    border-radius: 6px;
+    padding: 7px 12px;
+    font-size: 10.5px;
+    color: var(--gray-light);
+    letter-spacing: 1.5px;
+    font-weight: 500;
+  }
+  .owner-card .phone-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    font-size: 13.5px;
+    font-weight: 500;
+  }
+  .owner-card .phone-row i { color: var(--cyan); font-size: 16px; }
+
+  /* Stat cards */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .stat {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .stat .row1 {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .stat .num {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .stat .num small { font-size: 16px; color: var(--gray); font-weight: 600; }
+  .stat .icon i { color: var(--lime); font-size: 24px; }
+  .stat .desc {
+    font-size: 11px;
+    color: var(--gray);
+    line-height: 1.3;
+    margin-top: 6px;
+    font-weight: 500;
+  }
+
+  /* Highlights */
+  .highlights-body {
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    padding: 14px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    background: #fff;
+  }
+  .hl-num {
+    display: inline-block;
+    background: var(--lime);
+    color: var(--ink);
+    font-weight: 800;
+    font-size: 14px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+  }
+  .hl-icon { margin: 10px 0 8px; }
+  .hl-icon i { font-size: 32px; color: var(--ink); }
+  .hl-text { font-size: 12.5px; line-height: 1.35; font-weight: 500; }
+
+  /* ===== 3-COLUMN ===== */
+  .three-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+  .col-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .col-card .col-h {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.3px;
+  }
+  .col-card .col-h .en { color: var(--cyan); font-size: 10px; letter-spacing: 1.5px; }
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 5px 0;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+  .check-item i {
+    color: var(--cyan);
+    font-size: 16px;
+    flex: none;
+    margin-top: 1px;
+  }
+
+  /* ===== TESTIMONIAL ===== */
+  .testimonial {
+    display: grid;
+    grid-template-columns: auto auto 1fr auto;
+    gap: 18px;
+    align-items: center;
+    padding: 14px 20px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 16px;
+  }
+  .testimonial .avatar-icon {
+    width: 38px; height: 38px;
+    background: var(--cyan);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .testimonial .avatar-icon i { color: #fff; font-size: 22px; }
+  .testimonial .label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    line-height: 1.35;
+  }
+  .testimonial .quote {
+    font-style: italic;
+    font-size: 14px;
+    color: #374151;
+    text-align: center;
+  }
+  .testimonial .end-quote i { color: var(--cyan); font-size: 30px; }
+
+  /* ===== BOTTOM GRID ===== */
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .img-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+  }
+  .img-ph {
+    background: linear-gradient(135deg, #1F2937 0%, #111827 100%);
+    height: 90px;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--cyan);
+    position: relative;
+  }
+  .img-ph i { font-size: 26px; }
+  .img-ph .ph-l1 { font-size: 9px; font-weight: 600; letter-spacing: 1px; margin-top: 5px; }
+  .img-ph .ph-l2 { font-size: 8px; opacity: 0.7; margin-top: 2px; }
+  .project-caption {
+    font-size: 11.5px;
+    margin-top: 7px;
+    line-height: 1.3;
+    font-weight: 500;
+  }
+
+  /* QR section */
+  .qr-row {
+    margin-top: 10px;
+    display: grid;
+    grid-template-columns: 120px 90px 1fr;
+    gap: 14px;
+    align-items: center;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .qr-row .qr-title { font-size: 15px; font-weight: 700; letter-spacing: 1.5px; }
+  .qr-row .qr-sub { font-size: 10px; color: var(--cyan); letter-spacing: 2px; margin-top: 4px; font-weight: 600; }
+  .qr-box {
+    background: #F3F4F6;
+    border: 1px solid #D1D5DB;
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .qr-box .qr-l1 { font-size: 11px; font-weight: 700; color: var(--gray); }
+  .qr-box .qr-l2 { font-size: 9px; color: var(--gray-light); margin-top: 2px; }
+  .qr-desc { font-size: 12px; color: #374151; line-height: 1.4; }
+  .qr-desc .arrows { color: var(--lime); font-weight: 700; font-size: 16px; }
+
+  /* ===== FOOTER ===== */
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--ink);
+    color: #fff;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 11.5px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .footer .item { display: flex; align-items: center; gap: 7px; }
+  .footer i { color: var(--cyan); font-size: 14px; }
+  .footer .code-val { color: var(--cyan); font-weight: 700; }
+  .footer .gray { color: var(--gray-light); }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 900px) {
+    .header { grid-template-columns: 1fr; }
+    .main-grid, .bottom-grid, .three-col { grid-template-columns: 1fr; }
+    .stat-grid, .highlights-body, .img-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .contact-bar { flex-direction: column; gap: 8px; }
+    .contact-bar .divider { display: none; }
+    .testimonial { grid-template-columns: 1fr; text-align: center; }
+    .qr-row { grid-template-columns: 1fr; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- Decorative circuit lines -->
+  <svg class="circuit" viewBox="0 0 280 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0 40 L60 40 L75 25 L140 25 L155 40 L220 40" stroke="#1ECBED" stroke-width="1.5" stroke-opacity="0.6"/>
+    <path d="M0 60 L40 60 L55 75 L120 75" stroke="#1ECBED" stroke-width="1" stroke-opacity="0.3"/>
+    <circle cx="60" cy="40" r="3" fill="#1ECBED"/>
+    <circle cx="155" cy="40" r="3" fill="#1ECBED"/>
+    <circle cx="40" cy="60" r="2" fill="#1ECBED" opacity="0.6"/>
+  </svg>
+
+  <!-- ===== HEADER ===== -->
+  <div class="header">
+    <div class="austdoor-logo with-brackets">
+      <div class="mark"><i class="ti ti-door"></i></div>
+      <div>
+        <div class="brand-name">AUSTDOOR<sup>®</sup></div>
+        <div class="tagline">CỬA VỮNG NHÀ AN</div>
+      </div>
+      <span class="cb tl"></span><span class="cb tr"></span><span class="cb bl"></span><span class="cb br"></span>
+    </div>
+
+    <div class="title-block">
+      <div class="dealer-code-label">DEALER CODE</div>
+      <div class="dealer-code">DL-001</div>
+      <h1>Đại Lý<br>Minh Tâm Austdoor</h1>
+      <div class="subtitle">
+        <span class="slash">//</span>
+        <span>Khảo sát hôm nay, lắp đặt ngày mai,<br>đồng hành mãi mãi.</span>
+      </div>
+    </div>
+
+    <div class="logo-placeholder with-brackets">
+      <div class="ph-title">LOGO ĐẠI LÝ</div>
+      <div class="ph-sub">( PLACEHOLDER )</div>
+      <span class="cb tl"></span><span class="cb tr"></span><span class="cb bl"></span><span class="cb br"></span>
+    </div>
+  </div>
+
+  <!-- ===== BADGES ===== -->
+  <div class="badges">
+    <div class="badge"><i class="ti ti-shield-check"></i>Đại lý đã xác thực</div>
+    <div class="badge"><i class="ti ti-building-warehouse"></i>Có kho/xưởng thực tế</div>
+    <div class="badge"><i class="ti ti-clock-hour-9"></i>Hỗ trợ 24h</div>
+  </div>
+
+  <!-- ===== CONTACT BAR ===== -->
+  <div class="contact-bar">
+    <div class="item"><i class="ti ti-phone"></i>+84 90 123 4567</div>
+    <div class="divider"></div>
+    <div class="item"><i class="ti ti-mail"></i>minhtam@austdoor-dealer.vn</div>
+    <div class="divider"></div>
+    <div class="item"><i class="ti ti-map-pin"></i>123 Quốc lộ 1A, Phường 7, TP. Bến Tre</div>
+  </div>
+
+  <!-- ===== MAIN GRID ===== -->
+  <div class="main-grid">
+
+    <!-- LEFT COLUMN -->
+    <div>
+      <div class="hero with-brackets">
+        <i class="ti ti-camera"></i>
+        <div class="h-title">ẢNH HERO</div>
+        <div class="h-sub">( BÌA ĐẠI LÝ )</div>
+        <span class="cb tl"></span><span class="cb tr"></span><span class="cb bl"></span><span class="cb br"></span>
+      </div>
+
+      <div>
+        <div class="sec-header"><span>THÔNG TIN ĐẠI LÝ</span><span class="en">// PROFILE DATA</span></div>
+        <div class="info-table">
+          <table>
+            <tr><td class="label"><span class="dot"></span>Tên đại lý</td><td class="value">Đại Lý Minh Tâm Austdoor</td></tr>
+            <tr><td class="label"><span class="dot"></span>Chủ đại lý</td><td class="value">Nguyễn Văn Cường</td></tr>
+            <tr><td class="label"><span class="dot"></span>Mã đại lý</td><td class="value">DL-001</td></tr>
+            <tr><td class="label"><span class="dot"></span>Mã số thuế</td><td class="value">0101234567</td></tr>
+            <tr><td class="label"><span class="dot"></span>Địa chỉ</td><td class="value">123 Quốc lộ 1A, Phường 7, TP. Bến Tre</td></tr>
+            <tr><td class="label"><span class="dot"></span>Quận / Huyện</td><td class="value">TP. Bến Tre</td></tr>
+            <tr><td class="label"><span class="dot"></span>Tỉnh / Thành</td><td class="value">Bến Tre</td></tr>
+            <tr><td class="label"><span class="dot"></span>Khu vực phủ</td><td class="value">Bến Tre • Mỏ Cày • Châu Thành</td></tr>
+            <tr><td class="label"><span class="dot"></span>Giờ mở cửa</td><td class="value">08:00 – 20:00</td></tr>
+            <tr><td class="label"><span class="dot"></span>Kinh nghiệm</td><td class="value">8+ năm</td></tr>
+            <tr><td class="label"><span class="dot"></span>Quy mô đội</td><td class="value">12 người</td></tr>
+            <tr><td class="label"><span class="dot"></span>Dự án / tháng</td><td class="value">35+ dự án/tháng</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div>
+      <!-- Owner card -->
+      <div class="owner-card">
+        <div class="label-row">
+          <span class="cy">CHỦ ĐẠI LÝ</span>
+          <span class="cy">// OWNER</span>
+        </div>
+        <div class="row">
+          <div class="avatar"><i class="ti ti-user"></i></div>
+          <div class="name">Nguyễn Văn Cường</div>
+        </div>
+        <div class="role-pill">CHỦ ĐẠI LÝ / OWNER DEALER</div>
+        <div class="phone-row"><i class="ti ti-phone"></i>+84 90 123 4567</div>
+      </div>
+
+      <!-- Stat cards -->
+      <div class="stat-grid">
+        <div class="stat">
+          <div class="row1">
+            <div class="num">35+</div>
+            <div class="icon"><i class="ti ti-chart-bar"></i></div>
+          </div>
+          <div class="desc">/ dự án<br>mỗi tháng</div>
+        </div>
+        <div class="stat">
+          <div class="row1">
+            <div class="num">24h</div>
+            <div class="icon"><i class="ti ti-bolt"></i></div>
+          </div>
+          <div class="desc">/ phản hồi<br>hỗ trợ</div>
+        </div>
+        <div class="stat">
+          <div class="row1">
+            <div class="num">4.8<small>/5</small></div>
+            <div class="icon"><i class="ti ti-star"></i></div>
+          </div>
+          <div class="desc">/ đánh giá<br>khách hàng</div>
+        </div>
+      </div>
+
+      <!-- Highlights -->
+      <div>
+        <div class="sec-header"><span>ĐIỂM NỔI BẬT</span><span class="en">// HIGHLIGHTS</span></div>
+        <div class="highlights-body">
+          <div>
+            <span class="hl-num">01</span>
+            <div class="hl-icon"><i class="ti ti-stopwatch"></i></div>
+            <div class="hl-text">Khảo sát tận nơi trong 24 giờ</div>
+          </div>
+          <div>
+            <span class="hl-num">02</span>
+            <div class="hl-icon"><i class="ti ti-clipboard-check"></i></div>
+            <div class="hl-text">Đội thi công có checklist hiện trường</div>
+          </div>
+          <div>
+            <span class="hl-num">03</span>
+            <div class="hl-icon"><i class="ti ti-shield-check"></i></div>
+            <div class="hl-text">Bảo hành 24 tháng, hậu mãi rõ ràng</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 3-COLUMN ===== -->
+  <div class="three-col">
+    <div class="col-card">
+      <div class="col-h"><span>NĂNG LỰC NỔI BẬT</span><span class="en">// STRENGTHS</span></div>
+      <div class="check-item"><i class="ti ti-circle-check"></i>Khảo sát tận nơi miễn phí</div>
+      <div class="check-item"><i class="ti ti-circle-check"></i>Báo giá minh bạch vật tư – nhân công – phụ kiện</div>
+      <div class="check-item"><i class="ti ti-circle-check"></i>Đội ngũ thi công có quy trình</div>
+      <div class="check-item"><i class="ti ti-circle-check"></i>Kho hàng sẵn, giao nhanh</div>
+      <div class="check-item"><i class="ti ti-circle-check"></i>Bảo hành 24 tháng theo hãng</div>
+      <div class="check-item"><i class="ti ti-circle-check"></i>Hỗ trợ sau bán rõ ràng</div>
+    </div>
+    <div class="col-card">
+      <div class="col-h"><span>SẢN PHẨM &amp; DỊCH VỤ</span><span class="en">// PRODUCTS</span></div>
+      <div class="check-item"><i class="ti ti-box"></i>Cửa cuốn Austdoor</div>
+      <div class="check-item"><i class="ti ti-box"></i>Cửa nhôm – kính</div>
+      <div class="check-item"><i class="ti ti-box"></i>Motor và lưu điện</div>
+      <div class="check-item"><i class="ti ti-box"></i>Phụ kiện đồng bộ</div>
+      <div class="check-item"><i class="ti ti-box"></i>Bảo trì – sửa chữa</div>
+      <div class="check-item"><i class="ti ti-box"></i>Lắp đặt tại công trình</div>
+    </div>
+    <div class="col-card">
+      <div class="col-h"><span>CAM KẾT CHĂM SÓC KH</span><span class="en">// CUSTOMER CARE</span></div>
+      <div class="check-item"><i class="ti ti-heart-handshake"></i>Giải thích chi phí rõ ràng trước khi chốt</div>
+      <div class="check-item"><i class="ti ti-heart-handshake"></i>Bàn giao đầy đủ sau thi công</div>
+      <div class="check-item"><i class="ti ti-heart-handshake"></i>Theo dõi bảo trì định kỳ</div>
+      <div class="check-item"><i class="ti ti-heart-handshake"></i>Phản hồi mọi khiếu nại trong 24h</div>
+    </div>
+  </div>
+
+  <!-- ===== TESTIMONIAL ===== -->
+  <div class="testimonial">
+    <div class="avatar-icon"><i class="ti ti-message-circle-heart"></i></div>
+    <div class="label">KHÁCH HÀNG<br>NÓI VỀ CHÚNG TÔI</div>
+    <div class="quote">"Khách chọn vì thấy năng lực thật, ảnh thật và công trình thật."</div>
+    <div class="end-quote"><i class="ti ti-quote"></i></div>
+  </div>
+
+  <!-- ===== BOTTOM GRID ===== -->
+  <div class="bottom-grid">
+    <div>
+      <div class="sec-header"><span>ĐỘI NGŨ &amp; CƠ SỞ</span><span class="en">// TEAM &amp; FACILITIES</span></div>
+      <div class="img-grid-3">
+        <div class="img-ph with-brackets">
+          <i class="ti ti-camera"></i>
+          <div class="ph-l1">ẢNH ĐỘI NGŨ 1</div>
+          <div class="ph-l2">( TEAM )</div>
+          <span class="cb tl"></span><span class="cb tr"></span><span class="cb bl"></span><span class="cb br"></span>
+        </div>
+        <div class="img-ph with-brackets">
+          <i class="ti ti-camera"></i>
+          <div class="ph-l1">ẢNH KHO / XƯỞNG</div>
+          <div class="ph-l2">( WORKSHOP )</div>
+          <span class="cb tl"></span><span class="cb tr"></span><span class="cb bl"></span><span class="cb br"></span>
+        </div>
+        <div class="img-ph with-brackets">
+          <i class="ti ti-camera"></i>
+          <div class="ph-l1">ẢNH ĐỘI NGŨ 2</div>
+          <div class="ph-l2">( TEAM )</div>
+          <span class="cb tl"></span><span class="cb tr"></span><span class="cb bl"></span><span class="cb br"></span>
+        </div>
+      </div>
+
+      <div class="qr-row">
+        <div>
+          <div class="qr-title">QUÉT MÃ QR</div>
+          <div class="qr-sub">// SCAN ME</div>
+        </div>
+        <div class="qr-box">
+          <div class="qr-l1">QR CODE</div>
+          <div class="qr-l2">(PLACEHOLDER)</div>
+        </div>
+        <div class="qr-desc"><span class="arrows">»»»</span> Quét mã QR để xem thêm công trình và liên hệ tư vấn miễn phí.</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec-header"><span>CÔNG TRÌNH THỰC TẾ</span><span class="en">// REAL PROJECTS</span></div>
+      <div class="img-grid-3">
+        <div>
+          <div class="img-ph with-brackets">
+            <i class="ti ti-camera"></i>
+            <span class="cb tl"></span><span class="cb tr"></span><span class="cb bl"></span><span class="cb br"></span>
+          </div>
+          <div class="project-caption">Mặt tiền nhà phố hoàn thiện cửa cuốn</div>
+        </div>
+        <div>
+          <div class="img-ph with-brackets">
+            <i class="ti ti-camera"></i>
+            <span class="cb tl"></span><span class="cb tr"></span><span class="cb bl"></span><span class="cb br"></span>
+          </div>
+          <div class="project-caption">Cải tạo biệt thự hiện đại</div>
+        </div>
+        <div>
+          <div class="img-ph with-brackets">
+            <i class="ti ti-camera"></i>
+            <span class="cb tl"></span><span class="cb tr"></span><span class="cb bl"></span><span class="cb br"></span>
+          </div>
+          <div class="project-caption">Dự án dân dụng đúng tiến độ</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== FOOTER ===== -->
+  <div class="footer">
+    <div class="item"><i class="ti ti-user"></i>ĐẠI LÝ MINH TÂM AUSTDOOR</div>
+    <div class="item gray">CODE: <span class="code-val">DL-001</span></div>
+    <div class="item"><i class="ti ti-phone"></i>+84 90 123 4567</div>
+    <div class="item"><i class="ti ti-mail"></i>minhtam@austdoor-dealer.vn</div>
+  </div>
+
+</div>
+
+</body>
+</html>

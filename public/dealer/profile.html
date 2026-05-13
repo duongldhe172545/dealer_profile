@@ -245,11 +245,9 @@
           </div>
 
           <div class="panel">
-            <div class="panel-hd"><h3>Mô tả 3 ảnh công trình</h3></div>
-            <div class="panel-bd space-y-2">
-              <input class="field-input" x-model="profile.project_caption1" placeholder="Mô tả ảnh công trình 1">
-              <input class="field-input" x-model="profile.project_caption2" placeholder="Mô tả ảnh công trình 2">
-              <input class="field-input" x-model="profile.project_caption3" placeholder="Mô tả ảnh công trình 3">
+            <div class="panel-hd"><h3>Mô tả ảnh</h3></div>
+            <div class="panel-bd">
+              <p class="text-xs text-slate-500">Mô tả các ảnh đội ngũ, kho/xưởng, công trình đã chuyển sang tab "<strong>Hình ảnh</strong>" để gõ ngay cạnh ảnh tương ứng.</p>
             </div>
           </div>
         </div>
@@ -283,13 +281,37 @@
                               class="text-[11px] bg-red-50 hover:bg-red-100 text-red-700 px-2 py-1.5 rounded font-semibold">Xoá</button>
                     </div>
                   </div>
+
+                  <!-- Caption (textarea, Shift+Enter để xuống dòng) -->
+                  <template x-if="slot.captionField">
+                    <div class="mt-2">
+                      <label class="text-[10px] text-slate-500 font-semibold">Mô tả ảnh</label>
+                      <textarea x-model="profile[slot.captionField]" rows="2"
+                                placeholder="Gõ mô tả, Shift+Enter xuống dòng..."
+                                class="w-full px-2 py-1.5 mt-0.5 text-[12px] border border-slate-300 rounded outline-none focus:ring-2 focus:ring-brand-500 resize-y leading-snug"></textarea>
+                    </div>
+                  </template>
                 </div>
               </template>
             </div>
           </div>
         </div>
 
-        <div x-show="error" x-cloak class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2" x-text="error"></div>
+        <!-- Điều hướng giữa tab: Quay lại / Tiếp theo -->
+        <div class="flex items-center justify-between gap-2 mt-3">
+          <button type="button" @click="prevTab()" :disabled="!hasPrevTab()"
+                  class="px-4 py-2 text-sm rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">
+            ← Quay lại
+          </button>
+          <span class="text-xs text-slate-500" x-text="tabIndexText()"></span>
+          <button type="button" @click="hasNextTab() ? nextTab() : save()"
+                  class="px-4 py-2 text-sm rounded-lg bg-brand-500 hover:bg-brand-600 text-white font-semibold">
+            <span x-show="hasNextTab()">Tiếp theo →</span>
+            <span x-show="!hasNextTab()" x-cloak>💾 Lưu hồ sơ</span>
+          </button>
+        </div>
+
+        <div x-show="error" x-cloak class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2 mt-2" x-text="error"></div>
       </div>
 
       <!-- ============================== CỘT PHẢI: PREVIEW ============================== -->
@@ -352,18 +374,18 @@
           { key: 'logo_dai_ly',  label: 'Logo đại lý',           size: 'Vuông 1:1 · ~500×500px' },
           { key: 'avatar_chu',   label: 'Ảnh chủ đại lý',        size: 'Vuông 1:1 · ~600×600px' },
           { key: 'hero',         label: 'Ảnh nổi bật đầu trang', size: 'Ngang 21:9 · ~1920×820px' },
-          { key: 'kho_xuong',    label: 'Ảnh kho / xưởng',       size: 'Ngang 4:3 · ~1600×1200px' },
-          { key: 'doi_ngu_1',    label: 'Ảnh đội ngũ 1',         size: 'Ngang 4:3 · ~1200×900px' },
-          { key: 'doi_ngu_2',    label: 'Ảnh đội ngũ 2',         size: 'Ngang 4:3 · ~1200×900px' },
+          { key: 'kho_xuong',    label: 'Ảnh kho / xưởng',       size: 'Ngang 4:3 · ~1600×1200px', captionField: 'team_caption_kho_xuong' },
+          { key: 'doi_ngu_1',    label: 'Ảnh đội ngũ 1',         size: 'Ngang 4:3 · ~1200×900px',  captionField: 'team_caption_doi_ngu_1' },
+          { key: 'doi_ngu_2',    label: 'Ảnh đội ngũ 2',         size: 'Ngang 4:3 · ~1200×900px',  captionField: 'team_caption_doi_ngu_2' },
           { key: 'qr_code',      label: 'Mã QR liên hệ',         size: 'Vuông 1:1 · ~500×500px' },
-          { key: 'cong_trinh_1', label: 'Ảnh công trình 1',      size: 'Vuông 1:1 · ~1200×1200px' },
-          { key: 'cong_trinh_2', label: 'Ảnh công trình 2',      size: 'Vuông 1:1 · ~1200×1200px' },
-          { key: 'cong_trinh_3', label: 'Ảnh công trình 3',      size: 'Vuông 1:1 · ~1200×1200px' },
-          { key: 'partner_logo_1', label: 'Logo đối tác 1',      size: 'Ngang ~3:1 · nền trắng' },
-          { key: 'partner_logo_2', label: 'Logo đối tác 2',      size: 'Ngang ~3:1 · nền trắng' },
-          { key: 'partner_logo_3', label: 'Logo đối tác 3',      size: 'Ngang ~3:1 · nền trắng' },
-          { key: 'partner_logo_4', label: 'Logo đối tác 4',      size: 'Ngang ~3:1 · nền trắng' },
-          { key: 'partner_logo_5', label: 'Logo đối tác 5',      size: 'Ngang ~3:1 · nền trắng' },
+          { key: 'cong_trinh_1', label: 'Ảnh công trình 1',      size: 'Vuông 1:1 · ~1200×1200px', captionField: 'project_caption1' },
+          { key: 'cong_trinh_2', label: 'Ảnh công trình 2',      size: 'Vuông 1:1 · ~1200×1200px', captionField: 'project_caption2' },
+          { key: 'cong_trinh_3', label: 'Ảnh công trình 3',      size: 'Vuông 1:1 · ~1200×1200px', captionField: 'project_caption3' },
+          { key: 'partner_logo_1', label: 'Logo đối tác 1',      size: 'Vuông 1:1 · nền trắng' },
+          { key: 'partner_logo_2', label: 'Logo đối tác 2',      size: 'Vuông 1:1 · nền trắng' },
+          { key: 'partner_logo_3', label: 'Logo đối tác 3',      size: 'Vuông 1:1 · nền trắng' },
+          { key: 'partner_logo_4', label: 'Logo đối tác 4',      size: 'Vuông 1:1 · nền trắng' },
+          { key: 'partner_logo_5', label: 'Logo đối tác 5',      size: 'Vuông 1:1 · nền trắng' },
         ],
         templateKeys: ['t1', 't2', 't3', 't4', 't5'],
         templateLabels: window.ProfileTemplates.labels,
@@ -594,6 +616,25 @@
         defaultPartnersTitle() {
           const name = (this.dealer && this.dealer.ten_dai_ly || '').trim() || 'Đại lý';
           return `${name} là đối tác chiến lược uy tín của nhiều thương hiệu lớn`;
+        },
+
+        // ----- Điều hướng giữa 4 tab -----
+        _tabIdx() { return Math.max(0, this.tabs.findIndex(t => t.key === this.activeTab)); },
+        hasPrevTab() { return this._tabIdx() > 0; },
+        hasNextTab() { return this._tabIdx() < this.tabs.length - 1; },
+        prevTab() {
+          if (!this.hasPrevTab()) return;
+          this.activeTab = this.tabs[this._tabIdx() - 1].key;
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        },
+        nextTab() {
+          if (!this.hasNextTab()) return;
+          this.activeTab = this.tabs[this._tabIdx() + 1].key;
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        },
+        tabIndexText() {
+          const i = this._tabIdx();
+          return `Bước ${i + 1} / ${this.tabs.length}`;
         },
 
         renderPreview() {

@@ -9,6 +9,7 @@ const PROFILE_FIELDS = [
   'metric2_value', 'metric2_label',
   'metric3_value', 'metric3_label',
   'project_caption1', 'project_caption2', 'project_caption3',
+  'team_caption_doi_ngu_1', 'team_caption_kho_xuong', 'team_caption_doi_ngu_2',
   'partners_title',
   'selected_template',
 ];

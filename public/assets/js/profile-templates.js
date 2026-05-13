@@ -3,6 +3,9 @@
 // CSS đi kèm: /assets/css/profile.css
 (function (global) {
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  // Escape + giữ xuống dòng (Shift+Enter → <br>). Dùng cho caption ảnh,
+  // tagline đối tác, các text user gõ có thể nhiều dòng.
+  const escMulti = s => esc(s).replace(/\r?\n/g, '<br>');
   const lines = s => String(s || '').split(/\r?\n/).map(x => x.trim()).filter(Boolean);
   const has = v => v != null && String(v).trim() !== '';
 
@@ -276,16 +279,21 @@
     const b2 = has(p.badge2) ? p.badge2 : 'Khảo sát 24/7';
     const b3 = has(p.badge3) ? p.badge3 : 'Có kho/xưởng thực tế';
 
+    // Team captions từ data, fallback nhãn mặc định
+    const tcDoiNgu1 = has(p.team_caption_doi_ngu_1) ? p.team_caption_doi_ngu_1 : 'Ảnh đội ngũ 1';
+    const tcKhoXuong = has(p.team_caption_kho_xuong) ? p.team_caption_kho_xuong : 'Ảnh kho / xưởng';
+    const tcDoiNgu2 = has(p.team_caption_doi_ngu_2) ? p.team_caption_doi_ngu_2 : 'Ảnh đội ngũ 2';
+
     const projItem = (url, cap, idx) => `
       <div class="t1-proj">
         <div class="t1-proj-img">${url ? `<img src="${esc(url)}" alt="">` : `${SVG.image}`}</div>
-        <div class="t1-proj-cap">${esc(cap || ('Công trình ' + idx))}</div>
+        <div class="t1-proj-cap">${has(cap) ? escMulti(cap) : esc('Công trình ' + idx)}</div>
       </div>`;
 
     const teamItem = (url, cap) => `
       <div class="t1-team-item">
         <div class="t1-team-img">${url ? `<img src="${esc(url)}" alt="">` : `${SVG.image}`}</div>
-        <div class="t1-team-cap">${esc(cap)}</div>
+        <div class="t1-team-cap">${escMulti(cap)}</div>
       </div>`;
 
     return `
@@ -296,7 +304,7 @@
           <div class="t1-col-left">
 
             <div class="t1-hdr">
-              <div class="t1-hdr-logo">
+              <div class="t1-hdr-logo ${has(imgs.logo_dai_ly) ? 'has-img' : ''}">
                 ${has(imgs.logo_dai_ly)
                   ? `<img src="${esc(imgs.logo_dai_ly)}" alt="Logo đại lý">`
                   : `<div class="t1-no-logo">LOGO<br>ĐẠI LÝ</div>`}
@@ -410,8 +418,8 @@
                 <span class="t1-card-ic">${SVG.team}</span>
               </div>
               <div class="t1-team-grid">
-                ${teamItem(imgs.doi_ngu_1, 'Ảnh đội ngũ 1')}
-                ${teamItem(imgs.doi_ngu_2, 'Ảnh đội ngũ 2')}
+                ${teamItem(imgs.doi_ngu_1, tcDoiNgu1)}
+                ${teamItem(imgs.doi_ngu_2, tcDoiNgu2)}
               </div>
             </div>
 
@@ -428,7 +436,7 @@
                 </div>
                 <div class="t1-base-img-wrap">
                   <div class="t1-base-img">${has(imgs.kho_xuong) ? `<img src="${esc(imgs.kho_xuong)}" alt="">` : `${SVG.image}`}</div>
-                  <div class="t1-base-img-cap">Ảnh kho / xưởng</div>
+                  <div class="t1-base-img-cap">${escMulti(tcKhoXuong)}</div>
                 </div>
               </div>
             </div>
@@ -511,6 +519,9 @@
       pc1: has(p.project_caption1) ? p.project_caption1 : 'Công trình 1',
       pc2: has(p.project_caption2) ? p.project_caption2 : 'Công trình 2',
       pc3: has(p.project_caption3) ? p.project_caption3 : 'Công trình 3',
+      tcDoiNgu1: has(p.team_caption_doi_ngu_1) ? p.team_caption_doi_ngu_1 : 'Đội ngũ thi công',
+      tcKhoXuong: has(p.team_caption_kho_xuong) ? p.team_caption_kho_xuong : 'Kho / xưởng',
+      tcDoiNgu2: has(p.team_caption_doi_ngu_2) ? p.team_caption_doi_ngu_2 : 'Hoạt động đội ngũ',
     };
   }
 
@@ -583,14 +594,14 @@
             </div>
           </div>
 
-          <div class="t2-hdr-logo">
+          <div class="t2-hdr-logo ${has(x.imgs.logo_dai_ly) ? 'has-img' : ''}">
             ${has(x.imgs.logo_dai_ly)
               ? `<img src="${esc(x.imgs.logo_dai_ly)}" alt="Logo đại lý">`
               : `<div class="t2-logo-ph">
                    <div class="t2-logo-t">LOGO ĐẠI LÝ</div>
                    <div class="t2-logo-s">( PLACEHOLDER )</div>
-                 </div>`}
-            ${cb}
+                 </div>
+                 ${cb}`}
           </div>
         </header>
 
@@ -745,15 +756,15 @@
             <div class="t2-img-grid">
               <div class="t2-team-cell">
                 <div class="t2-team-it">${imgOr(x.imgs.doi_ngu_1, 'ẢNH ĐỘI NGŨ 1', '( TEAM )')}</div>
-                <div class="t2-team-cap">Đội ngũ thi công</div>
+                <div class="t2-team-cap">${escMulti(x.tcDoiNgu1)}</div>
               </div>
               <div class="t2-team-cell">
                 <div class="t2-team-it">${imgOr(x.imgs.kho_xuong, 'KHO / XƯỞNG', '( WORKSHOP )')}</div>
-                <div class="t2-team-cap">Kho / xưởng</div>
+                <div class="t2-team-cap">${escMulti(x.tcKhoXuong)}</div>
               </div>
               <div class="t2-team-cell">
                 <div class="t2-team-it">${imgOr(x.imgs.doi_ngu_2, 'ẢNH ĐỘI NGŨ 2', '( TEAM )')}</div>
-                <div class="t2-team-cap">Hoạt động đội ngũ</div>
+                <div class="t2-team-cap">${escMulti(x.tcDoiNgu2)}</div>
               </div>
             </div>
           </div>
@@ -764,15 +775,15 @@
             <div class="t2-img-grid">
               <div class="t2-prj-it">
                 <div class="t2-prj-img">${imgOr(x.imgs.cong_trinh_1)}</div>
-                <div class="t2-prj-cap">${esc(x.pc1)}</div>
+                <div class="t2-prj-cap">${escMulti(x.pc1)}</div>
               </div>
               <div class="t2-prj-it">
                 <div class="t2-prj-img">${imgOr(x.imgs.cong_trinh_2)}</div>
-                <div class="t2-prj-cap">${esc(x.pc2)}</div>
+                <div class="t2-prj-cap">${escMulti(x.pc2)}</div>
               </div>
               <div class="t2-prj-it">
                 <div class="t2-prj-img">${imgOr(x.imgs.cong_trinh_3)}</div>
-                <div class="t2-prj-cap">${esc(x.pc3)}</div>
+                <div class="t2-prj-cap">${escMulti(x.pc3)}</div>
               </div>
             </div>
           </div>
@@ -877,18 +888,18 @@
         <div class="t3-row4">
           <div class="t3-sec-h">ĐỘI NGŨ &amp; CƠ SỞ VẬT CHẤT</div>
           <div class="t3-gal-3">
-            <div class="t3-gal-it">${pImg(x.imgs.kho_xuong, 'Kho/xưởng')}<span>Kho &amp; xưởng thực tế</span></div>
-            <div class="t3-gal-it">${pImg(x.imgs.doi_ngu_1, 'Đội ngũ 1')}<span>Đội ngũ thi công</span></div>
-            <div class="t3-gal-it">${pImg(x.imgs.doi_ngu_2, 'Đội ngũ 2')}<span>Hoạt động đội ngũ</span></div>
+            <div class="t3-gal-it">${pImg(x.imgs.kho_xuong, 'Kho/xưởng')}<span>${escMulti(x.tcKhoXuong)}</span></div>
+            <div class="t3-gal-it">${pImg(x.imgs.doi_ngu_1, 'Đội ngũ 1')}<span>${escMulti(x.tcDoiNgu1)}</span></div>
+            <div class="t3-gal-it">${pImg(x.imgs.doi_ngu_2, 'Đội ngũ 2')}<span>${escMulti(x.tcDoiNgu2)}</span></div>
           </div>
         </div>
 
         <div class="t3-row4">
           <div class="t3-sec-h">CÔNG TRÌNH THỰC TẾ</div>
           <div class="t3-gal-3">
-            <div class="t3-gal-it">${pImg(x.imgs.cong_trinh_1, x.pc1)}<span>${esc(x.pc1)}</span></div>
-            <div class="t3-gal-it">${pImg(x.imgs.cong_trinh_2, x.pc2)}<span>${esc(x.pc2)}</span></div>
-            <div class="t3-gal-it">${pImg(x.imgs.cong_trinh_3, x.pc3)}<span>${esc(x.pc3)}</span></div>
+            <div class="t3-gal-it">${pImg(x.imgs.cong_trinh_1, x.pc1)}<span>${escMulti(x.pc1)}</span></div>
+            <div class="t3-gal-it">${pImg(x.imgs.cong_trinh_2, x.pc2)}<span>${escMulti(x.pc2)}</span></div>
+            <div class="t3-gal-it">${pImg(x.imgs.cong_trinh_3, x.pc3)}<span>${escMulti(x.pc3)}</span></div>
           </div>
         </div>
 
@@ -923,7 +934,7 @@
     return `
       <section class="profile-page tpl-4-v2">
         <header class="t4-hdr">
-          <div class="t4-hdr-logo">${has(x.imgs.logo_dai_ly) ? `<img src="${esc(x.imgs.logo_dai_ly)}">` : `<div class="t4-no-logo">LOGO</div>`}</div>
+          <div class="t4-hdr-logo ${has(x.imgs.logo_dai_ly) ? 'has-img' : ''}">${has(x.imgs.logo_dai_ly) ? `<img src="${esc(x.imgs.logo_dai_ly)}">` : `<div class="t4-no-logo">LOGO</div>`}</div>
           <div class="t4-hdr-mid">
             <div class="t4-hdr-eyebrow">SỐ ĐL CODE · TEMPLATE 4</div>
             <h1>${esc(x.titleRaw)}</h1>
@@ -949,9 +960,9 @@
           <div class="t4-tieubieu">
             <div class="t4-sec-h">TIÊU BIỂU</div>
             <div class="t4-thumbs">
-              <div class="t4-thumb">${pImg(x.imgs.cong_trinh_1, x.pc1)}<span>${esc(x.pc1)}</span></div>
-              <div class="t4-thumb">${pImg(x.imgs.cong_trinh_2, x.pc2)}<span>${esc(x.pc2)}</span></div>
-              <div class="t4-thumb">${pImg(x.imgs.cong_trinh_3, x.pc3)}<span>${esc(x.pc3)}</span></div>
+              <div class="t4-thumb">${pImg(x.imgs.cong_trinh_1, x.pc1)}<span>${escMulti(x.pc1)}</span></div>
+              <div class="t4-thumb">${pImg(x.imgs.cong_trinh_2, x.pc2)}<span>${escMulti(x.pc2)}</span></div>
+              <div class="t4-thumb">${pImg(x.imgs.cong_trinh_3, x.pc3)}<span>${escMulti(x.pc3)}</span></div>
             </div>
           </div>
         </div>
@@ -990,8 +1001,8 @@
           <div class="t4-block">
             <div class="t4-sec-h">VỀ ĐỘI NGŨ</div>
             <div class="t4-team-imgs">
-              <div class="t4-team-it">${pImg(x.imgs.doi_ngu_1, 'Đội ngũ 1')}<span>Đội ngũ 1</span></div>
-              <div class="t4-team-it">${pImg(x.imgs.doi_ngu_2, 'Đội ngũ 2')}<span>Đội ngũ 2</span></div>
+              <div class="t4-team-it">${pImg(x.imgs.doi_ngu_1, 'Đội ngũ 1')}<span>${escMulti(x.tcDoiNgu1)}</span></div>
+              <div class="t4-team-it">${pImg(x.imgs.doi_ngu_2, 'Đội ngũ 2')}<span>${escMulti(x.tcDoiNgu2)}</span></div>
             </div>
           </div>
         </div>

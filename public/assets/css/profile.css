@@ -512,6 +512,10 @@
   display: flex; align-items: center; justify-content: center;
   overflow: hidden; padding: 4px;
 }
+/* Khi đã có ảnh logo → bỏ viền trắng + padding, để logo "trôi" trên header navy */
+.tpl-1-v2 .t1-hdr-logo.has-img {
+  background: transparent; padding: 0; border-radius: 0;
+}
 .tpl-1-v2 .t1-hdr-logo img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; display: block; }
 .tpl-1-v2 .t1-no-logo { font-size: 8.5px; font-weight: 900; color: var(--t1-navy); text-align: center; line-height: 1.1; }
 .tpl-1-v2 .t1-title { font-size: 14px; font-weight: 900; letter-spacing: 0.02em; color: #fff; margin-bottom: 4px; line-height: 1.15; }
@@ -740,6 +744,10 @@
   padding: 10px;
 }
 .tpl-2-v2 .t2-hdr-logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
+/* Khi có ảnh logo → bỏ nền cyan + corner brackets, để logo hiển thị clean */
+.tpl-2-v2 .t2-hdr-logo.has-img {
+  background: transparent; padding: 0; border-radius: 0; min-height: 80px;
+}
 .tpl-2-v2 .t2-logo-t { font-size: 13px; font-weight: 700; letter-spacing: 1.2px; }
 .tpl-2-v2 .t2-logo-s { font-size: 9px; opacity: 0.9; margin-top: 3px; letter-spacing: 0.8px; }
 .tpl-2-v2 .t2-hdr-logo .cb { border-color: #fff; }
@@ -1032,11 +1040,12 @@
   margin-bottom: 12px;
 }
 .tpl-2-v2 .t2-partners-grid {
-  display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 12px;
 }
 .tpl-2-v2 .t2-partner {
   background: #fff; border-radius: 6px;
-  height: 50px;
+  width: 60px; height: 60px;             /* 1:1 vuông */
+  flex: 0 0 auto;
   display: flex; align-items: center; justify-content: center;
   padding: 6px; overflow: hidden;
 }
@@ -1045,7 +1054,8 @@
   background: rgba(255,255,255,0.06);
   border: 1px dashed rgba(255,255,255,0.25);
   color: rgba(255,255,255,0.5);
-  font-size: 8.5px; font-weight: 700; letter-spacing: 1px;
+  font-size: 7.5px; font-weight: 700; letter-spacing: 0.4px;
+  line-height: 1.2; text-align: center;
 }
 
 /* Footer */
@@ -1159,6 +1169,7 @@
 
 .tpl-4-v2 .t4-hdr { background: var(--t4-blue-light); border-radius: 10px; padding: 12px; margin-bottom: 8px; display: grid; grid-template-columns: 60px 1fr 90px; gap: 12px; align-items: center; }
 .tpl-4-v2 .t4-hdr-logo { width: 60px; height: 60px; background: #fff; border-radius: 6px; padding: 4px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.tpl-4-v2 .t4-hdr-logo.has-img { background: transparent; padding: 0; border-radius: 0; }
 .tpl-4-v2 .t4-hdr-logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
 .tpl-4-v2 .t4-no-logo { font-size: 9px; font-weight: 800; color: var(--t4-blue); }
 .tpl-4-v2 .t4-hdr-mid h1 { font-size: 18px; font-weight: 900; color: var(--t4-ink); line-height: 1.1; letter-spacing: 0.02em; }
@@ -1240,21 +1251,25 @@
   font-size: 12px; font-weight: 700; letter-spacing: 0.2px;
   margin-bottom: 10px;
 }
+/* Flex center thay vì grid 5 cột cứng — 1 logo ra giữa, 2 logo cách đều,...
+   max-width đảm bảo logo không quá to khi ít */
 .tpl-1-v2 .t1-partners-grid {
-  display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
 }
 .tpl-1-v2 .t1-partner {
   background: #fff; border-radius: 6px;
-  height: 44px;
+  width: 52px; height: 52px;             /* 1:1 vuông */
+  flex: 0 0 auto;
   display: flex; align-items: center; justify-content: center;
-  padding: 5px; overflow: hidden;
+  padding: 4px; overflow: hidden;
 }
 .tpl-1-v2 .t1-partner img { max-width: 100%; max-height: 100%; object-fit: contain; }
 .tpl-1-v2 .t1-partner.empty {
   background: rgba(255,255,255,0.05);
   border: 1px dashed rgba(255,255,255,0.25);
   color: rgba(255,255,255,0.5);
-  font-size: 8px; font-weight: 700; letter-spacing: 0.6px;
+  font-size: 7.5px; font-weight: 700; letter-spacing: 0.4px;
+  line-height: 1.2; text-align: center;
 }
 
 /* ---- T3: cream + burgundy ---- */
@@ -1274,11 +1289,12 @@
   font-style: italic;
 }
 .tpl-3-v2 .t3-partners-grid {
-  display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
 }
 .tpl-3-v2 .t3-partner {
   background: var(--t3-bg); border-radius: 5px;
-  height: 42px;
+  width: 50px; height: 50px;             /* 1:1 vuông */
+  flex: 0 0 auto;
   display: flex; align-items: center; justify-content: center;
   padding: 5px; overflow: hidden;
   border: 1px solid var(--t3-line);
@@ -1286,9 +1302,10 @@
 .tpl-3-v2 .t3-partner img { max-width: 100%; max-height: 100%; object-fit: contain; }
 .tpl-3-v2 .t3-partner.empty {
   color: var(--t3-muted);
-  font-size: 8px; font-weight: 700; letter-spacing: 0.6px;
+  font-size: 7.5px; font-weight: 700; letter-spacing: 0.4px;
   background: rgba(134,47,62,0.04);
   border-style: dashed;
+  line-height: 1.2; text-align: center;
 }
 
 /* ---- T4: white + red ---- */
@@ -1304,11 +1321,12 @@
   letter-spacing: 0.2px;
 }
 .tpl-4-v2 .t4-partners-grid {
-  display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px;
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 9px;
 }
 .tpl-4-v2 .t4-partner {
   background: #fff; border-radius: 5px;
-  height: 40px;
+  width: 48px; height: 48px;             /* 1:1 vuông */
+  flex: 0 0 auto;
   display: flex; align-items: center; justify-content: center;
   padding: 4px; overflow: hidden;
 }
@@ -1317,5 +1335,6 @@
   background: rgba(255,255,255,0.05);
   border: 1px dashed rgba(255,255,255,0.25);
   color: rgba(255,255,255,0.5);
-  font-size: 7.5px; font-weight: 700; letter-spacing: 0.6px;
+  font-size: 7px; font-weight: 700; letter-spacing: 0.4px;
+  line-height: 1.2; text-align: center;
 }

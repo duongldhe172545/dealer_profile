@@ -26,11 +26,20 @@ function applyMigrations() {
     }
   }
 
-  // 2) Thêm dealer_profiles.partners_title nếu thiếu
+  // 2) Thêm dealer_profiles.partners_title + 3 team caption nếu thiếu
   const profileCols = db.prepare(`PRAGMA table_info(dealer_profiles)`).all();
-  if (profileCols.length && !profileCols.some(c => c.name === 'partners_title')) {
-    db.exec(`ALTER TABLE dealer_profiles ADD COLUMN partners_title TEXT`);
-    console.log('  ✓ Added dealer_profiles.partners_title');
+  const profileColNames = profileCols.map(c => c.name);
+  const newProfileCols = [
+    'partners_title',
+    'team_caption_doi_ngu_1',
+    'team_caption_kho_xuong',
+    'team_caption_doi_ngu_2',
+  ];
+  for (const col of newProfileCols) {
+    if (profileCols.length && !profileColNames.includes(col)) {
+      db.exec(`ALTER TABLE dealer_profiles ADD COLUMN ${col} TEXT`);
+      console.log(`  ✓ Added dealer_profiles.${col}`);
+    }
   }
 
   // 3) Mở rộng CHECK constraint của dealer_images.slot

@@ -75,6 +75,9 @@ CREATE TABLE IF NOT EXISTS dealer_profiles (
   project_caption1    TEXT,
   project_caption2    TEXT,
   project_caption3    TEXT,
+  team_caption_doi_ngu_1 TEXT,
+  team_caption_kho_xuong TEXT,
+  team_caption_doi_ngu_2 TEXT,
   partners_title      TEXT,
   selected_template   TEXT NOT NULL DEFAULT 't1' CHECK (selected_template IN ('t1','t2','t3','t4','t5')),
   updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP

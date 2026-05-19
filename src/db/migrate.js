@@ -1,81 +1,106 @@
+// =============================================================
+// Migration runner — versioned, idempotent, transaction-safe.
+//
+// Mỗi file trong src/db/migrations/ tên dạng NNN_description.{sql|js}
+// được chạy đúng 1 lần và ghi vào bảng schema_migrations.
+//
+// Quy ước:
+//   - .sql  : runner đọc file, exec trong 1 transaction
+//   - .js   : runner require + gọi module.exports.up(db) trong 1 transaction
+//   - NNN   : số thứ tự (3 chữ số, sort được dạng lexicographic)
+//   - Migration FAIL → transaction rollback, runner dừng, exit code != 0
+//
+// QUY TẮC CHO DEV / AI khi đổi schema (PHẢI nhớ):
+//   1. KHÔNG sửa migration cũ đã chạy production. Tạo file mới.
+//   2. Cột mới: luôn NULL được hoặc DEFAULT. KHÔNG NOT NULL không default.
+//   3. Đổi tên cột / xoá cột → cẩn thận, đọc docs/MIGRATION.md trước.
+//   4. Mỗi thay đổi schema = 1 file mới ở folder migrations/.
+// =============================================================
 const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcrypt');
 const db = require('../config/database');
 const env = require('../config/env');
 
-function applySchema() {
-  const sql = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
-  db.exec(sql);
-  console.log('  ✓ Schema applied');
+const MIGRATIONS_DIR = path.join(__dirname, 'migrations');
+
+function ensureMigrationsTable() {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS schema_migrations (
+      version    TEXT PRIMARY KEY,
+      filename   TEXT NOT NULL,
+      ran_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
 }
 
-// Migration idempotent áp dụng cho DB đã có dữ liệu cũ:
-//   - Bỏ cột dealers.mst (nếu còn)
-//   - Thêm cột dealer_profiles.partners_title (nếu thiếu)
-//   - Mở rộng CHECK của dealer_images.slot để chấp nhận partner_logo_1..5
+function getAppliedVersions() {
+  return new Set(
+    db.prepare('SELECT version FROM schema_migrations').all().map(r => r.version)
+  );
+}
+
+function listMigrationFiles() {
+  if (!fs.existsSync(MIGRATIONS_DIR)) return [];
+  return fs.readdirSync(MIGRATIONS_DIR)
+    .filter(f => /^\d{3}_.+\.(sql|js)$/.test(f))
+    .sort();
+}
+
+function versionOf(filename) {
+  return filename.match(/^(\d{3})_/)[1];
+}
+
+function runOneMigration(filename) {
+  const fullPath = path.join(MIGRATIONS_DIR, filename);
+  const version = versionOf(filename);
+
+  // Chạy nội dung + record trong 1 transaction → fail giữa chừng auto rollback.
+  const tx = db.transaction(() => {
+    if (filename.endsWith('.sql')) {
+      db.exec(fs.readFileSync(fullPath, 'utf8'));
+    } else if (filename.endsWith('.js')) {
+      // Xoá cache để dev mode hot-reload migration vừa sửa
+      delete require.cache[require.resolve(fullPath)];
+      const mod = require(fullPath);
+      if (typeof mod.up !== 'function') {
+        throw new Error(`Migration ${filename} thiếu export 'up(db)'`);
+      }
+      mod.up(db);
+    }
+    db.prepare(
+      'INSERT INTO schema_migrations (version, filename) VALUES (?, ?)'
+    ).run(version, filename);
+  });
+  tx();
+}
+
 function applyMigrations() {
-  // 1) Drop dealers.mst nếu còn tồn tại
-  const dealerCols = db.prepare(`PRAGMA table_info(dealers)`).all();
-  if (dealerCols.some(c => c.name === 'mst')) {
+  ensureMigrationsTable();
+  const applied = getAppliedVersions();
+  const files = listMigrationFiles();
+
+  if (!files.length) {
+    console.log('  ! Không tìm thấy migration nào ở src/db/migrations/');
+    return;
+  }
+
+  let count = 0;
+  for (const f of files) {
+    const v = versionOf(f);
+    if (applied.has(v)) continue;
+    console.log(`  → Running ${f}...`);
     try {
-      db.exec(`ALTER TABLE dealers DROP COLUMN mst`);
-      console.log('  ✓ Dropped dealers.mst');
+      runOneMigration(f);
+      console.log(`  ✓ Applied ${f}`);
+      count++;
     } catch (err) {
-      console.warn('  ! Không thể drop dealers.mst (SQLite cũ?):', err.message);
+      console.error(`  ✗ FAILED ${f}: ${err.message}`);
+      throw err;     // halt — đừng chạy migration kế tiếp khi 1 cái fail
     }
   }
-
-  // 2) Thêm dealer_profiles.partners_title + 3 team caption nếu thiếu
-  const profileCols = db.prepare(`PRAGMA table_info(dealer_profiles)`).all();
-  const profileColNames = profileCols.map(c => c.name);
-  const newProfileCols = [
-    'partners_title',
-    'team_caption_doi_ngu_1',
-    'team_caption_kho_xuong',
-    'team_caption_doi_ngu_2',
-  ];
-  for (const col of newProfileCols) {
-    if (profileCols.length && !profileColNames.includes(col)) {
-      db.exec(`ALTER TABLE dealer_profiles ADD COLUMN ${col} TEXT`);
-      console.log(`  ✓ Added dealer_profiles.${col}`);
-    }
-  }
-
-  // 3) Mở rộng CHECK constraint của dealer_images.slot
-  const imgSchema = db.prepare(
-    `SELECT sql FROM sqlite_master WHERE type='table' AND name='dealer_images'`
-  ).get();
-  if (imgSchema && !imgSchema.sql.includes('partner_logo_1')) {
-    // Dùng db.transaction() để auto-rollback nếu lỗi giữa chừng
-    // (raw BEGIN/COMMIT trong exec không tự rollback khi statement giữa fail).
-    const rebuildImageSlots = db.transaction(() => {
-      db.exec(`
-        CREATE TABLE dealer_images_new (
-          id              INTEGER PRIMARY KEY AUTOINCREMENT,
-          dealer_id       INTEGER NOT NULL REFERENCES dealers(id) ON DELETE CASCADE,
-          slot            TEXT NOT NULL CHECK (slot IN (
-                            'logo_dai_ly', 'avatar_chu', 'hero', 'kho_xuong',
-                            'doi_ngu_1', 'doi_ngu_2', 'qr_code',
-                            'cong_trinh_1', 'cong_trinh_2', 'cong_trinh_3',
-                            'partner_logo_1', 'partner_logo_2', 'partner_logo_3',
-                            'partner_logo_4', 'partner_logo_5'
-                          )),
-          url             TEXT NOT NULL,
-          public_id       TEXT,
-          uploaded_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          UNIQUE (dealer_id, slot)
-        );
-        INSERT INTO dealer_images_new (id, dealer_id, slot, url, public_id, uploaded_at)
-          SELECT id, dealer_id, slot, url, public_id, uploaded_at FROM dealer_images;
-        DROP TABLE dealer_images;
-        ALTER TABLE dealer_images_new RENAME TO dealer_images;
-        CREATE INDEX IF NOT EXISTS idx_dealer_images_dealer ON dealer_images(dealer_id);
-      `);
-    });
-    rebuildImageSlots();
-    console.log('  ✓ Expanded dealer_images.slot CHECK to include partner_logo_1..5');
-  }
+  if (count === 0) console.log('  ✓ All migrations up to date');
+  else console.log(`  ✓ Applied ${count} new migration(s)`);
 }
 
 function seedAdmin() {
@@ -84,19 +109,16 @@ function seedAdmin() {
     console.log('  ✓ Admin already exists, skip seeding');
     return;
   }
-
   const passwordHash = bcrypt.hashSync(env.seedAdmin.password, env.bcrypt.rounds);
   db.prepare(`
     INSERT INTO users (username, password_hash, full_name, role, status)
     VALUES (?, ?, ?, 'admin', 'active')
   `).run(env.seedAdmin.username, passwordHash, 'Quản trị viên');
-
   console.log(`  ✓ Created admin: ${env.seedAdmin.username}`);
 }
 
 function run() {
   console.log('Migrating database...');
-  applySchema();
   applyMigrations();
   seedAdmin();
   console.log('Done.');

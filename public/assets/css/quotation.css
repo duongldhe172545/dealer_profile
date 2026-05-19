@@ -153,26 +153,57 @@
 
 /* ─── Items table ─── */
 .q-items {
-  width: 100%; border-collapse: collapse; font-size: 10px;
+  width: 100%; border-collapse: collapse;
+  font-size: 9px;
+  table-layout: fixed;       /* tuân width đã đặt, không co kéo */
 }
 .q-items thead th {
   background: #0a1f3d; color: #fff;
-  padding: 8px 6px; text-align: left; font-weight: 700;
-  font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.04em;
+  padding: 5px 3px; text-align: left; font-weight: 700;
+  font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.02em;
+  white-space: normal;       /* cho phép header xuống dòng nếu chật */
+  vertical-align: middle;
 }
 .q-items thead th:first-child { border-radius: 8px 0 0 0; }
 .q-items thead th:last-child  { border-radius: 0 8px 0 0; }
 .q-items tbody td {
-  padding: 7px 6px;
+  padding: 4px 3px;
   border-bottom: 1px solid #e2e8f0;
   vertical-align: top;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;   /* string không space dài (mã SP) vẫn xuống dòng */
 }
 .q-items tbody tr:nth-child(even) td { background: #f8fafc; }
-.q-items .num   { text-align: right; tabular-nums: 1; font-family: ui-monospace, monospace; font-size: 10px; white-space: nowrap; }
+.q-items .num   { text-align: right; tabular-nums: 1; font-family: ui-monospace, monospace; font-size: 8.5px; white-space: nowrap; }
 .q-items .center{ text-align: center; }
-.q-items .ma    { font-family: ui-monospace, monospace; font-weight: 700; color: #334155; font-size: 10px; }
-.q-items .desc  { font-size: 10px; color: #0f172a; line-height: 1.4; }
+.q-items .ma     { font-family: ui-monospace, monospace; font-weight: 700; color: #334155; font-size: 9px; }
+.q-items .ten-sp { font-weight: 700; color: #0f172a; font-size: 9.5px; line-height: 1.25; }
+.q-items .desc   { font-size: 8.5px; color: #475569; line-height: 1.35; white-space: pre-line; }
 .q-items .total { font-weight: 800; color: #053b7a; }
+
+/* Section header row trong bảng items: nền xanh nhạt + chữ in đậm */
+.q-items tr.q-sec-hdr td {
+  background: #ecfdf5 !important;   /* override zebra stripe */
+  padding: 4px 4px;
+  border-top: 1.5px solid #10b981;
+  border-bottom: 1px solid #d1fae5;
+  font-size: 9.5px; color: #064e3b;
+  letter-spacing: 0.2px;
+}
+.q-items tr.q-sec-sub td {
+  background: #f1f5f9 !important;
+  border-top: 1px solid #cbd5e1;
+  font-size: 9.5px;
+  padding: 3px 4px;
+}
+.q-items .area-cell { background: #f0fdf4; color: #065f46; font-weight: 600; }
+.q-items .qty-cell  { background: #f0fdf4; color: #065f46; font-weight: 600; }
+.q-items .icon-cell { padding: 2px; }
+.q-items .icon-cell svg, .q-items .icon-cell img {
+  max-width: 24px; max-height: 24px;
+  display: inline-block; vertical-align: middle;
+  color: #0f172a;
+}
 
 /* ─── Tổng kết ─── */
 .q-summary {
@@ -197,6 +228,15 @@
 }
 .q-totals .row.grand .k { color: #d4a55b; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
 .q-totals .row.grand .v { color: #fff; font-size: 16px; font-weight: 900; }
+.q-totals .row.minus .v { color: #b91c1c; }
+.q-totals .row.pre-tax {
+  background: #f8fafc;
+  border-top: 1.5px solid #1e293b;
+  border-bottom: 1.5px solid #1e293b;
+  margin-top: 4px;
+}
+.q-totals .row.pre-tax .k,
+.q-totals .row.pre-tax .v { color: #0f172a; font-weight: 800; }
 
 /* ─── Điều khoản ─── */
 .q-terms {

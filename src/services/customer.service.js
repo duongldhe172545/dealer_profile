@@ -1,14 +1,9 @@
 const customerModel = require('../models/customer.model');
 const audit = require('../utils/audit');
 const { badRequest, notFound, conflict } = require('../utils/http');
+const { cleanString } = require('../utils/sanitize');
 
-function clean(value, max = 300) {
-  if (value == null) return null;
-  const v = String(value).trim();
-  if (!v) return null;
-  if (v.length > max) throw badRequest(`Giá trị quá dài (tối đa ${max} ký tự)`);
-  return v;
-}
+const clean = (value, max = 300) => cleanString(value, max);
 
 function normalize(body, { autoGenCode, dealerId }) {
   const ten_kh = clean(body.ten_kh, 200);

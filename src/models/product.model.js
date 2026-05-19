@@ -1,6 +1,7 @@
 const db = require('../config/database');
 
-const FIELDS = ['ma_sp', 'nhom_sp', 'mo_ta', 'dvt_mac_dinh', 'cach_tinh_gia', 'don_gia_mac_dinh', 'active'];
+const FIELDS = ['ma_sp', 'ten_sp', 'nhom_sp', 'mo_ta', 'dvt_mac_dinh', 'cach_tinh_gia', 'don_gia_mac_dinh', 'active',
+                'icon_preset', 'icon_url', 'icon_public_id'];
 
 function list(dealerId, { search, nhom_sp, active } = {}) {
   const where = ['dealer_id = @dealer_id'];
@@ -15,7 +16,8 @@ function list(dealerId, { search, nhom_sp, active } = {}) {
 }
 
 function listActive(dealerId) {
-  return db.prepare(`SELECT id, ma_sp, nhom_sp, mo_ta, dvt_mac_dinh, cach_tinh_gia, don_gia_mac_dinh
+  return db.prepare(`SELECT id, ma_sp, ten_sp, nhom_sp, mo_ta, dvt_mac_dinh, cach_tinh_gia, don_gia_mac_dinh,
+                            icon_preset, icon_url, icon_public_id
     FROM products WHERE dealer_id = ? AND active = 1 ORDER BY nhom_sp, ma_sp`).all(dealerId);
 }
 

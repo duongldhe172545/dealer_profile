@@ -5,6 +5,8 @@ const profileController = require('../controllers/profile.controller');
 const productController = require('../controllers/product.controller');
 const customerController = require('../controllers/customer.controller');
 const quotationController = require('../controllers/quotation.controller');
+const iconController = require('../controllers/icon-library.controller');
+const iconUploadController = require('../controllers/icon-upload.controller');
 
 const router = express.Router();
 
@@ -15,6 +17,13 @@ router.get('/profile', profileController.getMine);
 router.put('/profile', profileController.updateMine);
 router.post('/profile/images/:slot', upload.single('file'), profileController.uploadImage);
 router.delete('/profile/images/:slot', profileController.deleteImage);
+
+// Icon library (read-only cho dealer)
+router.get('/icons', iconController.list);
+
+// Upload ảnh riêng làm icon (Cloudinary) cho catalog SP / per-item override BG
+router.post('/icon-upload', upload.single('file'), iconUploadController.upload);
+router.delete('/icon-upload', iconUploadController.remove);
 
 // Sản phẩm
 router.get('/products', productController.list);

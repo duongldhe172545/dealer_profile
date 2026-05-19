@@ -1,18 +1,25 @@
+// Quotation model v2 — đã support sections + adjustments.
+// Backward compat: legacy cột chi_phi_van_chuyen + chi_phi_lap_dat vẫn tồn tại
+// trong DB (data cũ); code mới luôn UPDATE = 0 vì giá trị đã chuyển sang
+// bảng quotation_adjustments khi migrate 005.
 const db = require('../config/database');
 
 const HEADER_FIELDS = [
   'customer_id', 'so_bao_gia', 'ngay_bao_gia', 'dia_chi_cong_trinh',
   'ghi_chu_ho_so', 'ghi_chu_thuong_mai',
-  'tam_tinh', 'chi_phi_van_chuyen', 'chi_phi_lap_dat',
+  'tam_tinh',
+  'chi_phi_van_chuyen', 'chi_phi_lap_dat',   // legacy — luôn 0 trên save mới
   'vat_percent', 'vat_amount', 'tong_cong',
   'thanh_toan', 'tien_do', 'bao_hanh',
   'status', 'sent_at', 'sent_method', 'sent_note',
 ];
 
 const ITEM_FIELDS = [
-  'product_id', 'stt', 'ma_sp', 'nhom_sp', 'mo_ta',
+  'product_id', 'stt', 'ma_sp', 'ten_sp', 'nhom_sp', 'mo_ta',
   'cach_tinh_gia', 'rong', 'cao', 'dien_tich', 'dai', 'can_nang',
   'sl', 'dvt', 'don_gia', 'thanh_tien',
+  'section_id',                              // v2 — trỏ về quotation_sections.id
+  'icon_preset', 'icon_url', 'icon_public_id',  // snapshot icon từ products
 ];
 
 function list(dealerId, { search, status, customer_id, from, to } = {}) {
@@ -49,9 +56,19 @@ function findById(dealerId, id) {
     WHERE q.dealer_id = ? AND q.id = ?
   `).get(dealerId, id);
   if (!header) return null;
-  const items = db.prepare('SELECT * FROM quotation_items WHERE quotation_id = ? ORDER BY stt').all(id);
-  const images = db.prepare('SELECT slot, url, public_id, caption FROM quotation_images WHERE quotation_id = ? ORDER BY slot').all(id);
-  return { ...header, items, images };
+  const sections = db.prepare(
+    'SELECT id, position, ten FROM quotation_sections WHERE quotation_id = ? ORDER BY position'
+  ).all(id);
+  const items = db.prepare(
+    'SELECT * FROM quotation_items WHERE quotation_id = ? ORDER BY stt'
+  ).all(id);
+  const adjustments = db.prepare(
+    'SELECT id, position, kind, label, amount, mode, value_percent FROM quotation_adjustments WHERE quotation_id = ? ORDER BY position'
+  ).all(id);
+  const images = db.prepare(
+    'SELECT slot, url, public_id, caption FROM quotation_images WHERE quotation_id = ? ORDER BY slot'
+  ).all(id);
+  return { ...header, sections, items, adjustments, images };
 }
 
 function getImages(quotationId) {
@@ -98,46 +115,94 @@ function nextNumber(dealerId, year) {
   return prefix + String(n).padStart(3, '0');
 }
 
-function create(dealerId, header, items) {
-  const tx = db.transaction(() => {
-    const cols = ['dealer_id', ...HEADER_FIELDS].join(', ');
-    const placeholders = ['@dealer_id', ...HEADER_FIELDS.map(f => `@${f}`)].join(', ');
-    const payload = { dealer_id: dealerId, ...Object.fromEntries(HEADER_FIELDS.map(f => [f, header[f] ?? null])) };
-    const info = db.prepare(`INSERT INTO quotations (${cols}) VALUES (${placeholders})`).run(payload);
-    const quotationId = info.lastInsertRowid;
-    insertItems(quotationId, items);
-    return quotationId;
-  });
-  return tx();
+// Insert sections cho 1 báo giá. Trả map { position → newId } để items chỉ trỏ đúng.
+function insertSections(quotationId, sections) {
+  const map = {};
+  if (!sections || !sections.length) return map;
+  const stmt = db.prepare(
+    'INSERT INTO quotation_sections (quotation_id, position, ten) VALUES (?, ?, ?)'
+  );
+  for (const s of sections) {
+    const info = stmt.run(quotationId, s.position, s.ten ?? null);
+    map[s.position] = info.lastInsertRowid;
+  }
+  return map;
 }
 
-function update(dealerId, id, header, items) {
-  const tx = db.transaction(() => {
-    const sets = HEADER_FIELDS.map(f => `${f} = @${f}`).join(', ');
-    const payload = { dealer_id: dealerId, id, ...Object.fromEntries(HEADER_FIELDS.map(f => [f, header[f] ?? null])) };
-    db.prepare(`UPDATE quotations SET ${sets}, updated_at = CURRENT_TIMESTAMP
-      WHERE dealer_id = @dealer_id AND id = @id`).run(payload);
-
-    // Xoá items cũ, insert lại (đơn giản, đỡ rối)
-    db.prepare('DELETE FROM quotation_items WHERE quotation_id = ?').run(id);
-    insertItems(id, items);
-  });
-  tx();
-}
-
-function insertItems(quotationId, items) {
+function insertItems(quotationId, items, sectionIdMap) {
   if (!items || !items.length) return;
   const cols = ['quotation_id', ...ITEM_FIELDS].join(', ');
   const placeholders = ['@quotation_id', ...ITEM_FIELDS.map(f => `@${f}`)].join(', ');
   const stmt = db.prepare(`INSERT INTO quotation_items (${cols}) VALUES (${placeholders})`);
   items.forEach((it, idx) => {
+    // it.section_position (FE input dạng chỉ số) → map thành section_id thực
+    const sectionId = it.section_position != null && sectionIdMap[it.section_position] != null
+      ? sectionIdMap[it.section_position]
+      : null;
     const payload = {
       quotation_id: quotationId,
       ...Object.fromEntries(ITEM_FIELDS.map(f => [f, it[f] ?? null])),
+      section_id: sectionId,
     };
     if (payload.stt == null) payload.stt = idx + 1;
     stmt.run(payload);
   });
+}
+
+function insertAdjustments(quotationId, adjustments) {
+  if (!adjustments || !adjustments.length) return;
+  const stmt = db.prepare(
+    `INSERT INTO quotation_adjustments
+       (quotation_id, position, kind, label, amount, mode, value_percent)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`
+  );
+  for (const a of adjustments) {
+    stmt.run(
+      quotationId, a.position, a.kind, a.label,
+      a.amount ?? 0,
+      a.mode || 'fixed',
+      a.value_percent ?? null
+    );
+  }
+}
+
+function create(dealerId, header, sections, items, adjustments) {
+  const tx = db.transaction(() => {
+    const cols = ['dealer_id', ...HEADER_FIELDS].join(', ');
+    const placeholders = ['@dealer_id', ...HEADER_FIELDS.map(f => `@${f}`)].join(', ');
+    const payload = {
+      dealer_id: dealerId,
+      ...Object.fromEntries(HEADER_FIELDS.map(f => [f, header[f] ?? null])),
+    };
+    const info = db.prepare(`INSERT INTO quotations (${cols}) VALUES (${placeholders})`).run(payload);
+    const quotationId = info.lastInsertRowid;
+    const sectionIdMap = insertSections(quotationId, sections);
+    insertItems(quotationId, items, sectionIdMap);
+    insertAdjustments(quotationId, adjustments);
+    return quotationId;
+  });
+  return tx();
+}
+
+function update(dealerId, id, header, sections, items, adjustments) {
+  const tx = db.transaction(() => {
+    const sets = HEADER_FIELDS.map(f => `${f} = @${f}`).join(', ');
+    const payload = {
+      dealer_id: dealerId, id,
+      ...Object.fromEntries(HEADER_FIELDS.map(f => [f, header[f] ?? null])),
+    };
+    db.prepare(`UPDATE quotations SET ${sets}, updated_at = CURRENT_TIMESTAMP
+      WHERE dealer_id = @dealer_id AND id = @id`).run(payload);
+
+    // Xoá hết items + sections + adjustments cũ rồi insert lại (đơn giản, idempotent)
+    db.prepare('DELETE FROM quotation_items WHERE quotation_id = ?').run(id);
+    db.prepare('DELETE FROM quotation_sections WHERE quotation_id = ?').run(id);
+    db.prepare('DELETE FROM quotation_adjustments WHERE quotation_id = ?').run(id);
+    const sectionIdMap = insertSections(id, sections);
+    insertItems(id, items, sectionIdMap);
+    insertAdjustments(id, adjustments);
+  });
+  tx();
 }
 
 function remove(dealerId, id) {

@@ -2,12 +2,12 @@
 // luôn hiện placeholder lịch sự để đại lý thấy chỗ cần điền.
 // CSS đi kèm: /assets/css/profile.css
 (function (global) {
-  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
-  // Escape + giữ xuống dòng (Shift+Enter → <br>). Dùng cho caption ảnh,
-  // tagline đối tác, các text user gõ có thể nhiều dòng.
-  const escMulti = s => esc(s).replace(/\r?\n/g, '<br>');
-  const lines = s => String(s || '').split(/\r?\n/).map(x => x.trim()).filter(Boolean);
-  const has = v => v != null && String(v).trim() !== '';
+  // Helpers chung lấy từ window.AppHelpers (load _helpers.js trước).
+  // Fail loud nếu thiếu — đỡ phải debug lý do template render rỗng.
+  if (!global.AppHelpers) {
+    throw new Error('profile-templates.js cần _helpers.js load trước (window.AppHelpers).');
+  }
+  const { esc, escMulti, lines, has } = global.AppHelpers;
 
   // ============================================================
   // SVG icons (line-art, stroke-based)
@@ -801,126 +801,209 @@
   }
 
   // ============================================================
-  // MẪU 3 — Editorial Magazine (cream + burgundy, serif headlines)
+  // MẪU 3 — Newspaper Bulletin (cream + wine, DM Serif Display + Crimson Text)
+  // Theo docs/design/template3.png:
+  //  - Masthead 2-col: cột trái stack (nameplate huge + hero + caption)
+  //    | cột phải side-rail (logo đại lý 1:1 + 3 ribbon đỏ wine clip-path)
+  //  - Subtitle italic serif (tagline) viền dưới ink
+  //  - 4-col main grid: LÝ LỊCH | NGƯỜI ĐẠI DIỆN | SỐ LIỆU | TIÊU ĐIỂM
+  //  - 3 mini-cols (NĂNG LỰC, SẢN PHẨM&DV, CAM KẾT) + QUOTE box
+  //  - PHÓNG SỰ HÌNH ẢNH (6 ảnh 3×2 = 3 team + 3 project) + ĐỐI TÁC sidebar
+  //    Đối tác: up bao nhiêu logo hiện bấy nhiêu (flex wrap, không khung trống)
+  //  - Footer: QR + cta italic | contact info (phone/email/address 2 hàng)
   // ============================================================
   function template3(data) {
     const x = prepareData(data);
+    // Tabler-style line icons (inline SVG)
+    const ic = {
+      check:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-6"/></svg>`,
+      clock:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 7v5l3 2"/></svg>`,
+      home:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>`,
+      phone:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.6a2 2 0 0 1-.5 2.1L7.9 9.7a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.7.5 2.6.6a2 2 0 0 1 1.7 2z"/></svg>`,
+      mail:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/></svg>`,
+      pin:      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7 8-13a8 8 0 0 0-16 0c0 6 8 13 8 13z"/><circle cx="12" cy="9" r="3"/></svg>`,
+      user:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>`,
+      photo:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>`,
+    };
+
+    // Hero image / avatar / partner thumbs
+    const heroBox = has(x.imgs.hero)
+      ? `<img src="${esc(x.imgs.hero)}" alt="Ảnh bìa đại lý">`
+      : `<div class="t3-hero-ph"><span class="t3-ph-ic">${ic.photo}</span></div>`;
+
+    const avatarBox = has(x.imgs.avatar_chu)
+      ? `<img src="${esc(x.imgs.avatar_chu)}" alt="Ảnh chủ đại lý">`
+      : `<span class="t3-ava-ic">${ic.user}</span>`;
+
+    const logoBox = has(x.imgs.logo_dai_ly)
+      ? `<img src="${esc(x.imgs.logo_dai_ly)}" alt="Logo đại lý">`
+      : `<span class="t3-logo-txt">LOGO<br>ĐẠI LÝ<small>(1:1)</small></span>`;
+
+    // 1 ô ảnh trong "PHÓNG SỰ HÌNH ẢNH" — ảnh 4:3 + caption
+    const photoCell = (url, label) => `
+      <div class="t3-pcell">
+        <div class="t3-pimg">${has(url)
+          ? `<img src="${esc(url)}" alt="${esc(label)}">`
+          : `<span class="t3-ph-ic">${ic.photo}</span>`}</div>
+        <div class="t3-pcap">
+          <span class="t3-pcap-lbl">${escMulti(label)}</span>
+        </div>
+      </div>`;
+
+    // Đối tác: up bao nhiêu logo hiện bấy nhiêu (không render khung trống)
+    const partnerGridHtml = x.partnerLogos.length
+      ? `<div class="t3-pt-grid">${x.partnerLogos.map(u =>
+          `<div class="t3-pt-logo has-img"><img src="${esc(u)}" alt="Logo đối tác"></div>`
+        ).join('')}</div>`
+      : '';
+
     return `
       <section class="profile-page tpl-3-v2">
-        <div class="t3-pretitle">
-          <span class="t3-variant">Variant 2 — Editorial Magazine</span>
-          <span class="t3-code">${esc(x.dealerCode || '—')}</span>
-        </div>
 
-        <div class="t3-hero-row">
-          <div class="t3-title-block">
-            <h1>${esc(x.titleRaw)}</h1>
-            <p class="t3-tagline">${esc(x.tagline)}</p>
-            <div class="t3-badges">
-              <span>${esc(x.b1)}</span>
-              <span>${esc(x.b2)}</span>
-              <span>${esc(x.b3)}</span>
-            </div>
+        <!-- ============ MASTHEAD: left stack (title + hero) | side-rail (logo + 3 ribbon) ============ -->
+        <div class="t3-masthead">
+          <div class="t3-mast-left">
+            <h1 class="t3-nameplate">${esc(x.titleRaw)}</h1>
+            <div class="t3-hero-img">${heroBox}</div>
           </div>
-          <div class="t3-hero">${pImg(x.imgs.hero, 'Ảnh bìa')}</div>
+          <aside class="t3-side-rail">
+            <div class="t3-rail-logo ${has(x.imgs.logo_dai_ly) ? 'has-img' : ''}">${logoBox}</div>
+            <div class="t3-ribbon">${ic.check}<span>${esc(x.b1)}</span></div>
+            <div class="t3-ribbon">${ic.clock}<span>${esc(x.b2)}</span></div>
+            <div class="t3-ribbon">${ic.home}<span>${esc(x.b3)}</span></div>
+          </aside>
         </div>
 
-        <div class="t3-contact-strip">
-          <span>📞 ${esc(x.ownerPhone)}</span>
-          <span>✉ ${esc(x.ownerEmail)}</span>
-          <span>📍 ${esc(x.addrFull)}</span>
-        </div>
+        <!-- ============ SUBTITLE italic serif (tagline) ============ -->
+        <div class="t3-subtitle">${escMulti(x.tagline)}</div>
 
-        <div class="t3-body">
-          <div class="t3-col-l">
-            <div class="t3-sec-h">THÔNG TIN ĐẠI LÝ</div>
-            <table class="t3-table">
-              <tr><th>Mã đại lý</th><td>${esc(x.dealerCode || '—')}</td></tr>
-              <tr><th>Tên đại lý</th><td>${esc(x.titleRaw)}</td></tr>
-              <tr><th>Chủ đại lý</th><td>${esc(x.ownerName)}</td></tr>
-              <tr><th>Điện thoại</th><td>${esc(x.ownerPhone)}</td></tr>
-              <tr><th>Email</th><td>${esc(x.ownerEmail)}</td></tr>
-              <tr><th>Địa chỉ</th><td>${esc(x.addrFull)}</td></tr>
-              <tr><th>Khu vực</th><td>${esc(x.coverage)}</td></tr>
-              <tr><th>Giờ mở cửa</th><td>${esc(x.hours)}</td></tr>
-              <tr><th>Kinh nghiệm</th><td>${esc(x.exp)} năm</td></tr>
-              <tr><th>Đội ngũ</th><td>${esc(x.team)}</td></tr>
-              <tr><th>Dự án / tháng</th><td>${esc(x.projects)}</td></tr>
+        <!-- ============ 4-COL MAIN GRID ============ -->
+        <div class="t3-main-grid">
+
+          <!-- COL 1: LÝ LỊCH ĐẠI LÝ (info table) -->
+          <div class="t3-col">
+            <div class="t3-col-title">LÝ LỊCH ĐẠI LÝ</div>
+            <table class="t3-info">
+              <tr><td class="t3-lbl">Tên đại lý:</td><td class="t3-val">${esc(x.titleRaw)}</td></tr>
+              <tr><td class="t3-lbl">Chủ đại lý:</td><td class="t3-val">${esc(x.ownerName)}</td></tr>
+              <tr><td class="t3-lbl">Điện thoại:</td><td class="t3-val">${esc(x.ownerPhone)}</td></tr>
+              <tr><td class="t3-lbl">Email:</td><td class="t3-val">${esc(x.ownerEmail)}</td></tr>
+              <tr><td class="t3-lbl">Địa chỉ:</td><td class="t3-val">${esc(x.addrFull)}</td></tr>
+              <tr><td class="t3-lbl">Khu vực:</td><td class="t3-val">${esc(x.coverage)}</td></tr>
+              <tr><td class="t3-lbl">Giờ làm việc:</td><td class="t3-val">${escMulti(x.hours)}</td></tr>
+              <tr><td class="t3-lbl">Kinh nghiệm:</td><td class="t3-val">${esc(x.exp)} năm</td></tr>
+              <tr><td class="t3-lbl">Quy mô:</td><td class="t3-val">${esc(x.team)}</td></tr>
+              <tr><td class="t3-lbl">Dự án/tháng:</td><td class="t3-val">${esc(x.projects)} công trình</td></tr>
             </table>
           </div>
-          <div class="t3-col-r">
-            <div class="t3-owner">
-              <div class="t3-owner-avatar">${has(x.imgs.avatar_chu) ? `<img src="${esc(x.imgs.avatar_chu)}">` : SVG.user}</div>
-              <div class="t3-owner-n">${esc(x.ownerName)}</div>
-              <div class="t3-owner-r">Chủ đại lý / người đại diện</div>
-              <div class="t3-quote-mark">"</div>
-              <div class="t3-quote-text">${esc(x.quote)}</div>
+
+          <!-- COL 2: NGƯỜI ĐẠI DIỆN -->
+          <div class="t3-col t3-col-rep">
+            <div class="t3-col-title">NGƯỜI ĐẠI DIỆN</div>
+            <div class="t3-rep-photo">${avatarBox}</div>
+            <div class="t3-rep-name">${esc(x.ownerName)}</div>
+            <div class="t3-rep-role">Chủ đại lý</div>
+            <div class="t3-rep-phone">${ic.phone}<span>${esc(x.ownerPhone)}</span></div>
+          </div>
+
+          <!-- COL 3: SỐ LIỆU NỔI BẬT (3 stat box) -->
+          <div class="t3-col">
+            <div class="t3-col-title">SỐ LIỆU NỔI BẬT</div>
+            <div class="t3-stat-stack">
+              <div class="t3-stat-box">
+                <div class="t3-stat-num">${esc(x.m1v)}</div>
+                <div class="t3-stat-lbl">${escMulti(x.m1l)}</div>
+              </div>
+              <div class="t3-stat-box">
+                <div class="t3-stat-num">${esc(x.m2v)}</div>
+                <div class="t3-stat-lbl">${escMulti(x.m2l)}</div>
+              </div>
+              <div class="t3-stat-box">
+                <div class="t3-stat-num">${esc(x.m3v)}</div>
+                <div class="t3-stat-lbl">${escMulti(x.m3l)}</div>
+              </div>
             </div>
-            <div class="t3-kpi-row">
-              <div class="t3-kpi"><div class="v">${esc(x.m1v)}</div><div class="l">${esc(x.m1l)}</div></div>
-              <div class="t3-kpi"><div class="v">${esc(x.m2v)}</div><div class="l">${esc(x.m2l)}</div></div>
-              <div class="t3-kpi"><div class="v">${esc(x.m3v)}</div><div class="l">${esc(x.m3l)}</div></div>
+          </div>
+
+          <!-- COL 4: TIÊU ĐIỂM (3 highlight rows) -->
+          <div class="t3-col">
+            <div class="t3-col-title">TIÊU ĐIỂM</div>
+            <div class="t3-hl-list">
+              <div class="t3-hl-row">
+                <span class="t3-hl-num">01</span>
+                <span class="t3-hl-text">${escMulti(x.hl1)}</span>
+              </div>
+              <div class="t3-hl-row">
+                <span class="t3-hl-num">02</span>
+                <span class="t3-hl-text">${escMulti(x.hl2)}</span>
+              </div>
+              <div class="t3-hl-row">
+                <span class="t3-hl-num">03</span>
+                <span class="t3-hl-text">${escMulti(x.hl3)}</span>
+              </div>
             </div>
-            <div class="t3-sec-h">3 ĐIỂM NỔI BẬT</div>
-            <div class="t3-hl"><div class="n">1</div><div class="t">${esc(x.hl1)}</div></div>
-            <div class="t3-hl"><div class="n">2</div><div class="t">${esc(x.hl2)}</div></div>
-            <div class="t3-hl"><div class="n">3</div><div class="t">${esc(x.hl3)}</div></div>
           </div>
         </div>
 
-        <div class="t3-row3">
-          <div class="t3-list-card">
-            <div class="t3-list-h"><span>${SVG.shieldChk}</span> NĂNG LỰC NỔI BẬT</div>
-            <ul>${x.uspLines.slice(0, 6).map(s => `<li>${esc(s)}</li>`).join('')}</ul>
+        <!-- ============ 3 MINI-COLS + QUOTE ============ -->
+        <div class="t3-three-grid">
+          <div class="t3-mini-col">
+            <div class="t3-mc-title">NĂNG LỰC</div>
+            <ul>${x.uspLines.map(li => `<li>${escMulti(li)}</li>`).join('')}</ul>
           </div>
-          <div class="t3-list-card">
-            <div class="t3-list-h"><span>${SVG.box}</span> SẢN PHẨM &amp; DỊCH VỤ</div>
-            <ul>${x.serviceLines.slice(0, 6).map(s => `<li>${esc(s)}</li>`).join('')}</ul>
+          <div class="t3-mini-col">
+            <div class="t3-mc-title">SẢN PHẨM &amp; DỊCH VỤ</div>
+            <ul>${x.serviceLines.map(li => `<li>${escMulti(li)}</li>`).join('')}</ul>
           </div>
-          <div class="t3-list-card">
-            <div class="t3-list-h"><span>${SVG.heart}</span> CAM KẾT CHĂM SÓC</div>
-            <ul>${x.commitLines.slice(0, 5).map(s => `<li>${esc(s)}</li>`).join('')}</ul>
+          <div class="t3-mini-col">
+            <div class="t3-mc-title">CAM KẾT</div>
+            <ul>${x.commitLines.map(li => `<li>${escMulti(li)}</li>`).join('')}</ul>
           </div>
-        </div>
-
-        <div class="t3-row4">
-          <div class="t3-sec-h">ĐỘI NGŨ &amp; CƠ SỞ VẬT CHẤT</div>
-          <div class="t3-gal-3">
-            <div class="t3-gal-it">${pImg(x.imgs.kho_xuong, 'Kho/xưởng')}<span>${escMulti(x.tcKhoXuong)}</span></div>
-            <div class="t3-gal-it">${pImg(x.imgs.doi_ngu_1, 'Đội ngũ 1')}<span>${escMulti(x.tcDoiNgu1)}</span></div>
-            <div class="t3-gal-it">${pImg(x.imgs.doi_ngu_2, 'Đội ngũ 2')}<span>${escMulti(x.tcDoiNgu2)}</span></div>
+          <div class="t3-quote-box">
+            <div class="t3-qmark">"</div>
+            <div class="t3-qtext">${escMulti(x.quote)}</div>
+            <div class="t3-qsrc">— <span class="t3-qname">Khách hàng</span></div>
           </div>
         </div>
 
-        <div class="t3-row4">
-          <div class="t3-sec-h">CÔNG TRÌNH THỰC TẾ</div>
-          <div class="t3-gal-3">
-            <div class="t3-gal-it">${pImg(x.imgs.cong_trinh_1, x.pc1)}<span>${escMulti(x.pc1)}</span></div>
-            <div class="t3-gal-it">${pImg(x.imgs.cong_trinh_2, x.pc2)}<span>${escMulti(x.pc2)}</span></div>
-            <div class="t3-gal-it">${pImg(x.imgs.cong_trinh_3, x.pc3)}<span>${escMulti(x.pc3)}</span></div>
+        <!-- ============ PHÓNG SỰ HÌNH ẢNH + ĐỐI TÁC SIDEBAR ============ -->
+        <div class="t3-section-title">PHÓNG SỰ HÌNH ẢNH</div>
+        <div class="t3-photo-wrap">
+          <div class="t3-photo-grid">
+            ${photoCell(x.imgs.doi_ngu_1, x.tcDoiNgu1)}
+            ${photoCell(x.imgs.kho_xuong, x.tcKhoXuong)}
+            ${photoCell(x.imgs.doi_ngu_2, x.tcDoiNgu2)}
+            ${photoCell(x.imgs.cong_trinh_1, x.pc1)}
+            ${photoCell(x.imgs.cong_trinh_2, x.pc2)}
+            ${photoCell(x.imgs.cong_trinh_3, x.pc3)}
           </div>
+          <aside class="t3-partners-card">
+            <div class="t3-pt-title">ĐỐI TÁC</div>
+            <div class="t3-pt-desc">${escMulti(x.partnersTitle)}</div>
+            ${partnerGridHtml}
+          </aside>
         </div>
 
-        <div class="t3-qr-row">
-          <div class="t3-cta">${esc(x.cta)}</div>
-          <div class="t3-qr">${has(x.imgs.qr_code) ? `<img src="${esc(x.imgs.qr_code)}">` : `<span>QR</span>`}</div>
-        </div>
-
-        <!-- Đối tác chiến lược -->
-        <div class="t3-partners">
-          <div class="t3-partners-title">${esc(x.partnersTitle)}</div>
-          <div class="t3-partners-grid">
-            ${x.partnerLogos.length
-              ? x.partnerLogos.map(u => `<div class="t3-partner"><img src="${esc(u)}" alt="Logo đối tác"></div>`).join('')
-              : Array.from({length: 5}).map(() => `<div class="t3-partner empty"><span>LOGO ĐỐI TÁC</span></div>`).join('')
-            }
+        <!-- ============ FOOTER: QR (box + cta italic) | CONTACT (phone/email/addr) ============ -->
+        <footer class="t3-footer">
+          <div class="t3-fqr">
+            ${has(x.imgs.qr_code)
+              ? `<img src="${esc(x.imgs.qr_code)}" alt="QR">`
+              : `<div class="t3-fqr-ph"></div>`}
           </div>
-        </div>
-
-        <div class="t3-ftr">
-          <span>${esc(x.titleRaw)} · ${esc(x.dealerCode || '—')}</span>
-          <span>📞 ${esc(x.ownerPhone)} · ✉ ${esc(x.ownerEmail)}</span>
-        </div>
+          <div class="t3-fqr-text">${escMulti(x.cta)} <span class="t3-arrow">►</span></div>
+          <div class="t3-fcontact">
+            <div class="t3-fc-row">
+              <span class="t3-fc-it">${ic.phone}${esc(x.ownerPhone)}</span>
+              <span class="t3-fc-sep">|</span>
+              <span class="t3-fc-it">${ic.mail}${esc(x.ownerEmail)}</span>
+            </div>
+            <div class="t3-fc-row t3-fc-row-addr">
+              <span class="t3-fc-it">${ic.pin}${esc(x.addrFull)}</span>
+            </div>
+            <div class="t3-fc-work">Làm việc: ${escMulti(x.hours)}</div>
+          </div>
+        </footer>
       </section>`;
   }
 
@@ -1038,7 +1121,13 @@
 
   global.ProfileTemplates = {
     renderers: { t1: template1, t2: template2, t3: template3, t4: template4, t5: template5 },
-    labels:    { t1: 'Cổ điển (navy + xanh)', t2: 'Tối — Modern (dark + gold)', t3: 'Editorial (cream + burgundy)', t4: 'Compact (white + red)', t5: 'Cao cấp' },
+    labels: {
+      t1: 'Cổ điển (navy + xanh)',
+      t2: 'Tech Modern (cyan + lime)',
+      t3: 'Bản tin (cream + wine)',
+      t4: 'Compact (white + red)',
+      t5: 'Cao cấp (đang đợi)',
+    },
     render(key, data) {
       const fn = this.renderers[key] || this.renderers.t1;
       return fn(data);

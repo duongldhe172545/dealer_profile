@@ -5,6 +5,7 @@
     { href: '/admin/',                 label: 'Tổng quan' },
     { href: '/admin/dealers.html',     label: 'Đại lý' },
     { href: '/admin/quotations.html',  label: 'Tất cả báo giá' },
+    { href: '/admin/icons.html',       label: 'Thư viện ảnh MH' },
     { href: '/admin/audit.html',       label: 'Audit log' },
   ];
 

@@ -8,11 +8,12 @@
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700&family=DM+Sans:wght@400;500;600;700&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/profile.css">
   <script src="/assets/js/api.js"></script>
   <script src="/assets/js/auth.js"></script>
   <script src="/assets/js/dealer-shell.js"></script>
+  <script src="/assets/js/_helpers.js"></script>
   <script src="/assets/js/profile-templates.js"></script>
   <script>
     tailwind.config = { theme: { extend: { colors: { brand: { 500:'#0a6fd6', 600:'#0858b3', 700:'#063f7a', 900:'#0b1f3a' } }, fontFamily: { sans: ['Be Vietnam Pro','Inter','system-ui','sans-serif'] } } } };
@@ -326,7 +327,7 @@
             <div class="tpl-pick mb-3">
               <template x-for="key in templateKeys" :key="key">
                 <button class="tpl-pick-btn" :class="{ 'active': (profile.selected_template || 't1') === key }"
-                        @click="profile.selected_template = key">
+                        @click="pickTemplate(key)">
                   <div class="tpl-key" x-text="key.toUpperCase()"></div>
                   <div class="tpl-label" x-text="templateLabels[key]"></div>
                 </button>
@@ -352,7 +353,7 @@
         dealer: {}, profile: { selected_template: 't1' }, images: {},
         uploading: {},
         dirty: false, lastSavedAt: null, hasDraft: false,
-        _initializing: true, _draftTimer: null,
+        _initializing: true, _draftTimer: null, _autoSaveTimer: null,
         activeTab: 'info',
         previewScale: 1,
         autoScale: 1,
@@ -405,6 +406,13 @@
               this.setupAutoFit();
               this.setupAutoSave();
               this._initializing = false;
+              // Sau load: nếu có draft khôi phục → dirty (data lệch server).
+              // Nếu không draft → coi như đồng bộ, đánh dấu lastSavedAt để button disable.
+              if (this.hasDraft) {
+                this.dirty = true;
+              } else {
+                this.lastSavedAt = new Date();
+              }
             });
           } catch (e) { this.error = e.message; }
           finally { this.loading = false; }
@@ -415,6 +423,12 @@
           this.$watch('dealer',  () => this.markDirty(), { deep: true });
           this.$watch('profile', () => this.markDirty(), { deep: true });
 
+          // Auto-save mỗi 3 phút nếu có thay đổi chưa lưu
+          if (this._autoSaveTimer) clearInterval(this._autoSaveTimer);
+          this._autoSaveTimer = setInterval(() => {
+            if (this.dirty && !this.saving) this.save();
+          }, 3 * 60 * 1000);
+
           // Cảnh báo khi rời trang nếu còn thay đổi chưa lưu vào hệ thống
           window.addEventListener('beforeunload', (e) => {
             if (this.dirty) { e.preventDefault(); e.returnValue = ''; }
@@ -423,10 +437,29 @@
 
         markDirty() {
           if (this._initializing) return;
+          if (this._skipNextDirty) { this._skipNextDirty = false; return; }
           this.dirty = true;
           this.savedFlash = false;
           if (this._draftTimer) clearTimeout(this._draftTimer);
           this._draftTimer = setTimeout(() => this._writeDraft(), 600);
+        },
+
+        // Chuyển template = thao tác UI, KHÔNG nên mark dirty.
+        //   - Nếu user chưa dirty (data đồng bộ server) → auto-save background luôn
+        //   - Nếu user đang dirty → chỉ đổi local, đợi user save tay (sẽ lưu cả template)
+        async pickTemplate(key) {
+          if (this.profile.selected_template === key) return;
+          const wasDirty = this.dirty;
+          this._skipNextDirty = true;
+          this.profile.selected_template = key;
+          if (wasDirty) return;       // có thay đổi khác chưa lưu → defer
+          try {
+            await API.put('/api/dealer/profile', { dealer: this.dealer, profile: this.profile });
+            this.lastSavedAt = new Date();
+          } catch (e) {
+            console.warn('Auto-save template fail:', e.message);
+            this.dirty = true;        // fallback: cho user save tay
+          }
         },
 
         _writeDraft() {
@@ -487,7 +520,7 @@
             this.lastSavedAt = new Date();
             this.savedFlash = true;
             this._clearDraft();
-            setTimeout(() => { this.savedFlash = false; }, 2500);
+            setTimeout(() => { this.savedFlash = false; }, 5000);
           } catch (e) { this.error = e.message; }
           finally {
             this.saving = false;
@@ -502,11 +535,9 @@
         },
 
         statusText() {
-          if (this.saving) return 'Đang lưu vào hệ thống...';
-          if (this.savedFlash) return '✓ Đã lưu vào hệ thống';
-          if (this.dirty && this.hasDraft) return '● Có nháp chưa lưu (bấm "Lưu" để cập nhật)';
+          if (this.saving) return 'Đang lưu...';
+          if (this.savedFlash) return '✓ Đã lưu';
           if (this.dirty) return '● Chưa lưu';
-          if (this.lastSavedAt) return '✓ Đã lưu lúc ' + this.lastSavedAt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
           return '';
         },
         statusClass() {
@@ -517,7 +548,6 @@
         },
 
         pickFile(slot) {
-          console.log('[upload] pickFile', slot);
           const input = document.createElement('input');
           input.type = 'file';
           input.accept = 'image/jpeg,image/png,image/webp';
@@ -525,7 +555,6 @@
           const self = this;
           input.addEventListener('change', function (e) {
             const file = e.target.files && e.target.files[0];
-            console.log('[upload] selected file', file && file.name);
             self.uploadImage(slot, file);
             setTimeout(() => input.remove(), 500);
           });
@@ -537,14 +566,11 @@
           if (!file) return;
           this.error = '';
           this.uploading[slot] = true;
-          const t0 = performance.now();
           try {
             // Resize + chuyển WebP ở browser (giảm 5MB → ~200KB)
             let toUpload = file;
             if (file.type && file.type.startsWith('image/') && file.size > 200 * 1024) {
-              console.log('[upload] compressing', (file.size/1024).toFixed(0) + 'KB');
               toUpload = await this._compress(file, 1600, 0.82);
-              console.log('[upload] →', (toUpload.size/1024).toFixed(0) + 'KB', '('+ toUpload.type +')');
             }
             const fd = new FormData();
             fd.append('file', toUpload);
@@ -556,7 +582,6 @@
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Tải ảnh thất bại');
             this.images[slot] = data.data.url;
-            console.log('[upload] done in', Math.round(performance.now() - t0) + 'ms');
           } catch (e) { this.error = e.message; }
           finally { this.uploading[slot] = false; }
         },

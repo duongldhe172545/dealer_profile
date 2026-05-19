@@ -2,6 +2,8 @@ const express = require('express');
 const { requireAuth, requireRole } = require('../middleware/auth');
 const dealerController = require('../controllers/dealer.controller');
 const statsController = require('../controllers/admin-stats.controller');
+const iconController = require('../controllers/icon-library.controller');
+const adminDbController = require('../controllers/admin-db.controller');
 
 const router = express.Router();
 
@@ -22,6 +24,16 @@ router.get('/all/customers', statsController.customers);
 router.get('/all/products', statsController.products);
 router.get('/dealers/:id/full', statsController.dealerDetail);
 router.get('/export/:type', statsController.exportCSV);
+
+// Tải backup DB (cho admin — Railway free tier không có Backup tab)
+router.get('/db-download', adminDbController.downloadDb);
+
+// Icon library
+router.get('/icons', iconController.list);
+router.get('/icons/categories', iconController.categories);
+router.post('/icons', iconController.create);
+router.put('/icons/:id', iconController.update);
+router.delete('/icons/:id', iconController.remove);
 
 // Audit log
 const auditModel = require('../models/audit.model');

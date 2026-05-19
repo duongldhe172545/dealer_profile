@@ -42,3 +42,13 @@ app.use(errorHandler);
 app.listen(env.port, () => {
   console.log(`Đại Lý Số đang chạy ở http://localhost:${env.port}`);
 });
+
+// Daily auto-backup DB — chạy 24h/lần khi server đang up.
+// Pre-deploy backup đã được lo bởi `npm start` (scripts/backup-db.js).
+// Mục này phòng case server chạy nhiều ngày không deploy → vẫn có backup ngày.
+const runBackup = require('../scripts/backup-db');
+const DAY_MS = 24 * 60 * 60 * 1000;
+setInterval(() => {
+  console.log('[auto-backup] Bắt đầu backup định kỳ...');
+  runBackup().catch(err => console.error('[auto-backup] FAIL:', err.message));
+}, DAY_MS);

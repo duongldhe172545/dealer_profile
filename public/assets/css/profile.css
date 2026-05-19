@@ -679,8 +679,8 @@
 
 /* ============================================================================
    TPL-2 v2 — Tech Modern (cyan + lime + ink)
-   Theo template2.html (AI image-to-code): nền trắng card-based, accent cyan
-   + lime, header dark ink + cyan slash, corner brackets cyan ở mọi hộp ảnh,
+   Theo docs/design/template2.html: nền trắng card-based, accent cyan + lime,
+   header dark ink + cyan slash, corner brackets cyan ở mọi hộp ảnh,
    testimonial italic. Block "đối tác chiến lược" ở cuối + footer dark.
    ============================================================================ */
 .tpl-2-v2 {
@@ -1070,84 +1070,499 @@
 .tpl-2-v2 .t2-f-it svg { color: var(--t2-cy); width: 13px; height: 13px; }
 
 /* ============================================================================
-   TPL-3 v2 — Editorial Magazine (cream + burgundy, serif)
+   TPL-3 v2 — Newspaper Bulletin (cream + wine; DM Serif Display + Crimson Text)
+   Theo docs/design/template3.png:
+   - Masthead 2-col: cột trái stack (nameplate huge + hero) | side-rail
+     (logo đại lý 1:1 + 3 ribbon đỏ wine clip-path đuôi cờ)
+   - Subtitle italic serif (tagline) viền dưới ink
+   - 4-col main grid: LÝ LỊCH | NGƯỜI ĐẠI DIỆN | SỐ LIỆU | TIÊU ĐIỂM
+   - 3 mini-cols (NĂNG LỰC, SẢN PHẨM & DV, CAM KẾT) + QUOTE box
+   - PHÓNG SỰ HÌNH ẢNH 6 ảnh 3×2 + ĐỐI TÁC card (logos flex wrap)
+   - Footer double-border top: QR | QR cta italic | divider | contact 2-row
    ============================================================================ */
 .tpl-3-v2 {
-  --t3-bg: #faf6ef;
-  --t3-burgundy: #862f3e;
-  --t3-ink: #2a1c1f;
-  --t3-muted: #6b5b5f;
-  --t3-line: #e6d9d2;
-  background: var(--t3-bg);
+  --t3-paper: #EFE6D2;
+  --t3-paper-2: #E8DDC4;
+  --t3-paper-3: #DDD0B0;
+  --t3-ink: #2A241B;
+  --t3-ink-2: #3F362A;
+  --t3-ink-soft: #5C5240;
+  --t3-muted: #7A6F58;
+  --t3-wine: #8B1F1A;
+  --t3-wine-dark: #6E1814;
+  --t3-line: #B8A98C;
+  --t3-line-soft: #C8BB9F;
+  background: var(--t3-paper);
+  background-image:
+    radial-gradient(ellipse at 20% 30%, rgba(139,31,26,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(42,36,27,0.05) 0%, transparent 50%);
   color: var(--t3-ink);
-  padding: 8mm; box-sizing: border-box;
-  font-family: 'Times New Roman', Georgia, serif;
-  font-size: 10px;
+  font-family: 'Crimson Text', 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  font-size: 11px;
+  line-height: 1.45;
+  padding: 9mm;
+  position: relative;
 }
 .tpl-3-v2 * { box-sizing: border-box; }
-.tpl-3-v2 h1, .tpl-3-v2 p, .tpl-3-v2 table, .tpl-3-v2 ul { margin: 0; padding: 0; }
-.tpl-3-v2 ul { list-style: none; }
-.tpl-3-v2 table { border-collapse: collapse; width: 100%; }
+.tpl-3-v2 h1, .tpl-3-v2 p { margin: 0; padding: 0; }
+.tpl-3-v2 ul { margin: 0; padding: 0; list-style: none; }
+.tpl-3-v2 svg { width: 1em; height: 1em; display: inline-block; vertical-align: middle; }
 
-.tpl-3-v2 .t3-pretitle { display: flex; justify-content: space-between; font-size: 8.5px; color: var(--t3-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.08em; }
-.tpl-3-v2 .t3-code { background: var(--t3-burgundy); color: #fff; padding: 2px 8px; font-weight: 700; }
+/* ============ MASTHEAD: left stack (title + issue + hero) | side-rail ============ */
+.tpl-3-v2 .t3-masthead {
+  display: grid;
+  grid-template-columns: 1fr 122px;
+  gap: 16px;
+  align-items: start;
+  padding-bottom: 6px;
+  border-bottom: 3px double var(--t3-wine);
+  margin-bottom: 8px;
+}
+.tpl-3-v2 .t3-mast-left {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;       /* cho phép ảnh shrink trong grid item */
+}
+.tpl-3-v2 .t3-nameplate {
+  font-family: 'DM Serif Display', 'Playfair Display', Georgia, serif;
+  font-size: 44px;
+  font-weight: 400;   /* DM Serif Display chỉ có 1 weight */
+  line-height: 0.95;
+  color: var(--t3-ink);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-align: center;
+  word-break: break-word;
+  margin: 0 0 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--t3-line);
+}
 
-.tpl-3-v2 .t3-hero-row { display: grid; grid-template-columns: 50% 1fr; gap: 12px; margin-bottom: 8px; }
-.tpl-3-v2 .t3-title-block h1 { font-size: 28px; line-height: 1.0; color: var(--t3-burgundy); font-weight: 700; letter-spacing: -0.01em; }
-.tpl-3-v2 .t3-tagline { font-size: 10.5px; color: var(--t3-ink); margin-top: 8px; font-style: italic; line-height: 1.5; }
-.tpl-3-v2 .t3-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
-.tpl-3-v2 .t3-badges span { padding: 3px 10px; border: 1px solid var(--t3-burgundy); color: var(--t3-burgundy); border-radius: 999px; font-size: 8.5px; font-weight: 700; }
-.tpl-3-v2 .t3-hero { padding-bottom: 56%; position: relative; background: var(--t3-line); border-radius: 4px; overflow: hidden; }
-.tpl-3-v2 .t3-hero > * { position: absolute; inset: 0; }
-.tpl-3-v2 .t3-hero img { width: 100%; height: 100%; object-fit: cover; }
+/* Hero image trong cột trái, ngay dưới nameplate */
+.tpl-3-v2 .t3-hero-img {
+  aspect-ratio: 21/9;
+  border: 1px solid var(--t3-ink-2);
+  background: var(--t3-paper-3);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tpl-3-v2 .t3-hero-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tpl-3-v2 .t3-hero-ph {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  background:
+    linear-gradient(135deg, var(--t3-paper-3), var(--t3-paper-2)),
+    repeating-linear-gradient(45deg, transparent 0 12px, rgba(139,31,26,0.04) 12px 24px);
+}
+.tpl-3-v2 .t3-ph-ic svg { width: 38px; height: 38px; color: var(--t3-muted); }
+.tpl-3-v2 .t3-hero-cap {
+  font-style: italic;
+  font-size: 10.5px;
+  color: var(--t3-ink-soft);
+  margin-top: 4px;
+  font-family: 'Crimson Text', Georgia, serif;
+}
 
-.tpl-3-v2 .t3-contact-strip { display: flex; gap: 16px; justify-content: center; padding: 6px 0; border-top: 1px solid var(--t3-burgundy); border-bottom: 1px solid var(--t3-burgundy); font-size: 9px; color: var(--t3-ink); margin-bottom: 8px; }
-.tpl-3-v2 .t3-contact-strip span { font-weight: 600; }
+/* Side-rail (cột phải) — trải dọc cạnh title + hero, chỉ logo + 3 ribbon */
+.tpl-3-v2 .t3-side-rail { text-align: center; }
+.tpl-3-v2 .t3-rail-logo {
+  border: 2px solid var(--t3-wine);
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  background: var(--t3-paper);
+  overflow: hidden;
+  padding: 4px;
+}
+.tpl-3-v2 .t3-rail-logo.has-img { padding: 0; }
+.tpl-3-v2 .t3-rail-logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.tpl-3-v2 .t3-logo-txt {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--t3-wine);
+  line-height: 1.2;
+  text-align: center;
+}
+.tpl-3-v2 .t3-logo-txt small {
+  display: block;
+  font-size: 8px;
+  opacity: 0.7;
+  margin-top: 3px;
+  font-weight: 400;
+}
 
-.tpl-3-v2 .t3-body { display: grid; grid-template-columns: 50% 1fr; gap: 12px; margin-bottom: 8px; }
-.tpl-3-v2 .t3-sec-h { font-size: 10px; font-weight: 700; color: var(--t3-burgundy); letter-spacing: 0.06em; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid var(--t3-line); }
-.tpl-3-v2 .t3-table th { font-size: 8.5px; color: var(--t3-muted); font-weight: 600; text-align: left; padding: 3px 8px 3px 0; vertical-align: top; width: 35%; }
-.tpl-3-v2 .t3-table td { font-size: 9.5px; color: var(--t3-ink); font-weight: 600; padding: 3px 0; vertical-align: top; }
+/* Wine ribbon badges (đuôi cờ bên trái) */
+.tpl-3-v2 .t3-ribbon {
+  background: var(--t3-wine);
+  color: var(--t3-paper);
+  padding: 6px 10px 6px 14px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10.5px;
+  font-weight: 600;
+  font-family: 'Crimson Text', Georgia, serif;
+  clip-path: polygon(0% 50%, 6px 0%, 100% 0%, 100% 100%, 6px 100%);
+  text-align: left;
+  line-height: 1.15;
+}
+.tpl-3-v2 .t3-ribbon svg { width: 12px; height: 12px; flex-shrink: 0; color: var(--t3-paper); }
+.tpl-3-v2 .t3-ribbon span { line-height: 1.2; }
 
-.tpl-3-v2 .t3-owner { background: #fff; border: 1px solid var(--t3-line); padding: 12px; text-align: center; margin-bottom: 8px; position: relative; }
-.tpl-3-v2 .t3-owner-avatar { width: 60px; height: 60px; border-radius: 50%; overflow: hidden; margin: 0 auto 6px; background: var(--t3-line); display: flex; align-items: center; justify-content: center; }
-.tpl-3-v2 .t3-owner-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.tpl-3-v2 .t3-owner-avatar .ic { width: 24px; height: 24px; color: var(--t3-muted); }
-.tpl-3-v2 .t3-owner-n { font-size: 13px; font-weight: 700; color: var(--t3-burgundy); }
-.tpl-3-v2 .t3-owner-r { font-size: 9px; color: var(--t3-muted); font-style: italic; margin-top: 2px; }
-.tpl-3-v2 .t3-quote-mark { font-size: 24px; color: var(--t3-burgundy); font-weight: 700; line-height: 1; margin: 6px 0 0; }
-.tpl-3-v2 .t3-quote-text { font-size: 9.5px; font-style: italic; color: var(--t3-ink); padding: 0 10px; line-height: 1.5; }
+/* ============ SUBTITLE (italic serif, sau masthead — cỡ nhỏ vừa, không át nameplate) ============ */
+.tpl-3-v2 .t3-subtitle {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-style: italic;
+  font-size: 17px;
+  font-weight: 500;
+  text-align: center;
+  color: var(--t3-ink);
+  padding: 8px 16px 10px;
+  line-height: 1.25;
+  border-bottom: 1.5px solid var(--t3-ink);
+  margin-bottom: 12px;
+  letter-spacing: 0.2px;
+}
 
-.tpl-3-v2 .t3-kpi-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-bottom: 8px; }
-.tpl-3-v2 .t3-kpi { background: #fff; border: 1px solid var(--t3-line); padding: 6px; text-align: center; }
-.tpl-3-v2 .t3-kpi .v { font-size: 14px; font-weight: 700; color: var(--t3-burgundy); }
-.tpl-3-v2 .t3-kpi .l { font-size: 8px; color: var(--t3-muted); margin-top: 2px; }
+/* ============ 4-COL MAIN GRID ============ */
+.tpl-3-v2 .t3-main-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 1.1fr;
+  gap: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1.5px solid var(--t3-ink);
+  margin-bottom: 12px;
+}
+.tpl-3-v2 .t3-col-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 14.5px;
+  font-weight: 800;
+  color: var(--t3-wine);
+  text-align: center;
+  letter-spacing: 1.2px;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--t3-line);
+}
 
-.tpl-3-v2 .t3-hl { display: flex; align-items: flex-start; gap: 8px; margin-top: 5px; }
-.tpl-3-v2 .t3-hl .n { width: 20px; height: 20px; border-radius: 50%; background: var(--t3-burgundy); color: #fff; font-weight: 700; font-size: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-family: 'Inter', sans-serif; }
-.tpl-3-v2 .t3-hl .t { font-size: 9px; color: var(--t3-ink); line-height: 1.4; padding-top: 2px; }
+/* COL 1: info table */
+.tpl-3-v2 .t3-info { width: 100%; border-collapse: collapse; font-size: 10px; }
+.tpl-3-v2 .t3-info tr { border-bottom: 1px solid var(--t3-line-soft); }
+.tpl-3-v2 .t3-info tr:last-child { border-bottom: 0; }
+.tpl-3-v2 .t3-info td { padding: 3px 4px; vertical-align: top; line-height: 1.35; }
+.tpl-3-v2 .t3-info td.t3-lbl {
+  color: var(--t3-ink-2); font-weight: 700; width: 40%;
+  border-right: 1px solid var(--t3-line-soft);
+}
+.tpl-3-v2 .t3-info td.t3-val { color: var(--t3-ink); word-break: break-word; }
 
-.tpl-3-v2 .t3-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; }
-.tpl-3-v2 .t3-list-card { background: #fff; border: 1px solid var(--t3-line); padding: 10px; }
-.tpl-3-v2 .t3-list-h { font-size: 9.5px; font-weight: 700; color: var(--t3-burgundy); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
-.tpl-3-v2 .t3-list-h .ic { width: 12px; height: 12px; }
-.tpl-3-v2 .t3-list-card ul li { padding: 2px 0 2px 14px; position: relative; font-size: 9px; line-height: 1.4; color: var(--t3-ink); }
-.tpl-3-v2 .t3-list-card ul li::before { content: '•'; color: var(--t3-burgundy); position: absolute; left: 4px; font-size: 11px; line-height: 1.2; }
+/* COL 2: representative — photo vuông 1:1 (ngắn hơn), block name/role/phone
+   căn giữa dọc trong col để ngang bằng với 3 cột bên cạnh */
+.tpl-3-v2 .t3-col-rep {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+}
+.tpl-3-v2 .t3-col-rep > .t3-rep-photo { margin-top: auto; }
+.tpl-3-v2 .t3-col-rep > .t3-rep-phone { margin-bottom: auto; }
+.tpl-3-v2 .t3-rep-photo {
+  aspect-ratio: 1/1;
+  width: 78%;
+  margin-left: auto; margin-right: auto;
+  background: linear-gradient(160deg, var(--t3-paper-3), var(--t3-paper-2));
+  border: 1px solid var(--t3-ink-2);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+.tpl-3-v2 .t3-rep-photo img { width: 100%; height: 100%; object-fit: cover; }
+.tpl-3-v2 .t3-ava-ic svg { width: 72px; height: 72px; color: var(--t3-muted); }
+.tpl-3-v2 .t3-rep-name {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 14px; font-weight: 700; color: var(--t3-ink);
+  margin-top: 4px;
+  word-break: break-word;
+}
+.tpl-3-v2 .t3-rep-role {
+  font-size: 10.5px; color: var(--t3-ink-soft);
+  margin-top: 1px; font-style: italic;
+}
+.tpl-3-v2 .t3-rep-phone {
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  font-size: 11px; color: var(--t3-ink); margin-top: 5px;
+}
+.tpl-3-v2 .t3-rep-phone svg { width: 12px; height: 12px; color: var(--t3-wine); }
 
-.tpl-3-v2 .t3-row4 { background: #fff; border: 1px solid var(--t3-line); padding: 10px; margin-bottom: 8px; }
-.tpl-3-v2 .t3-gal-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
-.tpl-3-v2 .t3-gal-it { display: flex; flex-direction: column; gap: 3px; }
-.tpl-3-v2 .t3-gal-it > :first-child { padding-bottom: 75%; position: relative; background: var(--t3-line); overflow: hidden; }
-.tpl-3-v2 .t3-gal-it > :first-child > * { position: absolute; inset: 0; }
-.tpl-3-v2 .t3-gal-it img { width: 100%; height: 100%; object-fit: cover; }
-.tpl-3-v2 .t3-gal-it span { font-size: 8.5px; color: var(--t3-muted); text-align: center; font-style: italic; }
+/* COL 3: stats */
+.tpl-3-v2 .t3-stat-stack { display: flex; flex-direction: column; gap: 6px; }
+.tpl-3-v2 .t3-stat-box {
+  border: 1.5px solid var(--t3-ink);
+  padding: 7px 4px 6px;
+  text-align: center;
+  background: var(--t3-paper);
+}
+.tpl-3-v2 .t3-stat-num {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 26px; font-weight: 700; color: var(--t3-ink);
+  line-height: 1; letter-spacing: 0.5px;
+}
+.tpl-3-v2 .t3-stat-lbl {
+  font-size: 10px; color: var(--t3-ink-2);
+  margin-top: 4px; padding-top: 3px;
+  border-top: 1px solid var(--t3-wine);
+  width: 72%; margin-left: auto; margin-right: auto;
+  line-height: 1.25;
+}
 
-.tpl-3-v2 .t3-qr-row { display: grid; grid-template-columns: 1fr 70px; gap: 10px; align-items: center; padding: 10px; background: var(--t3-burgundy); color: #fff; margin-bottom: 4px; }
-.tpl-3-v2 .t3-cta { font-size: 10px; line-height: 1.5; }
-.tpl-3-v2 .t3-qr { width: 70px; height: 70px; background: #fff; display: flex; align-items: center; justify-content: center; color: var(--t3-burgundy); font-weight: 900; }
-.tpl-3-v2 .t3-qr img { width: 100%; height: 100%; object-fit: contain; }
+/* COL 4: highlights */
+.tpl-3-v2 .t3-hl-list { display: flex; flex-direction: column; gap: 6px; }
+.tpl-3-v2 .t3-hl-row {
+  padding-bottom: 6px;
+  border-bottom: 1px dashed var(--t3-line);
+  display: flex; gap: 8px; align-items: flex-start;
+}
+.tpl-3-v2 .t3-hl-row:last-child { border-bottom: 0; }
+.tpl-3-v2 .t3-hl-num {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 24px; font-weight: 800; color: var(--t3-wine);
+  line-height: 1; flex-shrink: 0;
+}
+.tpl-3-v2 .t3-hl-num::after { content: '.'; }
+.tpl-3-v2 .t3-hl-text {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 12px; font-weight: 700; color: var(--t3-ink);
+  line-height: 1.2;
+  word-break: break-word;
+}
 
-.tpl-3-v2 .t3-ftr { display: flex; justify-content: space-between; font-size: 8.5px; color: var(--t3-muted); padding-top: 8px; border-top: 1px solid var(--t3-burgundy); }
+/* ============ 3 MINI-COLS + QUOTE ============ */
+.tpl-3-v2 .t3-three-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1.3fr;
+  gap: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1.5px solid var(--t3-ink);
+  margin-bottom: 12px;
+}
+.tpl-3-v2 .t3-mc-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--t3-wine);
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--t3-line);
+  text-align: center;
+}
+.tpl-3-v2 .t3-mini-col ul li {
+  position: relative;
+  padding: 2px 0 2px 11px;
+  font-size: 10.5px;
+  color: var(--t3-ink);
+  line-height: 1.35;
+}
+.tpl-3-v2 .t3-mini-col ul li::before {
+  content: '•';
+  position: absolute; left: 0; top: 0;
+  color: var(--t3-ink); font-weight: 700;
+}
+
+/* Quote box */
+.tpl-3-v2 .t3-quote-box {
+  border: 1.5px solid var(--t3-ink);
+  padding: 10px 12px;
+  background: var(--t3-paper);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.tpl-3-v2 .t3-qmark {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 28px; color: var(--t3-wine);
+  line-height: 0.5; margin-bottom: 6px;
+}
+.tpl-3-v2 .t3-qtext {
+  font-style: italic; font-size: 11px;
+  color: var(--t3-ink); line-height: 1.4; margin-bottom: 8px;
+}
+.tpl-3-v2 .t3-qsrc {
+  text-align: right; font-size: 10px; color: var(--t3-ink-soft);
+}
+.tpl-3-v2 .t3-qname {
+  font-weight: 700; color: var(--t3-ink);
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+/* ============ PHÓNG SỰ HÌNH ẢNH (chỉ 1 đường kẻ dưới — đường trên đã có từ
+   border-bottom của .t3-three-grid phía trên) ============ */
+.tpl-3-v2 .t3-section-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 18px; font-weight: 800; color: var(--t3-ink);
+  text-align: center; letter-spacing: 4px;
+  padding: 4px 0 6px;
+  border-bottom: 1px solid var(--t3-ink);
+  margin-bottom: 10px;
+}
+.tpl-3-v2 .t3-section-title::before,
+.tpl-3-v2 .t3-section-title::after {
+  content: '—'; color: var(--t3-wine); margin: 0 8px; font-weight: 400;
+}
+
+.tpl-3-v2 .t3-photo-wrap {
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.tpl-3-v2 .t3-photo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 10px;
+}
+.tpl-3-v2 .t3-pcell { display: flex; flex-direction: column; }
+.tpl-3-v2 .t3-pimg {
+  aspect-ratio: 4/3;
+  background: linear-gradient(135deg, var(--t3-paper-3), var(--t3-paper-2));
+  border: 1px solid var(--t3-ink-2);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.tpl-3-v2 .t3-pimg img { width: 100%; height: 100%; object-fit: cover; }
+.tpl-3-v2 .t3-pimg .t3-ph-ic svg { width: 28px; height: 28px; color: var(--t3-muted); }
+.tpl-3-v2 .t3-pcap {
+  margin-top: 4px;
+  text-align: center;
+  font-size: 10px;
+}
+.tpl-3-v2 .t3-pcap-lbl {
+  font-weight: 700; color: var(--t3-ink);
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+/* Partners sidebar — flex column để card cao bằng photo-grid bên trái:
+   pt-desc chiếm flex:1 nên khi 5 logo chỉ điền hàng 1, phần còn lại
+   không bị trống — desc lớn lấp đầy không gian */
+.tpl-3-v2 .t3-partners-card {
+  border: 1.5px solid var(--t3-ink);
+  padding: 10px 12px 12px;
+  background: var(--t3-paper);
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;   /* fill row height của photo-wrap grid */
+}
+.tpl-3-v2 .t3-pt-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 18px; font-weight: 800; color: var(--t3-wine);
+  text-align: center; letter-spacing: 2px; margin-bottom: 8px;
+}
+.tpl-3-v2 .t3-pt-desc {
+  text-align: center;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-style: italic;
+  font-size: 14px; font-weight: 500; color: var(--t3-ink);
+  line-height: 1.4;
+  padding: 6px 6px 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--t3-line);
+  flex: 1;               /* desc lấp đầy chiều cao còn lại */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Pt-grid: flex wrap với cell size cố định → up bao nhiêu render bấy nhiêu,
+   tự co dòng. Không có khung trống nào. */
+.tpl-3-v2 .t3-pt-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+.tpl-3-v2 .t3-pt-logo {
+  border: 1.5px solid var(--t3-wine);
+  width: 52px; height: 52px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--t3-paper);
+  overflow: hidden;
+}
+.tpl-3-v2 .t3-pt-logo.has-img { padding: 0; }
+.tpl-3-v2 .t3-pt-logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+/* ============ FOOTER (QR | QR text | divider | Contact info) ============ */
+.tpl-3-v2 .t3-footer {
+  display: grid;
+  grid-template-columns: 82px 1fr 270px;
+  gap: 16px;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 3px double var(--t3-ink);
+  margin-top: 8px;
+}
+.tpl-3-v2 .t3-fqr {
+  width: 82px; height: 82px;
+  background: var(--t3-paper);
+  border: 1.5px solid var(--t3-ink);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.tpl-3-v2 .t3-fqr img { width: 100%; height: 100%; object-fit: contain; }
+.tpl-3-v2 .t3-fqr-ph {
+  width: 100%; height: 100%;
+  background:
+    linear-gradient(45deg, var(--t3-ink) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--t3-ink) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--t3-ink) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--t3-ink) 75%);
+  background-size: 8px 8px;
+  background-position: 0 0, 0 4px, 4px -4px, -4px 0;
+}
+.tpl-3-v2 .t3-fqr-text {
+  font-size: 11.5px;
+  color: var(--t3-ink-soft);
+  line-height: 1.4;
+  font-style: italic;
+}
+.tpl-3-v2 .t3-arrow {
+  color: var(--t3-wine); font-weight: 700; font-style: normal;
+}
+/* Footer contact — gạch phân cách dọc với QR cta bên trái + 2 hàng:
+   hàng 1: phone | email   hàng 2: address (full-width) */
+.tpl-3-v2 .t3-fcontact {
+  display: flex; flex-direction: column; gap: 4px;
+  font-size: 13px; color: var(--t3-ink);
+  min-width: 0;
+  padding-left: 16px;
+  border-left: 1px solid var(--t3-line);
+}
+.tpl-3-v2 .t3-fc-row {
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 600;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+.tpl-3-v2 .t3-fc-row-addr .t3-fc-it {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+.tpl-3-v2 .t3-fc-it {
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.tpl-3-v2 .t3-fc-it svg { width: 14px; height: 14px; color: var(--t3-wine); flex-shrink: 0; }
+.tpl-3-v2 .t3-fc-sep { color: var(--t3-line); font-weight: 400; }
+.tpl-3-v2 .t3-fc-work {
+  font-size: 11.5px; color: var(--t3-ink-2); font-style: italic;
+}
+.tpl-3-v2 .t3-fc-work b { font-style: normal; font-weight: 700; color: var(--t3-ink); }
 
 /* ============================================================================
    TPL-4 v2 — Compact Pamphlet (white + red accent)
@@ -1273,41 +1688,6 @@
   line-height: 1.2; text-align: center;
 }
 
-/* ---- T3: cream + burgundy ---- */
-.tpl-3-v2 .t3-partners {
-  margin-top: 10px; padding: 14px 16px;
-  background: #fff;
-  border: 1px solid var(--t3-line);
-  border-radius: 8px;
-  text-align: center;
-}
-.tpl-3-v2 .t3-partners-title {
-  font-size: 12px; font-weight: 700;
-  color: var(--t3-burgundy);
-  margin-bottom: 10px;
-  letter-spacing: 0.2px;
-  font-family: Georgia, 'Times New Roman', serif;
-  font-style: italic;
-}
-.tpl-3-v2 .t3-partners-grid {
-  display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
-}
-.tpl-3-v2 .t3-partner {
-  background: var(--t3-bg); border-radius: 5px;
-  width: 50px; height: 50px;             /* 1:1 vuông */
-  flex: 0 0 auto;
-  display: flex; align-items: center; justify-content: center;
-  padding: 5px; overflow: hidden;
-  border: 1px solid var(--t3-line);
-}
-.tpl-3-v2 .t3-partner img { max-width: 100%; max-height: 100%; object-fit: contain; }
-.tpl-3-v2 .t3-partner.empty {
-  color: var(--t3-muted);
-  font-size: 7.5px; font-weight: 700; letter-spacing: 0.4px;
-  background: rgba(134,47,62,0.04);
-  border-style: dashed;
-  line-height: 1.2; text-align: center;
-}
 
 /* ---- T4: white + red ---- */
 .tpl-4-v2 .t4-partners {

@@ -3,6 +3,7 @@ const dealerModel = require('../models/dealer.model');
 const profileModel = require('../models/profile.model');
 const uploadService = require('./upload.service');
 const { badRequest, notFound } = require('../utils/http');
+const { cleanString } = require('../utils/sanitize');
 
 const TEMPLATES = ['t1', 't2', 't3', 't4', 't5'];
 const IMAGE_SLOTS = [
@@ -20,13 +21,7 @@ const DEALER_EDITABLE = [
   'years_experience', 'team_size', 'projects_monthly', 'open_hours',
 ];
 
-function clean(value, max) {
-  if (value == null) return null;
-  const v = String(value).trim();
-  if (!v) return null;
-  if (max && v.length > max) throw badRequest(`Giá trị quá dài (tối đa ${max} ký tự)`);
-  return v;
-}
+const clean = cleanString;  // không có default max — caller truyền explicit khi cần
 
 function get(dealerId) {
   const dealer = dealerModel.findById(dealerId);
@@ -84,7 +79,7 @@ async function uploadImage(dealerId, slot, fileBuffer) {
     publicId: result.public_id,
   });
 
-  if (oldPublicId) uploadService.deleteByPublicId(oldPublicId); // fire-and-forget
+  if (oldPublicId) uploadService.deleteByPublicId(oldPublicId).catch(() => {}); // fire-and-forget
 
   return { slot, url: result.secure_url };
 }
@@ -92,7 +87,7 @@ async function uploadImage(dealerId, slot, fileBuffer) {
 async function deleteImage(dealerId, slot) {
   if (!IMAGE_SLOTS.includes(slot)) throw badRequest('Vị trí ảnh không hợp lệ');
   const publicId = profileModel.deleteImage(dealerId, slot);
-  if (publicId) uploadService.deleteByPublicId(publicId);
+  if (publicId) uploadService.deleteByPublicId(publicId).catch(() => {});
 }
 
 module.exports = { get, update, uploadImage, deleteImage, TEMPLATES, IMAGE_SLOTS };

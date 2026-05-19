@@ -5,46 +5,349 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Trang chính · Đại Lý Số</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="/assets/js/api.js"></script>
   <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/common.js"></script>
   <script src="/assets/js/dealer-shell.js"></script>
   <script>
     tailwind.config = { theme: { extend: { colors: { brand: { 500:'#0a6fd6', 600:'#0858b3', 700:'#063f7a', 900:'#0f2744' } } } } };
     const user = Auth.guard('dealer');
     document.addEventListener('DOMContentLoaded', () => { if (user) DealerShell.mount(user); });
   </script>
+  <style>[x-cloak]{display:none!important}</style>
 </head>
 <body class="min-h-screen bg-slate-50">
   <div id="dealer-shell"></div>
 
-  <main class="max-w-6xl mx-auto px-6 py-10">
-    <h2 class="text-2xl font-bold text-slate-800 mb-6">Chào mừng đến Đại Lý Số</h2>
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6" x-data="dealerDashboard()" x-init="load()">
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <a href="/dealer/profile.html" class="block bg-white rounded-2xl border border-slate-200 hover:border-brand-500 hover:shadow-md transition p-6">
-        <div class="text-3xl mb-3">📋</div>
-        <h3 class="font-bold text-slate-800">Hồ sơ đại lý</h3>
-        <p class="text-sm text-slate-500 mt-1">Giới thiệu năng lực, kho/xưởng, công trình, đội ngũ.</p>
-      </a>
+    <!-- Header bar: greeting + quick action -->
+    <div class="flex items-center justify-between gap-3 mb-5 flex-wrap">
+      <div>
+        <h2 class="text-2xl font-bold text-slate-800">
+          Chào <span x-text="firstName"></span>!
+        </h2>
+        <p class="text-sm text-slate-500 mt-0.5" x-text="todayLabel"></p>
+      </div>
+      <div class="flex gap-2">
+        <a href="/dealer/quotation-edit.html" class="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap">
+          + Báo giá mới
+        </a>
+      </div>
+    </div>
 
-      <a href="/dealer/products.html" class="block bg-white rounded-2xl border border-slate-200 hover:border-brand-500 hover:shadow-md transition p-6">
-        <div class="text-3xl mb-3">📦</div>
-        <h3 class="font-bold text-slate-800">Sản phẩm</h3>
-        <p class="text-sm text-slate-500 mt-1">Danh mục sản phẩm — tái dùng khi tạo báo giá.</p>
-      </a>
+    <div x-show="loading" class="text-center text-slate-400 py-12">Đang tải...</div>
 
-      <a href="/dealer/customers.html" class="block bg-white rounded-2xl border border-slate-200 hover:border-brand-500 hover:shadow-md transition p-6">
-        <div class="text-3xl mb-3">👥</div>
-        <h3 class="font-bold text-slate-800">Khách hàng</h3>
-        <p class="text-sm text-slate-500 mt-1">Quản lý danh sách khách hàng.</p>
-      </a>
+    <div x-show="!loading" class="space-y-5">
 
-      <a href="/dealer/quotations.html" class="block bg-white rounded-2xl border border-slate-200 hover:border-brand-500 hover:shadow-md transition p-6">
-        <div class="text-3xl mb-3">📝</div>
-        <h3 class="font-bold text-slate-800">Báo giá</h3>
-        <p class="text-sm text-slate-500 mt-1">Tạo báo giá gửi khách + xuất PDF.</p>
-      </a>
+      <!-- KPI cards -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="bg-white rounded-xl border border-slate-200 p-4">
+          <div class="text-xs text-slate-500 font-semibold uppercase tracking-wide">Doanh số tháng này</div>
+          <div class="text-2xl font-black text-green-700 mt-2 tabular-nums" x-text="Fmt.formatMoney(kpi.revenue_month)"></div>
+          <div class="text-xs text-slate-400 mt-1">
+            <span x-text="kpi.quotations_month"></span> báo giá · <span x-text="kpi.sent_month"></span> đã gửi
+          </div>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-4">
+          <div class="text-xs text-slate-500 font-semibold uppercase tracking-wide">Báo giá draft</div>
+          <div class="text-2xl font-black text-amber-600 mt-2 tabular-nums" x-text="kpi.draft_count"></div>
+          <div class="text-xs text-slate-400 mt-1">cần hoàn thành / gửi</div>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-4">
+          <div class="text-xs text-slate-500 font-semibold uppercase tracking-wide">Khách hàng mới</div>
+          <div class="text-2xl font-black text-brand-700 mt-2 tabular-nums" x-text="kpi.new_customers_week"></div>
+          <div class="text-xs text-slate-400 mt-1">trong 7 ngày qua · tổng <span x-text="kpi.customers_total"></span></div>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-4">
+          <div class="text-xs text-slate-500 font-semibold uppercase tracking-wide">Tổng hợp</div>
+          <div class="text-sm text-slate-700 mt-2 space-y-0.5">
+            <div>Sản phẩm catalog: <span class="font-bold tabular-nums" x-text="kpi.products_total"></span></div>
+            <div>Khách hàng: <span class="font-bold tabular-nums" x-text="kpi.customers_total"></span></div>
+            <div>Tổng báo giá: <span class="font-bold tabular-nums" x-text="kpi.quotations_total"></span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alerts: BG cần xử lý -->
+      <div x-show="alertCount > 0" class="bg-amber-50 border border-amber-300 rounded-xl p-4">
+        <h3 class="text-sm font-bold text-amber-800 mb-2">⚠ Cần xử lý (<span x-text="alertCount"></span>)</h3>
+        <div class="space-y-2">
+          <template x-for="bg in alerts.stale_draft" :key="bg.id">
+            <a :href="'/dealer/quotation-edit.html?id=' + bg.id"
+               class="block bg-white hover:bg-amber-50 rounded-lg p-3 border border-amber-200 transition">
+              <div class="flex justify-between items-center gap-2 flex-wrap">
+                <div>
+                  <span class="font-mono font-bold text-sm text-slate-800" x-text="bg.so_bao_gia"></span>
+                  <span class="text-xs text-slate-500 ml-2" x-text="bg.customer_name || '— chưa KH —'"></span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-semibold text-amber-700">Draft <span x-text="daysAgo(bg.created_at)"></span></span>
+                  <span class="text-sm font-bold tabular-nums text-slate-700" x-text="Fmt.formatMoney(bg.tong_cong)"></span>
+                </div>
+              </div>
+            </a>
+          </template>
+          <template x-for="bg in alerts.stale_pending" :key="'p-' + bg.id">
+            <a :href="'/dealer/quotation-edit.html?id=' + bg.id"
+               class="block bg-white hover:bg-amber-50 rounded-lg p-3 border border-amber-200 transition">
+              <div class="flex justify-between items-center gap-2 flex-wrap">
+                <div>
+                  <span class="font-mono font-bold text-sm text-slate-800" x-text="bg.so_bao_gia"></span>
+                  <span class="text-xs text-slate-500 ml-2" x-text="bg.customer_name || '— chưa KH —'"></span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-semibold text-blue-700">Đã gửi <span x-text="daysAgo(bg.sent_at)"></span></span>
+                  <span class="text-sm font-bold tabular-nums text-slate-700" x-text="Fmt.formatMoney(bg.tong_cong)"></span>
+                </div>
+              </div>
+            </a>
+          </template>
+        </div>
+      </div>
+
+      <!-- Recent quotations + Top customers (2 col) -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+        <!-- Recent quotations -->
+        <div class="bg-white rounded-xl border border-slate-200">
+          <div class="px-4 py-3 border-b border-slate-100 flex justify-between items-center">
+            <h3 class="text-sm font-bold text-slate-800">Báo giá gần đây</h3>
+            <a href="/dealer/quotations.html" class="text-xs text-brand-600 hover:underline">Xem tất cả →</a>
+          </div>
+          <div class="divide-y divide-slate-100">
+            <template x-for="bg in recentQuotations" :key="bg.id">
+              <a :href="'/dealer/quotation-edit.html?id=' + bg.id"
+                 class="block px-4 py-3 hover:bg-slate-50 transition">
+                <div class="flex justify-between items-center gap-2 flex-wrap">
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2">
+                      <span class="font-mono font-bold text-sm text-slate-800" x-text="bg.so_bao_gia"></span>
+                      <span class="text-xs px-2 py-0.5 rounded font-semibold" :class="statusClass(bg.status)" x-text="statusLabel(bg.status)"></span>
+                    </div>
+                    <div class="text-xs text-slate-500 mt-0.5 truncate" x-text="bg.customer_name || '— chưa chọn KH —'"></div>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-sm font-bold tabular-nums text-brand-700" x-text="Fmt.formatMoney(bg.tong_cong)"></div>
+                    <div class="text-xs text-slate-400" x-text="relativeTime(bg.updated_at)"></div>
+                  </div>
+                </div>
+              </a>
+            </template>
+            <div x-show="recentQuotations.length === 0" class="px-4 py-8 text-center text-slate-400 italic text-sm">
+              Chưa có báo giá nào. <a href="/dealer/quotation-edit.html" class="text-brand-600 font-semibold">+ Tạo mới</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top customers -->
+        <div class="bg-white rounded-xl border border-slate-200">
+          <div class="px-4 py-3 border-b border-slate-100 flex justify-between items-center">
+            <h3 class="text-sm font-bold text-slate-800">Top khách hàng (doanh số)</h3>
+            <a href="/dealer/customers.html" class="text-xs text-brand-600 hover:underline">Xem tất cả →</a>
+          </div>
+          <table class="w-full text-sm">
+            <tbody class="divide-y divide-slate-100">
+              <template x-for="(c, i) in topCustomers" :key="c.id">
+                <tr class="hover:bg-slate-50">
+                  <td class="px-4 py-2.5 text-slate-400 font-bold w-8 tabular-nums" x-text="i + 1"></td>
+                  <td class="px-2 py-2.5">
+                    <div class="font-semibold text-slate-800" x-text="c.ten_kh"></div>
+                    <div class="text-xs text-slate-400 font-mono" x-text="c.ma_kh + (c.phone ? ' · ' + c.phone : '')"></div>
+                  </td>
+                  <td class="px-2 py-2.5 text-right">
+                    <div class="text-sm font-bold tabular-nums text-green-700" x-text="Fmt.formatMoney(c.revenue)"></div>
+                    <div class="text-xs text-slate-400"><span x-text="c.bg_count"></span> BG</div>
+                  </td>
+                </tr>
+              </template>
+              <tr x-show="topCustomers.length === 0">
+                <td class="px-4 py-8 text-center text-slate-400 italic text-sm" colspan="3">
+                  Chưa có doanh số. Tạo báo giá để bắt đầu tracking.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Chart 6 tháng + Top SP (2 col) -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+        <!-- Chart -->
+        <div class="bg-white rounded-xl border border-slate-200 p-4 lg:col-span-2">
+          <h3 class="text-sm font-bold text-slate-800 mb-2">Doanh số 6 tháng gần nhất</h3>
+          <div class="h-64"><canvas id="chart-monthly"></canvas></div>
+        </div>
+
+        <!-- Top products -->
+        <div class="bg-white rounded-xl border border-slate-200">
+          <div class="px-4 py-3 border-b border-slate-100">
+            <h3 class="text-sm font-bold text-slate-800">Sản phẩm bán chạy</h3>
+          </div>
+          <table class="w-full text-sm">
+            <tbody class="divide-y divide-slate-100">
+              <template x-for="(p, i) in topProducts" :key="p.ma_sp">
+                <tr class="hover:bg-slate-50">
+                  <td class="px-3 py-2.5 text-slate-400 font-bold w-7 tabular-nums" x-text="i + 1"></td>
+                  <td class="px-2 py-2.5">
+                    <div class="font-mono font-bold text-xs text-slate-800" x-text="p.ma_sp"></div>
+                    <div class="text-xs text-slate-500" x-text="p.ten_sp || '—'"></div>
+                  </td>
+                  <td class="px-2 py-2.5 text-right">
+                    <div class="text-sm font-bold tabular-nums text-brand-700"><span x-text="p.times_used"></span>×</div>
+                    <div class="text-xs text-slate-400" x-text="Fmt.formatMoney(p.total_value)"></div>
+                  </td>
+                </tr>
+              </template>
+              <tr x-show="topProducts.length === 0">
+                <td class="px-4 py-8 text-center text-slate-400 italic text-sm" colspan="3">
+                  Chưa có dữ liệu
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Quick menu (giữ lại cho mobile / new dealer chưa quen) -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
+        <a href="/dealer/profile.html" class="bg-white rounded-xl border border-slate-200 hover:border-brand-500 transition p-4 text-center">
+          <div class="text-2xl mb-1">📋</div>
+          <div class="text-sm font-semibold text-slate-700">Hồ sơ</div>
+        </a>
+        <a href="/dealer/products.html" class="bg-white rounded-xl border border-slate-200 hover:border-brand-500 transition p-4 text-center">
+          <div class="text-2xl mb-1">📦</div>
+          <div class="text-sm font-semibold text-slate-700">Sản phẩm</div>
+        </a>
+        <a href="/dealer/customers.html" class="bg-white rounded-xl border border-slate-200 hover:border-brand-500 transition p-4 text-center">
+          <div class="text-2xl mb-1">👥</div>
+          <div class="text-sm font-semibold text-slate-700">Khách hàng</div>
+        </a>
+        <a href="/dealer/quotations.html" class="bg-white rounded-xl border border-slate-200 hover:border-brand-500 transition p-4 text-center">
+          <div class="text-2xl mb-1">📝</div>
+          <div class="text-sm font-semibold text-slate-700">Báo giá</div>
+        </a>
+      </div>
+
     </div>
   </main>
+
+  <script>
+    function dealerDashboard() {
+      return {
+        loading: true,
+        kpi: { revenue_month: 0, quotations_month: 0, sent_month: 0, draft_count: 0, new_customers_week: 0, quotations_total: 0, customers_total: 0, products_total: 0 },
+        alerts: { stale_draft: [], stale_pending: [] },
+        recentQuotations: [], topCustomers: [], topProducts: [], monthly: [],
+        Fmt: window.Fmt,
+        _chart: null,
+
+        get firstName() {
+          const u = Auth.getUser();
+          if (!u) return '';
+          // Ưu tiên full_name, fallback username
+          const name = u.full_name || u.username || '';
+          // Lấy tên gọi (từ cuối) hoặc cả tên nếu ngắn
+          const parts = name.trim().split(/\s+/);
+          return parts.length > 1 ? parts[parts.length - 1] : name;
+        },
+        get todayLabel() {
+          const d = new Date();
+          const days = ['Chủ nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+          return `${days[d.getDay()]}, ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+        },
+        get alertCount() {
+          return this.alerts.stale_draft.length + this.alerts.stale_pending.length;
+        },
+
+        async load() {
+          this.loading = true;
+          try {
+            const r = await API.get('/api/dealer/dashboard');
+            this.kpi = r.data.kpi;
+            this.alerts = r.data.alerts;
+            this.recentQuotations = r.data.recent_quotations;
+            this.topCustomers = r.data.top_customers;
+            this.topProducts = r.data.top_products;
+            this.monthly = r.data.monthly;
+            this.$nextTick(() => this.drawChart());
+          } catch (e) { console.error(e); alert('Lỗi tải dashboard: ' + e.message); }
+          finally { this.loading = false; }
+        },
+
+        drawChart() {
+          const ctx = document.getElementById('chart-monthly');
+          if (!ctx) return;
+          if (this._chart) this._chart.destroy();
+          // Fill 6 tháng đủ (kể cả tháng không có data)
+          const map = Object.fromEntries(this.monthly.map(m => [m.ym, m]));
+          const labels = [], counts = [], revenues = [];
+          for (let i = 5; i >= 0; i--) {
+            const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - i);
+            const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+            labels.push(`T${d.getMonth()+1}/${d.getFullYear().toString().slice(-2)}`);
+            const r = map[ym];
+            counts.push(r ? r.count : 0);
+            revenues.push(r ? Math.round(r.revenue / 1e6) : 0);
+          }
+          this._chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels,
+              datasets: [
+                { label: 'Doanh số (triệu đ)', data: revenues, backgroundColor: '#0a6fd6', yAxisID: 'y', borderRadius: 4 },
+                { label: 'Số BG', data: counts, type: 'line', borderColor: '#d4a55b', backgroundColor: '#d4a55b', tension: 0.3, yAxisID: 'y1' },
+              ]
+            },
+            options: {
+              responsive: true, maintainAspectRatio: false,
+              scales: {
+                y:  { beginAtZero: true, position: 'left',  title: { display: true, text: 'Triệu đ' } },
+                y1: { beginAtZero: true, position: 'right', title: { display: true, text: 'Số BG' }, grid: { drawOnChartArea: false }, ticks: { stepSize: 1 } },
+              },
+              plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } }
+            }
+          });
+        },
+
+        statusLabel(s) {
+          return ({ draft: 'Nháp', sent: 'Đã gửi', confirmed: 'Đã xác nhận', cancelled: 'Đã huỷ' })[s] || s;
+        },
+        statusClass(s) {
+          return ({
+            draft: 'bg-slate-100 text-slate-700',
+            sent: 'bg-blue-100 text-blue-700',
+            confirmed: 'bg-green-100 text-green-700',
+            cancelled: 'bg-red-100 text-red-700',
+          })[s] || 'bg-slate-100 text-slate-700';
+        },
+
+        daysAgo(iso) {
+          if (!iso) return '';
+          const d = new Date(iso);
+          const days = Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24));
+          if (days === 0) return 'hôm nay';
+          if (days === 1) return '1 ngày trước';
+          return days + ' ngày trước';
+        },
+        relativeTime(iso) {
+          if (!iso) return '';
+          const d = new Date(iso);
+          const diff = Date.now() - d.getTime();
+          const mins = Math.floor(diff / 60000);
+          if (mins < 1) return 'vừa xong';
+          if (mins < 60) return mins + ' phút trước';
+          const hrs = Math.floor(mins / 60);
+          if (hrs < 24) return hrs + ' giờ trước';
+          const days = Math.floor(hrs / 24);
+          if (days < 30) return days + ' ngày trước';
+          return d.toLocaleDateString('vi-VN');
+        },
+      };
+    }
+  </script>
 </body>
 </html>

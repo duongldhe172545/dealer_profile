@@ -7,10 +7,14 @@ const customerController = require('../controllers/customer.controller');
 const quotationController = require('../controllers/quotation.controller');
 const iconController = require('../controllers/icon-library.controller');
 const iconUploadController = require('../controllers/icon-upload.controller');
+const dealerStatsController = require('../controllers/dealer-stats.controller');
 
 const router = express.Router();
 
 router.use(requireAuth, requireRole('dealer'));
+
+// Dashboard tổng quan của đại lý
+router.get('/dashboard', dealerStatsController.dashboard);
 
 // Hồ sơ
 router.get('/profile', profileController.getMine);

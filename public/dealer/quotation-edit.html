@@ -318,7 +318,6 @@
         <div class="panel">
           <div class="panel-hd">
             <h3>Ảnh đính kèm <span class="text-xs font-normal text-slate-500">(tối đa 5 · jpg/png/webp ≤ 5MB)</span></h3>
-            <span x-show="!editingId" class="text-xs text-amber-600">Lưu báo giá trước khi tải ảnh.</span>
           </div>
           <div class="panel-bd">
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
@@ -335,15 +334,15 @@
                              placeholder="Chú thích (tuỳ chọn)"
                              class="w-full text-[10px] px-2 py-1 mb-1 border border-slate-200 rounded outline-none focus:border-brand-500">
                       <div class="flex gap-1">
-                        <button @click="pickQuotationImage(slot)" type="button" :disabled="!editingId || qImgUploading[slot]"
+                        <button @click="pickQuotationImage(slot)" type="button" :disabled="qImgUploading[slot]"
                                 class="flex-1 text-[10px] bg-slate-100 hover:bg-slate-200 px-1.5 py-1 rounded font-semibold disabled:opacity-50">Đổi</button>
-                        <button @click="deleteQuotationImage(slot)" type="button" :disabled="!editingId || qImgUploading[slot]"
+                        <button @click="deleteQuotationImage(slot)" type="button" :disabled="qImgUploading[slot]"
                                 class="text-[10px] bg-red-50 hover:bg-red-100 text-red-700 px-1.5 py-1 rounded font-semibold disabled:opacity-50">Xoá</button>
                       </div>
                     </div>
                   </template>
                   <template x-if="!getQImg(slot)">
-                    <button @click="pickQuotationImage(slot)" type="button" :disabled="!editingId || qImgUploading[slot]"
+                    <button @click="pickQuotationImage(slot)" type="button" :disabled="qImgUploading[slot]"
                             class="img-empty-btn disabled:opacity-50">
                       <span x-show="!qImgUploading[slot]" class="text-xl leading-none">+</span>
                       <span x-show="!qImgUploading[slot]" class="text-[10px] font-semibold mt-0.5">Chọn ảnh</span>
@@ -353,7 +352,7 @@
                 </div>
               </template>
             </div>
-            <p x-show="!editingId" class="text-xs text-slate-500 mt-2 italic">Sau khi bấm "Lưu báo giá" sẽ mở chức năng tải ảnh.</p>
+            <p x-show="!editingId" class="text-xs text-slate-500 mt-2 italic">Bấm "+ Chọn ảnh" — báo giá sẽ tự lưu draft trước khi mở picker.</p>
           </div>
         </div>
 

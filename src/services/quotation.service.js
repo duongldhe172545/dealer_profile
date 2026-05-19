@@ -90,14 +90,18 @@ function normalizeAdjustment(a, idx) {
 //   - FE chưa update gửi items flat (không có sections) → tự bọc 1 section default
 //   - FE chưa update gửi chi_phi_van_chuyen / chi_phi_lap_dat → tự convert sang
 //     adjustments kind=plus (khi không có adjustments truyền vào)
+//   - BG draft trống hoàn toàn (no sections, no items) → để rỗng, không wrap
 function prepareSectionedPayload(body) {
   // Sections + items
   let rawSections;
   if (Array.isArray(body.sections) && body.sections.length) {
     rawSections = body.sections;
+  } else if (Array.isArray(body.items) && body.items.length) {
+    // FE cũ: items flat → wrap 1 section default
+    rawSections = [{ ten: 'Chưa phân nhóm', items: body.items }];
   } else {
-    // Fallback: wrap items flat vào 1 section default
-    rawSections = [{ ten: 'Chưa phân nhóm', items: body.items || [] }];
+    // BG draft trống — cho phép save để có id (upload ảnh / xuất PDF cần id)
+    rawSections = [];
   }
 
   const sections = [];
@@ -204,7 +208,8 @@ function suggestNumber(dealerId, ngay_bao_gia) {
 
 function create(dealerId, body, ctx) {
   const { sections, items, adjustments } = prepareSectionedPayload(body);
-  if (!items.length) throw badRequest('Vui lòng thêm ít nhất 1 dòng sản phẩm');
+  // KHÔNG check items.length — cho phép tạo BG draft trống (để có id upload ảnh,
+  // xuất PDF, ...). Validation "ít nhất 1 item" sẽ áp khi đại lý markSent.
 
   const header = normalizeHeader(dealerId, body, true, DEFAULT_VAT_NEW);
   if (!header.so_bao_gia) throw badRequest('Thiếu số báo giá');
@@ -236,7 +241,7 @@ function update(dealerId, id, body) {
   }
 
   const { sections, items, adjustments } = prepareSectionedPayload(body);
-  if (!items.length) throw badRequest('Vui lòng thêm ít nhất 1 dòng sản phẩm');
+  // KHÔNG check items.length — cho phép save draft trống. Sẽ kiểm khi markSent.
 
   const header = normalizeHeader(dealerId, body, false, existing.vat_percent || 0);
   if (!header.so_bao_gia) header.so_bao_gia = existing.so_bao_gia;
@@ -266,6 +271,10 @@ function remove(dealerId, id) {
 
 function markSent(dealerId, id, body, ctx) {
   const existing = getById(dealerId, id);
+  // Khi gửi BG đi → bắt buộc có ít nhất 1 dòng sản phẩm
+  if (!existing.items || !existing.items.length) {
+    throw badRequest('Báo giá chưa có dòng sản phẩm nào — không thể gửi đi');
+  }
   const sent_method = body.sent_method;
   if (!VALID_METHODS.includes(sent_method)) throw badRequest('Phương thức gửi không hợp lệ');
   const ok = quotationModel.markSent(dealerId, id, {

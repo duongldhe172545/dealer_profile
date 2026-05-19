@@ -581,14 +581,17 @@ function quoteForm() {
         if (this.editingId) res = await API.put('/api/dealer/quotations/' + this.editingId, payload);
         else res = await API.post('/api/dealer/quotations', payload);
         const id = res.data.id;
-        this.savedFlash = true;
-        setTimeout(() => { this.savedFlash = false; }, 5000);
-        if (!this.editingId) {
-          window.location.replace('/dealer/quotation-edit.html?id=' + id);
-          return;     // page reload, không cần reset state
+        const wasNew = !this.editingId;
+        this.editingId = id;
+        // Update URL bar không reload page → state form giữ nguyên,
+        // có thể tiếp tục upload ảnh / export PDF mà không mất gì.
+        if (wasNew) {
+          history.replaceState({}, '', '/dealer/quotation-edit.html?id=' + id);
         }
         await this.loadQuotation(id);
         this.lastSavedAt = new Date();
+        this.savedFlash = true;
+        setTimeout(() => { this.savedFlash = false; }, 5000);
       } catch (e) { this.error = e.message; window.scrollTo({ top: 0, behavior: 'smooth' }); }
       finally {
         this.saving = false;
@@ -598,6 +601,14 @@ function quoteForm() {
           this._initializing = false;
         }, 200);
       }
+    },
+
+    // Đảm bảo BG có id trước khi làm action cần id (upload ảnh, export PDF...).
+    // Auto-save background nếu chưa có. Trả về true nếu sẵn sàng, false nếu fail.
+    async _ensureSaved() {
+      if (this.editingId) return true;
+      await this.save();
+      return !!this.editingId;
     },
 
     // ─── Preview ─────────────────────────────────────────────────────────
@@ -667,7 +678,12 @@ ${chu || dl}`;
     },
 
     async exportPDF() {
-      if (!this.form.so_bao_gia) { this.error = 'Lưu báo giá trước khi xuất PDF'; return; }
+      // BG mới chưa save → auto-save trước (export PDF cần số BG đã sinh)
+      if (!this.editingId) {
+        const ok = await this._ensureSaved();
+        if (!ok) return;
+      }
+      if (!this.form.so_bao_gia) { this.error = 'Không có số báo giá'; return; }
       this.error = '';
       const root = document.querySelector('.q-print-root');
       root.innerHTML = this.renderPreview();
@@ -761,8 +777,12 @@ ${chu || dl}`;
     // ─── Ảnh đính kèm báo giá (không đổi vs cũ) ──────────────────────────
     getQImg(slot) { return this.quotationImages.find(i => i.slot === slot); },
 
-    pickQuotationImage(slot) {
-      if (!this.editingId) return;
+    async pickQuotationImage(slot) {
+      // BG mới chưa save → auto-save draft để có id rồi mở picker
+      if (!this.editingId) {
+        const ok = await this._ensureSaved();
+        if (!ok) return;
+      }
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = 'image/jpeg,image/png,image/webp';

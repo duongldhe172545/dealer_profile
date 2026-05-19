@@ -26,7 +26,8 @@ router.get('/dealers/:id/full', statsController.dealerDetail);
 router.get('/export/:type', statsController.exportCSV);
 
 // Tải backup DB (cho admin — Railway free tier không có Backup tab)
-router.get('/db-download', adminDbController.downloadDb);
+router.get('/db-download', adminDbController.downloadDb);          // file .db sqlite
+router.get('/db-export-html', adminDbController.exportHtml);       // file .html xem trong browser
 
 // Icon library
 router.get('/icons', iconController.list);

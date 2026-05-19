@@ -32,6 +32,12 @@
         <button @click="exportCSV('quotations')" class="text-sm bg-white border border-slate-300 hover:bg-slate-100 px-3 py-1.5 rounded-lg font-semibold">⬇ Excel Báo giá</button>
         <button @click="exportCSV('customers')" class="text-sm bg-white border border-slate-300 hover:bg-slate-100 px-3 py-1.5 rounded-lg font-semibold">⬇ Excel KH</button>
         <button @click="exportCSV('products')" class="text-sm bg-white border border-slate-300 hover:bg-slate-100 px-3 py-1.5 rounded-lg font-semibold">⬇ Excel SP</button>
+        <button @click="downloadDb()" :disabled="dbDownloading"
+                class="text-sm bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-800 px-3 py-1.5 rounded-lg font-semibold disabled:opacity-50"
+                title="Tải 2 file backup: .db (sqlite cho tech/AI) + .html (mở browser xem trực tiếp). Làm trước mỗi lần deploy.">
+          <span x-show="!dbDownloading">💾 Backup DB (.db + .html)</span>
+          <span x-show="dbDownloading" x-cloak>Đang tải 2 file...</span>
+        </button>
       </div>
     </div>
 
@@ -231,6 +237,37 @@
             a.click();
             setTimeout(() => URL.revokeObjectURL(url), 500);
           } catch (e) { alert(e.message); }
+        },
+
+        dbDownloading: false,
+        async downloadDb() {
+          if (this.dbDownloading) return;
+          this.dbDownloading = true;
+          try {
+            const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+            // Tải song song 2 file: .db (cho AI/tech) + .html (xem trong browser)
+            await Promise.all([
+              this._fetchAndSave('/api/admin/db-download', `app-${ts}.db`),
+              this._fetchAndSave('/api/admin/db-export-html', `backup-readable-${ts}.html`),
+            ]);
+          } catch (e) { alert('Lỗi backup: ' + e.message); }
+          finally { this.dbDownloading = false; }
+        },
+        async _fetchAndSave(url, filename) {
+          const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + API.getToken() } });
+          if (!res.ok) {
+            let msg = 'Download thất bại';
+            try { msg = (await res.json()).error || msg; } catch {}
+            throw new Error(msg);
+          }
+          const blob = await res.blob();
+          const objUrl = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = objUrl; a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(objUrl), 500);
         },
       };
     }

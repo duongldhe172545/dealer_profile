@@ -163,21 +163,21 @@
               <div class="col-span-2"><label class="field-label">Email</label>
                 <input class="field-input" type="email" x-model="dealer.email"></div>
               <div class="col-span-2"><label class="field-label">Địa chỉ</label>
-                <input class="field-input" x-model="dealer.address"></div>
+                <textarea class="field-textarea" rows="2" x-model="dealer.address"></textarea></div>
               <div><label class="field-label">Quận / Huyện</label>
                 <input class="field-input" x-model="dealer.district"></div>
               <div><label class="field-label">Tỉnh / TP</label>
                 <input class="field-input" x-model="dealer.province"></div>
               <div class="col-span-2"><label class="field-label">Khu vực phụ trách</label>
-                <input class="field-input" x-model="dealer.coverage" placeholder="VD: Hà Nội · Hà Nam · Hưng Yên"></div>
+                <textarea class="field-textarea" rows="2" x-model="dealer.coverage"></textarea></div>
               <div><label class="field-label">Số năm kinh nghiệm</label>
-                <input class="field-input" x-model="dealer.years_experience" placeholder="VD: 8+"></div>
+                <input class="field-input" x-model="dealer.years_experience"></div>
               <div><label class="field-label">Quy mô đội ngũ</label>
-                <input class="field-input" x-model="dealer.team_size" placeholder="VD: 12"></div>
+                <input class="field-input" x-model="dealer.team_size"></div>
               <div><label class="field-label">Dự án / tháng</label>
-                <input class="field-input" x-model="dealer.projects_monthly" placeholder="VD: 35+"></div>
+                <input class="field-input" x-model="dealer.projects_monthly"></div>
               <div><label class="field-label">Giờ mở cửa</label>
-                <input class="field-input" x-model="dealer.open_hours" placeholder="VD: 08:00 - 20:00"></div>
+                <input class="field-input" x-model="dealer.open_hours"></div>
             </div>
           </div>
         </div>
@@ -187,11 +187,11 @@
           <div class="panel-hd"><h3>Mô tả & năng lực</h3></div>
           <div class="panel-bd space-y-3">
             <div><label class="field-label">Thông điệp định vị (tagline)</label>
-              <textarea class="field-textarea" rows="3" x-model="profile.tagline" placeholder="Câu giới thiệu ngắn..."></textarea></div>
+              <textarea class="field-textarea" rows="3" x-model="profile.tagline"></textarea></div>
             <div><label class="field-label">Năng lực nổi bật (mỗi dòng 1 ý)</label>
-              <textarea class="field-textarea" rows="5" x-model="profile.usp_text" placeholder="Khảo sát tận nơi 24h&#10;Báo giá rõ vật tư - nhân công&#10;Đội ngũ có checklist hiện trường"></textarea></div>
+              <textarea class="field-textarea" rows="5" x-model="profile.usp_text"></textarea></div>
             <div><label class="field-label">Sản phẩm & dịch vụ (mỗi dòng 1 ý)</label>
-              <textarea class="field-textarea" rows="5" x-model="profile.services_text" placeholder="Cửa cuốn&#10;Cửa nhôm - kính&#10;Motor, lưu điện, phụ kiện"></textarea></div>
+              <textarea class="field-textarea" rows="5" x-model="profile.services_text"></textarea></div>
             <div><label class="field-label">Cam kết chăm sóc khách hàng (mỗi dòng 1 ý)</label>
               <textarea class="field-textarea" rows="4" x-model="profile.commitments_text"></textarea></div>
             <div><label class="field-label">Nhận xét / phản hồi khách hàng</label>
@@ -200,8 +200,7 @@
               <textarea class="field-textarea" rows="2" x-model="profile.cta_text"></textarea></div>
             <div>
               <label class="field-label">Câu giới thiệu khối "Đối tác chiến lược"</label>
-              <input class="field-input" x-model="profile.partners_title"
-                     :placeholder="defaultPartnersTitle()">
+              <textarea class="field-textarea" rows="2" x-model="profile.partners_title"></textarea>
               <p class="text-[11px] text-slate-500 mt-1">Bỏ trống → tự động dùng câu mặc định: <em x-text="defaultPartnersTitle()"></em>. Logo đối tác (tối đa 5) tải ở tab "Hình ảnh".</p>
             </div>
           </div>
@@ -212,18 +211,18 @@
           <div class="panel">
             <div class="panel-hd"><h3>3 huy hiệu nhanh</h3></div>
             <div class="panel-bd grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <input class="field-input" x-model="profile.badge1" placeholder="VD: Đã xác thực">
-              <input class="field-input" x-model="profile.badge2" placeholder="VD: Có kho/xưởng">
-              <input class="field-input" x-model="profile.badge3" placeholder="VD: Hỗ trợ khảo sát">
+              <textarea class="field-textarea" rows="2" x-model="profile.badge1"></textarea>
+              <textarea class="field-textarea" rows="2" x-model="profile.badge2"></textarea>
+              <textarea class="field-textarea" rows="2" x-model="profile.badge3"></textarea>
             </div>
           </div>
 
           <div class="panel">
             <div class="panel-hd"><h3>3 ưu điểm nổi bật</h3></div>
             <div class="panel-bd grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <input class="field-input" x-model="profile.usp_highlight1" placeholder="Ưu điểm 1">
-              <input class="field-input" x-model="profile.usp_highlight2" placeholder="Ưu điểm 2">
-              <input class="field-input" x-model="profile.usp_highlight3" placeholder="Ưu điểm 3">
+              <textarea class="field-textarea" rows="2" x-model="profile.usp_highlight1"></textarea>
+              <textarea class="field-textarea" rows="2" x-model="profile.usp_highlight2"></textarea>
+              <textarea class="field-textarea" rows="2" x-model="profile.usp_highlight3"></textarea>
             </div>
           </div>
 
@@ -231,16 +230,16 @@
             <div class="panel-hd"><h3>3 chỉ số ấn tượng (KPI)</h3></div>
             <div class="panel-bd grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div class="space-y-2">
-                <input class="field-input" x-model="profile.metric1_value" placeholder="VD: 35+">
-                <input class="field-input" x-model="profile.metric1_label" placeholder="dự án/tháng">
+                <input class="field-input" x-model="profile.metric1_value">
+                <input class="field-input" x-model="profile.metric1_label">
               </div>
               <div class="space-y-2">
-                <input class="field-input" x-model="profile.metric2_value" placeholder="VD: 24h">
-                <input class="field-input" x-model="profile.metric2_label" placeholder="phản hồi">
+                <input class="field-input" x-model="profile.metric2_value">
+                <input class="field-input" x-model="profile.metric2_label">
               </div>
               <div class="space-y-2">
-                <input class="field-input" x-model="profile.metric3_value" placeholder="VD: 4.8/5">
-                <input class="field-input" x-model="profile.metric3_label" placeholder="đánh giá">
+                <input class="field-input" x-model="profile.metric3_value">
+                <input class="field-input" x-model="profile.metric3_label">
               </div>
             </div>
           </div>

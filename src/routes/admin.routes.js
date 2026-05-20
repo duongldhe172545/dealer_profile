@@ -1,8 +1,9 @@
 const express = require('express');
 const { requireAuth, requireRole } = require('../middleware/auth');
+const { upload } = require('../services/upload.service');
 const dealerController = require('../controllers/dealer.controller');
 const statsController = require('../controllers/admin-stats.controller');
-const iconController = require('../controllers/icon-library.controller');
+const imageController = require('../controllers/image-library.controller');
 const adminDbController = require('../controllers/admin-db.controller');
 
 const router = express.Router();
@@ -29,12 +30,11 @@ router.get('/export/:type', statsController.exportCSV);
 router.get('/db-download', adminDbController.downloadDb);          // file .db sqlite
 router.get('/db-export-html', adminDbController.exportHtml);       // file .html xem trong browser
 
-// Icon library
-router.get('/icons', iconController.list);
-router.get('/icons/categories', iconController.categories);
-router.post('/icons', iconController.create);
-router.put('/icons/:id', iconController.update);
-router.delete('/icons/:id', iconController.remove);
+// Kho ảnh (admin xem tất cả + upload shared)
+router.get('/images', imageController.adminList);
+router.post('/images', upload.single('file'), imageController.adminUpload);
+router.put('/images/:id', imageController.updateMeta);
+router.delete('/images/:id', imageController.remove);
 
 // Audit log
 const auditModel = require('../models/audit.model');

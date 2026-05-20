@@ -32,7 +32,7 @@
 
     <!-- Filter bar -->
     <div class="bg-white border border-slate-200 rounded-xl p-4 mb-4 flex flex-wrap gap-3">
-      <input x-model="search" @input.debounce.400ms="load()" type="text" placeholder="Tìm theo tên / mã / SĐT..."
+      <input x-model="search" @input.debounce.400ms="load()" type="text"
              class="flex-1 min-w-[200px] px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none text-sm">
       <select x-model="status" @change="load()" class="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
         <option value="">Tất cả trạng thái</option>
@@ -103,7 +103,7 @@
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-semibold text-slate-600 mb-1">Mã đại lý *</label>
-              <input x-model="form.dealer_code" required placeholder="VD: DL-001"
+              <input x-model="form.dealer_code" required
                      class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm">
             </div>
             <div>
@@ -143,7 +143,7 @@
             </div>
             <div class="col-span-2">
               <label class="block text-xs font-semibold text-slate-600 mb-1">Khu vực phụ trách</label>
-              <input x-model="form.coverage" placeholder="VD: Hà Nội · Hà Nam · Hưng Yên"
+              <input x-model="form.coverage"
                      class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm">
             </div>
           </div>
@@ -154,12 +154,12 @@
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1">Tên đăng nhập *</label>
-                <input x-model="form.username" :required="!editingId" placeholder="VD: duongle"
+                <input x-model="form.username" :required="!editingId"
                        class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm font-mono">
               </div>
               <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1">Mật khẩu *</label>
-                <input x-model="form.password" :required="!editingId" type="text" placeholder="Tối thiểu 8 ký tự"
+                <input x-model="form.password" :required="!editingId" type="text"
                        class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm font-mono">
               </div>
             </div>
@@ -191,7 +191,7 @@
         <div class="px-6 py-5 space-y-3">
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">Mật khẩu mới *</label>
-            <input x-model="newPassword" type="text" placeholder="Tối thiểu 8 ký tự"
+            <input x-model="newPassword" type="text"
                    class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm font-mono">
           </div>
           <div x-show="error" x-cloak class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2" x-text="error"></div>

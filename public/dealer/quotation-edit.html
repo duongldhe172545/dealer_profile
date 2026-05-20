@@ -15,7 +15,7 @@
   <script src="/assets/js/common.js"></script>
   <script src="/assets/js/dealer-shell.js"></script>
   <script src="/assets/js/_helpers.js"></script>
-  <script src="/assets/js/icon-picker.js"></script>
+  <script src="/assets/js/image-picker.js"></script>
   <script src="/assets/js/quotation-template.js"></script>
   <script>
     tailwind.config = { theme: { extend: { colors: { brand: { 500:'#0a6fd6', 600:'#0858b3', 700:'#063f7a', 900:'#0b1f3a' } }, fontFamily: { sans: ['Be Vietnam Pro','Inter','system-ui','sans-serif'] } } } };
@@ -48,15 +48,24 @@
 
     .items-table {
       width: 100%; min-width: 1180px; border-collapse: collapse; font-size: 12px;
-      table-layout: fixed;       /* cells tuân width đã đặt, không co kéo */
+      table-layout: auto;        /* cell grow theo content khi gõ dài */
     }
     .items-table tbody td { vertical-align: top; }
     /* Textarea mô tả: auto-grow theo content (browser hiện đại) */
     .items-table textarea.field-input {
-      font-size: 12px; padding: 5px 7px; width: 100%;
+      font-size: 12px; padding: 5px 7px; width: 100%; min-width: 175px;
       resize: vertical; min-height: 32px; overflow: hidden;
       font-family: inherit; line-height: 1.4;
     }
+    /* Input trong items table: field-sizing=content cho phép input phình ngang theo text.
+       Browser hỗ trợ: Chrome/Edge 123+, FF 124+ (mid-2024). Fallback: width 100% như cũ. */
+    .items-table input.field-input {
+      field-sizing: content;
+      min-width: 100%;
+      max-width: 360px;
+    }
+    /* Cột số đơn giá có thể dài (vd 12.345.678) — tăng max */
+    .items-table td.num input.field-input { max-width: 220px; }
 
     /* Slot upload ảnh báo giá (compact, 5 cột) */
     .img-slot { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px; }
@@ -71,7 +80,8 @@
     }
     .img-empty-btn:hover:not(:disabled) { border-color: #0a6fd6; color: #0a6fd6; background: #f4f9ff; }
     .img-empty-btn:disabled { cursor: not-allowed; }
-    .items-table th, .items-table td { padding: 6px 5px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+    .items-table th, .items-table td { padding: 6px 5px; vertical-align: middle; }
+    .items-table thead th { border-bottom: 1px solid #e2e8f0; }
     .items-table th {
       font-size: 10.5px; text-transform: uppercase; color: #475569;
       font-weight: 700; background: #f8fafc; text-align: center;
@@ -79,6 +89,27 @@
     }
     .items-table .field-input { font-size: 12px; padding: 5px 7px; width: 100%; }
     .items-table .num { text-align: right; }
+
+    /* BS table (Bổ sung) — header columns + rows giống items-table nhưng compact hơn */
+    .bs-table {
+      width: 100%; border-collapse: collapse; font-size: 12px;
+      table-layout: auto;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .bs-table th, .bs-table td { padding: 5px 6px; vertical-align: middle; }
+    .bs-table thead th { border-bottom: 1px solid #fde68a; }
+    .bs-table th {
+      font-size: 10px; text-transform: uppercase; color: #92400e;
+      font-weight: 700; background: #fef3c7; text-align: center;
+      white-space: nowrap;
+    }
+    .bs-table .field-input { font-size: 12px; padding: 5px 7px; width: 100%; }
+    .bs-table .num { text-align: right; }
+    .bs-table input.field-input { field-sizing: content; min-width: 100%; max-width: 360px; }
+    .bs-table td.num input.field-input { max-width: 220px; }
 
     .action-bar { position: sticky; top: 0; z-index: 20; background: rgba(248,250,252,0.96); backdrop-filter: blur(8px); padding: 10px 0; border-bottom: 1px solid #e2e8f0; margin-bottom: 14px; }
   </style>
@@ -135,7 +166,7 @@
           <div class="panel-bd grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label class="field-label">Số báo giá *</label>
-              <input class="field-input" x-model="form.so_bao_gia" placeholder="Tự sinh nếu trống">
+              <input class="field-input" x-model="form.so_bao_gia">
             </div>
             <div>
               <label class="field-label">Ngày báo giá *</label>
@@ -157,8 +188,8 @@
               </div>
             </div>
             <div class="col-span-2">
-              <label class="field-label">Địa chỉ công trình</label>
-              <input class="field-input" x-model="form.dia_chi_cong_trinh">
+              <label class="field-label">Tên và địa chỉ công trình</label>
+              <textarea class="field-textarea" rows="2" x-model="form.dia_chi_cong_trinh"></textarea>
             </div>
             <div class="col-span-2">
               <label class="field-label">Ghi chú hồ sơ</label>
@@ -175,51 +206,54 @@
                     x-text="isGroupedMode ? '(' + form.sections.length + ' nhóm · ' + totalItemsCount + ' dòng)' : '(' + totalItemsCount + ' dòng)'"></span>
             </h3>
             <div class="flex items-center gap-2">
-              <button @click="addItemToLastSection()" type="button"
+              <button @click="addOrphanItem()" type="button"
+                      title="Thêm dòng không thuộc nhóm nào"
                       class="text-xs bg-brand-500 hover:bg-brand-600 text-white px-3 py-1.5 rounded font-semibold">+ Thêm dòng</button>
               <button @click="addSection()" type="button"
                       class="text-xs bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded font-semibold">+ Thêm nhóm</button>
             </div>
           </div>
           <div class="panel-bd space-y-3 overflow-x-auto">
+            <!-- Section orphan (idx=0, ten=''): chỉ hiện khi có items HOẶC là section duy nhất.
+                 Mọi section idx > 0: luôn hiện để user thấy + đặt tên + thêm dòng. -->
             <template x-for="(sec, sIdx) in form.sections" :key="sec._key">
-              <div class="section-block border border-slate-200 rounded-lg">
-                <!-- Section header bar: chỉ hiện khi có tên nhóm HOẶC nhiều nhóm.
-                     Mode flat (1 section duy nhất, ten='') → ẩn header để UX gọn. -->
-                <div x-show="isGroupedMode || sec.ten"
-                     class="flex items-center gap-2 bg-emerald-50 px-3 py-2 border-b border-slate-200 rounded-t-lg">
-                  <span x-show="isGroupedMode"
+              <div x-show="sIdx > 0 || sec.items.length > 0 || form.sections.length === 1"
+                   class="section-block">
+                <!-- Section bar: hiện cho nhóm CÓ TÊN, hoặc nhóm vừa tạo (idx > 0).
+                     Orphan bucket (idx=0, ten='') KHÔNG hiện bar. -->
+                <div x-show="sIdx > 0 || isNamedSection(sIdx)"
+                     class="flex items-center gap-2 bg-rose-50 px-3 py-2 border-b border-slate-200 rounded-t-lg"
+                     :class="sec.items.length === 0 ? 'rounded-b-lg' : ''">
+                  <span x-show="isNamedSection(sIdx)"
                         class="bg-brand-500 text-white text-xs font-bold rounded px-2 py-1 min-w-[28px] text-center"
                         x-text="sectionLetter(sIdx)"></span>
-                  <input class="field-input flex-1 !bg-white" x-model="sec.ten"
-                         placeholder="Tên nhóm (vd: Cửa nhôm kính)">
-                  <button type="button" @click="moveSection(sIdx, -1)" :disabled="sIdx === 0"
-                          x-show="form.sections.length > 1"
-                          class="text-xs bg-white border border-slate-300 hover:bg-slate-100 px-2 py-1.5 rounded disabled:opacity-30">↑</button>
-                  <button type="button" @click="moveSection(sIdx, 1)" :disabled="sIdx === form.sections.length - 1"
-                          x-show="form.sections.length > 1"
-                          class="text-xs bg-white border border-slate-300 hover:bg-slate-100 px-2 py-1.5 rounded disabled:opacity-30">↓</button>
-                  <button type="button" @click="removeSection(sIdx)"
-                          x-show="form.sections.length > 1"
+                  <input class="field-input flex-1 !bg-white" x-model="sec.ten" placeholder="Tên nhóm">
+                  <button type="button" @click="addItem(sIdx)"
+                          class="text-xs bg-brand-500 hover:bg-brand-600 text-white px-2.5 py-1.5 rounded font-semibold whitespace-nowrap">+ Thêm dòng</button>
+                  <button type="button" @click="openRemoveSection(sIdx)"
                           class="text-xs bg-red-50 hover:bg-red-100 text-red-700 px-2 py-1.5 rounded font-semibold">Xoá nhóm</button>
                 </div>
+                <!-- Orphan section banner: hint nhẹ "Dòng không thuộc nhóm nào" -->
+                <div x-show="!isNamedSection(sIdx) && sec.items.length > 0 && isGroupedMode"
+                     class="px-3 py-1.5 bg-slate-50 border-b border-slate-200 text-[11px] text-slate-500 italic rounded-t-lg">
+                  Dòng không thuộc nhóm nào
+                </div>
 
-                <table class="items-table">
+                <table class="items-table" x-show="sec.items.length > 0">
                   <thead>
                     <tr>
-                      <th style="width:30px">#</th>
-                      <th style="width:108px">Mã SP</th>
-                      <th style="min-width:155px">Tên SP *</th>
-                      <th style="min-width:175px">Mô tả chi tiết</th>
-                      <th style="width:68px">Rộng (mm)</th>
-                      <th style="width:68px">Cao (mm)</th>
-                      <th style="width:82px" title="Auto = rộng×cao÷1,000,000. Có thể gõ tay đè">Diện tích (m²)</th>
-                      <th style="width:60px">ĐVT *</th>
-                      <th style="width:76px">SL *</th>
-                      <th style="width:108px" class="num">Đơn giá (đ) *</th>
-                      <th style="width:108px" class="num">Thành tiền</th>
-                      <th style="width:52px" title="Ảnh minh hoạ sản phẩm">Ảnh MH</th>
-                      <th style="width:24px"></th>
+                      <th style="min-width:30px">#</th>
+                      <th style="min-width:56px">Mã SP</th>
+                      <th style="min-width:140px">Tên SP *</th>
+                      <th style="min-width:170px">Mô tả</th>
+                      <th style="min-width:68px">Rộng (mm)</th>
+                      <th style="min-width:68px">Cao (mm)</th>
+                      <th style="min-width:62px">Số bộ *</th>
+                      <th style="min-width:82px" title="m²: rộng×cao×số bộ÷10⁶ · md: cao×số bộ÷10³ · bộ: =số bộ · khác: tự nhập">Khối lượng</th>
+                      <th style="min-width:60px">Đơn vị *</th>
+                      <th style="min-width:108px" class="num">Đơn giá (đ) *</th>
+                      <th style="min-width:108px" class="num">Thành tiền</th>
+                      <th style="min-width:24px"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -233,76 +267,77 @@
                             </template>
                           </datalist>
                           <input class="field-input font-mono" x-model="it.ma_sp" :list="'pd-' + sIdx + '-' + iIdx"
-                                 @input.debounce.200ms="onMaSpChange(sIdx, iIdx)" @change="onMaSpChange(sIdx, iIdx)"
-                                 placeholder="VD: D1">
+                                 @input.debounce.200ms="onMaSpChange(sIdx, iIdx)" @change="onMaSpChange(sIdx, iIdx)">
                         </td>
                         <td>
-                          <input class="field-input font-semibold" x-model="it.ten_sp" placeholder="VD: Cửa nhôm 1 cánh">
+                          <input class="field-input font-semibold" x-model="it.ten_sp">
                         </td>
                         <td>
                           <textarea class="field-input" rows="1" x-model="it.mo_ta"
                                     @input="autoGrow($event.target)"
-                                    x-init="$nextTick(()=>autoGrow($el))"
-                                    placeholder="VD: - Nhôm XF55&#10;- Kính 8mm&#10;- Phụ kiện Kinlong"></textarea>
+                                    x-init="$nextTick(()=>autoGrow($el))"></textarea>
                         </td>
                         <td>
                           <input class="field-input" type="number" x-model.number="it.rong"
-                                 @input="onDimensionChange(sIdx, iIdx)" placeholder="—">
+                                 @input="onDimensionChange(sIdx, iIdx)">
                         </td>
                         <td>
                           <input class="field-input" type="number" x-model.number="it.cao"
-                                 @input="onDimensionChange(sIdx, iIdx)" placeholder="—">
+                                 @input="onDimensionChange(sIdx, iIdx)">
+                        </td>
+                        <td>
+                          <input class="field-input" type="number" step="any" x-model.number="it.sl"
+                                 @input="onDimensionChange(sIdx, iIdx)">
                         </td>
                         <td>
                           <input class="field-input" type="number" step="any" x-model.number="it.dien_tich"
-                                 @input="onDienTichInput(sIdx, iIdx, $event.target.value)"
-                                 :class="{ 'bg-emerald-50': it.dien_tich > 0 }"
-                                 :placeholder="autoArea(it) || 'auto'">
+                                 @input="onKhoiLuongInput(sIdx, iIdx, $event.target.value)"
+                                 :readonly="isKhoiLuongLocked(it)"
+                                 :class="isKhoiLuongLocked(it) ? 'bg-slate-100 cursor-not-allowed text-slate-600' : ''"
+                                 :title="isKhoiLuongLocked(it) ? 'Tự động tính theo đơn vị — không sửa được. Đổi đơn vị nếu muốn nhập tay.' : ''">
                         </td>
                         <td>
-                          <input class="field-input" x-model="it.dvt" placeholder="m²/bộ/Kg">
-                        </td>
-                        <td>
-                          <input class="field-input bg-emerald-50" type="number" step="any" x-model.number="it.sl"
-                                 @input="recalcItem(sIdx, iIdx)" placeholder="1">
+                          <input class="field-input" x-model="it.dvt"
+                                 @input="onDimensionChange(sIdx, iIdx)">
                         </td>
                         <td class="num">
-                          <input class="field-input num" type="text" inputmode="numeric" placeholder="0"
+                          <input class="field-input num" type="text" inputmode="numeric"
                                  :value="Fmt.formatMoneyInput(it.don_gia)"
                                  @input="it.don_gia = Fmt.parseMoneyInput($event.target.value); recalcItem(sIdx, iIdx)">
                         </td>
                         <td class="num">
                           <span class="font-bold tabular-nums text-brand-700" x-text="Fmt.formatMoney(it.thanh_tien)"></span>
                         </td>
-                        <td class="text-center">
-                          <button type="button" @click="pickItemIcon(sIdx, iIdx)"
-                                  class="inline-flex items-center justify-center bg-white border border-slate-300 hover:border-brand-500 rounded transition-colors"
-                                  style="width:36px;height:36px;color:#0f172a"
-                                  :title="it.icon_preset || it.icon_url ? 'Đổi ảnh minh hoạ' : 'Chọn ảnh minh hoạ'"
-                                  x-html="resolveItemIconSvg(it)"></button>
-                        </td>
-                        <td class="text-center">
+                        <td class="text-center" style="position:relative;white-space:nowrap">
+                          <button type="button" @click="moveMenuOpen = (moveMenuOpen === it._key ? null : it._key)"
+                                  class="text-slate-500 hover:text-brand-600 text-sm leading-none px-1"
+                                  title="Chuyển sang nhóm khác">⇅</button>
                           <button @click="removeItem(sIdx, iIdx)" type="button"
                                   class="text-red-500 hover:text-red-700 text-lg leading-none">×</button>
+                          <div x-show="moveMenuOpen === it._key" x-cloak
+                               @click.outside="moveMenuOpen = null"
+                               class="absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-20 min-w-[160px] py-1 text-left">
+                            <div class="px-3 py-1 text-[10px] uppercase text-slate-400 font-semibold border-b border-slate-100">Chuyển sang</div>
+                            <button type="button"
+                                    x-show="sIdx !== 0 || isNamedSection(0)"
+                                    @click="moveItemTo(sIdx, iIdx, 'orphan'); moveMenuOpen=null"
+                                    class="block w-full text-left px-3 py-1.5 text-xs hover:bg-slate-50">Không thuộc nhóm</button>
+                            <template x-for="(targetSec, tIdx) in form.sections" :key="targetSec._key + '-tgt-' + it._key">
+                              <button type="button"
+                                      x-show="tIdx !== sIdx && isNamedSection(tIdx)"
+                                      @click="moveItemTo(sIdx, iIdx, tIdx); moveMenuOpen=null"
+                                      class="block w-full text-left px-3 py-1.5 text-xs hover:bg-slate-50">
+                                Nhóm <span x-text="sectionLetter(tIdx)"></span><span x-show="targetSec.ten" x-text="' — ' + targetSec.ten"></span>
+                              </button>
+                            </template>
+                            <div x-show="form.sections.length === 1 && !isNamedSection(0)" class="px-3 py-1.5 text-xs text-slate-400 italic">
+                              Chưa có nhóm nào khác. Bấm "+ Thêm nhóm" trên header.
+                            </div>
+                          </div>
                         </td>
                       </tr>
                     </template>
-                    <tr x-show="sec.items.length === 0">
-                      <td colspan="13" class="text-center text-slate-400 py-4 italic text-xs">
-                        Chưa có dòng SP. Bấm "+ Thêm dòng" trên header để thêm.
-                      </td>
-                    </tr>
                   </tbody>
-                  <tfoot x-show="isGroupedMode">
-                    <tr class="bg-slate-50 font-semibold">
-                      <td colspan="10" class="text-right text-slate-700 pr-3">
-                        Tổng nhóm <span class="text-brand-600" x-text="sectionLetter(sIdx)"></span>:
-                      </td>
-                      <td class="num tabular-nums text-brand-700" x-text="Fmt.formatMoney(sectionSubtotal(sIdx))"></td>
-                      <td></td>
-                      <td></td>
-                    </tr>
-                  </tfoot>
                 </table>
               </div>
             </template>
@@ -310,6 +345,37 @@
             <div x-show="form.sections.length === 0"
                  class="text-center text-slate-400 py-8 italic border-2 border-dashed border-slate-200 rounded-lg">
               Chưa có nhóm sản phẩm nào. Bấm "+ Thêm nhóm" để bắt đầu.
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal: xoá nhóm với 2 lựa chọn -->
+        <div x-show="removeSecOpen !== null" x-cloak @keydown.escape.window="removeSecOpen = null"
+             class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md" @click.outside="removeSecOpen = null">
+            <div class="px-6 py-4 border-b border-slate-200">
+              <h3 class="text-lg font-bold text-slate-800">Xoá nhóm</h3>
+              <p class="text-sm text-slate-500 mt-0.5" x-show="removeSecOpen !== null"
+                 x-text="'Nhóm ' + (form.sections[removeSecOpen]?.ten || sectionLetter(removeSecOpen) || '(chưa đặt tên)') + ' có ' + (form.sections[removeSecOpen]?.items.length || 0) + ' dòng.'"></p>
+            </div>
+            <div class="px-6 py-5 space-y-2">
+              <button type="button" @click="removeSectionKeepItems(removeSecOpen); removeSecOpen = null"
+                      x-show="form.sections[removeSecOpen]?.items.length > 0"
+                      class="block w-full text-left px-4 py-3 border border-slate-200 hover:border-brand-500 hover:bg-brand-50 rounded-lg">
+                <div class="font-semibold text-slate-800 text-sm">Chỉ xoá nhóm, giữ lại sản phẩm</div>
+                <div class="text-xs text-slate-500 mt-0.5">Các dòng SP chuyển sang "Không thuộc nhóm".</div>
+              </button>
+              <button type="button" @click="removeSectionWithItems(removeSecOpen); removeSecOpen = null"
+                      class="block w-full text-left px-4 py-3 border border-red-200 hover:border-red-500 hover:bg-red-50 rounded-lg">
+                <div class="font-semibold text-red-700 text-sm">Xoá nhóm + tất cả sản phẩm trong đó</div>
+                <div class="text-xs text-slate-500 mt-0.5" x-show="form.sections[removeSecOpen]?.items.length > 0"
+                     x-text="'Xoá luôn ' + (form.sections[removeSecOpen]?.items.length || 0) + ' dòng SP.'"></div>
+                <div class="text-xs text-slate-500 mt-0.5" x-show="!(form.sections[removeSecOpen]?.items.length > 0)">Nhóm trống — chỉ xoá nhóm.</div>
+              </button>
+            </div>
+            <div class="px-6 py-4 border-t border-slate-200 flex justify-end">
+              <button type="button" @click="removeSecOpen = null"
+                      class="px-4 py-2 text-sm rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">Huỷ</button>
             </div>
           </div>
         </div>
@@ -331,7 +397,6 @@
                       <input type="text" maxlength="200"
                              :value="getQImg(slot).caption || ''"
                              @blur="saveCaption(slot, $event.target.value)"
-                             placeholder="Chú thích (tuỳ chọn)"
                              class="w-full text-[10px] px-2 py-1 mb-1 border border-slate-200 rounded outline-none focus:border-brand-500">
                       <div class="flex gap-1">
                         <button @click="pickQuotationImage(slot)" type="button" :disabled="qImgUploading[slot]"
@@ -352,7 +417,6 @@
                 </div>
               </template>
             </div>
-            <p x-show="!editingId" class="text-xs text-slate-500 mt-2 italic">Bấm "+ Chọn ảnh" — báo giá sẽ tự lưu draft trước khi mở picker.</p>
           </div>
         </div>
 
@@ -361,112 +425,70 @@
           <div class="panel-hd"><h3>Tổng kết & điều khoản</h3></div>
           <div class="panel-bd space-y-4">
 
-            <!-- Subtotal + tổng cộng (read-only) -->
-            <div class="grid grid-cols-2 gap-3">
-              <div class="bg-slate-100 rounded-lg p-3 text-right">
-                <div class="text-xs text-slate-500">Tạm tính (cộng tất cả nhóm)</div>
-                <div class="text-lg font-bold tabular-nums text-slate-700" x-text="Fmt.formatMoney(totals.tam_tinh)"></div>
-              </div>
-              <div class="bg-brand-900 text-white rounded-lg p-3 text-right">
-                <div class="text-xs opacity-80">Tổng tiền có thuế</div>
-                <div class="text-xl font-black tabular-nums" x-text="Fmt.formatMoney(totals.tong_cong)"></div>
-              </div>
-            </div>
-
-            <!-- Khoản cộng (+) -->
+            <!-- Bổ sung (BS) — vận chuyển, lắp đặt, phụ phí… (bảng 4 trường giống items table) -->
             <div>
               <div class="flex items-center justify-between mb-1.5">
-                <label class="field-label !m-0">Khoản cộng (vận chuyển, lắp đặt, phụ phí…)</label>
+                <label class="field-label !m-0">Bổ sung (BS): vận chuyển, lắp đặt, phụ phí…</label>
                 <button type="button" @click="addAdjustment('plus')"
-                        class="text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-2 py-1 rounded font-semibold">+ Thêm</button>
+                        class="text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-2 py-1 rounded font-semibold">+ Thêm BS</button>
               </div>
-              <div class="space-y-1.5">
-                <template x-for="a in plusAdjustments" :key="a._key">
-                  <div>
-                    <div class="flex items-center gap-2">
-                      <span class="text-emerald-600 font-bold text-lg leading-none w-4 text-center">+</span>
-                      <input class="field-input flex-1" x-model="a.label" placeholder="VD: Vận chuyển">
-                      <template x-if="a.mode === 'fixed'">
-                        <input class="field-input tabular-nums text-right" style="width:130px" type="text" inputmode="numeric" placeholder="0"
-                               :value="Fmt.formatMoneyInput(a.amount)"
-                               @input="a.amount = Fmt.parseMoneyInput($event.target.value)">
-                      </template>
-                      <template x-if="a.mode === 'percent'">
-                        <input class="field-input tabular-nums text-right" style="width:130px" type="number" step="0.1" min="0" max="1000" placeholder="0"
-                               x-model.number="a.amount">
-                      </template>
-                      <div class="inline-flex border border-slate-300 rounded overflow-hidden text-xs">
-                        <button type="button" @click="toggleAdjMode(a._key, 'fixed')"
-                                :class="a.mode === 'fixed' ? 'bg-brand-500 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'"
-                                class="px-2 py-1 font-bold">đ</button>
-                        <button type="button" @click="toggleAdjMode(a._key, 'percent')"
-                                :class="a.mode === 'percent' ? 'bg-brand-500 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'"
-                                class="px-2 py-1 font-bold border-l border-slate-300">%</button>
-                      </div>
-                      <button type="button" @click="removeAdjustment(a._key)"
-                              class="text-red-500 hover:text-red-700 text-lg leading-none px-1">×</button>
-                    </div>
-                    <div x-show="a.mode === 'percent' && a.amount > 0" x-cloak
-                         class="text-xs text-slate-500 italic pl-6 mt-0.5"
-                         x-text="'≈ ' + Fmt.formatMoney(adjEffective(a)) + ' (tính trên tạm tính)'"></div>
-                  </div>
-                </template>
-                <div x-show="plusAdjustments.length === 0" class="text-xs text-slate-400 italic px-1">Chưa có khoản cộng nào.</div>
-              </div>
-            </div>
-
-            <!-- Khoản trừ (-) -->
-            <div>
-              <div class="flex items-center justify-between mb-1.5">
-                <label class="field-label !m-0">Khoản trừ (chiết khấu, khuyến mãi…)</label>
-                <button type="button" @click="addAdjustment('minus')"
-                        class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-700 px-2 py-1 rounded font-semibold">+ Thêm</button>
-              </div>
-              <div class="space-y-1.5">
-                <template x-for="a in minusAdjustments" :key="a._key">
-                  <div>
-                    <div class="flex items-center gap-2">
-                      <span class="text-rose-600 font-bold text-lg leading-none w-4 text-center">−</span>
-                      <input class="field-input flex-1" x-model="a.label" placeholder="VD: Chiết khấu">
-                      <template x-if="a.mode === 'fixed'">
-                        <input class="field-input tabular-nums text-right" style="width:130px" type="text" inputmode="numeric" placeholder="0"
-                               :value="Fmt.formatMoneyInput(a.amount)"
-                               @input="a.amount = Fmt.parseMoneyInput($event.target.value)">
-                      </template>
-                      <template x-if="a.mode === 'percent'">
-                        <input class="field-input tabular-nums text-right" style="width:130px" type="number" step="0.1" min="0" max="1000" placeholder="0"
-                               x-model.number="a.amount">
-                      </template>
-                      <div class="inline-flex border border-slate-300 rounded overflow-hidden text-xs">
-                        <button type="button" @click="toggleAdjMode(a._key, 'fixed')"
-                                :class="a.mode === 'fixed' ? 'bg-brand-500 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'"
-                                class="px-2 py-1 font-bold">đ</button>
-                        <button type="button" @click="toggleAdjMode(a._key, 'percent')"
-                                :class="a.mode === 'percent' ? 'bg-brand-500 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'"
-                                class="px-2 py-1 font-bold border-l border-slate-300">%</button>
-                      </div>
-                      <button type="button" @click="removeAdjustment(a._key)"
-                              class="text-red-500 hover:text-red-700 text-lg leading-none px-1">×</button>
-                    </div>
-                    <div x-show="a.mode === 'percent' && a.amount > 0" x-cloak
-                         class="text-xs text-slate-500 italic pl-6 mt-0.5"
-                         x-text="'≈ −' + Fmt.formatMoney(adjEffective(a)) + ' (tính trên tạm tính)'"></div>
-                  </div>
-                </template>
-                <div x-show="minusAdjustments.length === 0" class="text-xs text-slate-400 italic px-1">Chưa có khoản trừ nào.</div>
+              <div class="overflow-x-auto">
+                <table class="bs-table">
+                  <thead>
+                    <tr>
+                      <th style="min-width:36px">STT</th>
+                      <th style="min-width:200px">Tên BS</th>
+                      <th style="min-width:60px">Số bộ</th>
+                      <th style="min-width:64px">Đơn vị</th>
+                      <th style="min-width:120px" class="num">Đơn giá (đ)</th>
+                      <th style="min-width:110px" class="num">Thành tiền</th>
+                      <th style="min-width:24px"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <template x-for="(a, aIdx) in plusAdjustments" :key="a._key">
+                      <tr>
+                        <td class="text-center text-brand-600 font-bold text-xs" x-text="'BS' + (aIdx + 1)"></td>
+                        <td><input class="field-input" x-model="a.label"></td>
+                        <td><input class="field-input tabular-nums text-center" type="number" step="any" min="0" x-model.number="a.so_bo"></td>
+                        <td><input class="field-input" x-model="a.don_vi"></td>
+                        <td class="num">
+                          <input class="field-input num" type="text" inputmode="numeric"
+                                 :value="Fmt.formatMoneyInput(a.don_gia)"
+                                 @input="a.don_gia = Fmt.parseMoneyInput($event.target.value)">
+                        </td>
+                        <td class="num">
+                          <span class="font-bold tabular-nums text-emerald-700" x-text="Fmt.formatMoney(adjFixedAmount(a))"></span>
+                        </td>
+                        <td class="text-center">
+                          <button type="button" @click="removeAdjustment(a._key)"
+                                  class="text-red-500 hover:text-red-700 text-lg leading-none">×</button>
+                        </td>
+                      </tr>
+                    </template>
+                    <tr x-show="plusAdjustments.length === 0">
+                      <td colspan="7" class="text-center text-slate-400 py-3 italic text-xs">
+                        Chưa có BS nào. Bấm "+ Thêm BS" để thêm vận chuyển / lắp đặt / phụ phí.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
 
-            <!-- Pre-tax + VAT breakdown -->
-            <div class="border-t border-slate-200 pt-3 grid grid-cols-[1fr_auto] gap-x-3 gap-y-2 items-center text-sm">
-              <div class="text-right text-slate-600">Thành tiền chưa thuế</div>
-              <div class="text-right font-bold tabular-nums text-slate-700 min-w-[140px]" x-text="Fmt.formatMoney(totals.pre_tax)"></div>
-              <div class="text-right text-slate-600 flex items-center justify-end gap-2">
-                <span>VAT</span>
-                <input class="field-input" style="width:64px" type="number" step="1" min="0" max="100" x-model.number="form.vat_percent">
-                <span>%</span>
+            <!-- Chiết khấu + VAT — 2 field độc lập -->
+            <div class="border-t border-slate-200 pt-3 grid grid-cols-2 gap-3">
+              <div class="flex items-center gap-2 justify-end">
+                <label class="text-sm text-slate-600">Chiết khấu</label>
+                <input class="field-input" style="width:60px" type="number" step="0.1" min="0" max="100" x-model.number="form.chiet_khau_percent">
+                <span class="text-sm text-slate-500">%</span>
               </div>
-              <div class="text-right font-bold tabular-nums text-slate-700" x-text="Fmt.formatMoney(totals.vat_amount)"></div>
+              <div class="flex items-center gap-2 justify-end">
+                <label class="text-sm text-slate-600">VAT</label>
+                <input class="field-input" style="width:60px" type="number" step="1" min="0" max="100" x-model.number="form.vat_percent">
+                <span class="text-sm text-slate-500">%</span>
+              </div>
+              <div class="col-span-2 text-xs text-slate-400 italic text-right">(xem tổng tiền ở phần xem trước →)</div>
             </div>
 
             <!-- Notes / điều khoản -->
@@ -477,15 +499,15 @@
               </div>
               <div>
                 <label class="field-label">Thanh toán</label>
-                <input class="field-input" x-model="form.thanh_toan" placeholder="VD: Đặt cọc 40% · 50% khi giao · 10% nghiệm thu">
+                <textarea class="field-textarea" rows="2" x-model="form.thanh_toan"></textarea>
               </div>
               <div>
                 <label class="field-label">Tiến độ</label>
-                <input class="field-input" x-model="form.tien_do" placeholder="VD: 12-18 ngày làm việc">
+                <textarea class="field-textarea" rows="2" x-model="form.tien_do"></textarea>
               </div>
               <div class="col-span-2">
                 <label class="field-label">Bảo hành</label>
-                <input class="field-input" x-model="form.bao_hanh" placeholder="VD: Bảo hành 24 tháng theo chính sách hãng">
+                <textarea class="field-textarea" rows="2" x-model="form.bao_hanh"></textarea>
               </div>
             </div>
           </div>

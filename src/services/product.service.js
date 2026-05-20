@@ -1,5 +1,4 @@
 const productModel = require('../models/product.model');
-const uploadService = require('./upload.service');
 const { badRequest, notFound, conflict } = require('../utils/http');
 const { cleanString } = require('../utils/sanitize');
 
@@ -32,9 +31,6 @@ function normalize(body) {
     cach_tinh_gia,
     don_gia_mac_dinh: parseNumber(body.don_gia_mac_dinh, 'Đơn giá mặc định'),
     active: body.active === 0 || body.active === false ? 0 : 1,
-    icon_preset: clean(body.icon_preset, 80),
-    icon_url: clean(body.icon_url, 500),
-    icon_public_id: clean(body.icon_public_id, 200),
   };
 }
 
@@ -66,24 +62,17 @@ function create(dealerId, body) {
 }
 
 function update(dealerId, id, body) {
-  const oldRow = getById(dealerId, id);
+  getById(dealerId, id);
   const data = normalize(body);
   const existing = productModel.findByCode(dealerId, data.ma_sp);
   if (existing && existing.id !== id) throw conflict('Mã sản phẩm đã tồn tại');
   productModel.update(dealerId, id, data);
-  // Cleanup Cloudinary orphan: nếu icon_public_id cũ != mới → xoá ảnh cũ
-  if (oldRow.icon_public_id && oldRow.icon_public_id !== data.icon_public_id) {
-    uploadService.deleteByPublicId(oldRow.icon_public_id).catch(() => {});
-  }
   return productModel.findById(dealerId, id);
 }
 
 function remove(dealerId, id) {
-  const oldRow = getById(dealerId, id);
+  getById(dealerId, id);
   productModel.remove(dealerId, id);
-  if (oldRow.icon_public_id) {
-    uploadService.deleteByPublicId(oldRow.icon_public_id).catch(() => {});
-  }
 }
 
 module.exports = { list, listActive, groups, getById, create, update, remove, VALID_CACH_TINH };

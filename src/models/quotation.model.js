@@ -10,6 +10,7 @@ const HEADER_FIELDS = [
   'tam_tinh',
   'chi_phi_van_chuyen', 'chi_phi_lap_dat',   // legacy — luôn 0 trên save mới
   'vat_percent', 'vat_amount', 'tong_cong',
+  'chiet_khau_percent',                       // mig 013 — chiết khấu = 1 field độc lập
   'thanh_toan', 'tien_do', 'bao_hanh',
   'status', 'sent_at', 'sent_method', 'sent_note',
 ];
@@ -19,7 +20,6 @@ const ITEM_FIELDS = [
   'cach_tinh_gia', 'rong', 'cao', 'dien_tich', 'dai', 'can_nang',
   'sl', 'dvt', 'don_gia', 'thanh_tien',
   'section_id',                              // v2 — trỏ về quotation_sections.id
-  'icon_preset', 'icon_url', 'icon_public_id',  // snapshot icon từ products
 ];
 
 function list(dealerId, { search, status, customer_id, from, to } = {}) {
@@ -63,7 +63,7 @@ function findById(dealerId, id) {
     'SELECT * FROM quotation_items WHERE quotation_id = ? ORDER BY stt'
   ).all(id);
   const adjustments = db.prepare(
-    'SELECT id, position, kind, label, amount, mode, value_percent FROM quotation_adjustments WHERE quotation_id = ? ORDER BY position'
+    'SELECT id, position, kind, label, amount, mode, value_percent, so_bo, don_vi, don_gia FROM quotation_adjustments WHERE quotation_id = ? ORDER BY position'
   ).all(id);
   const images = db.prepare(
     'SELECT slot, url, public_id, caption FROM quotation_images WHERE quotation_id = ? ORDER BY slot'
@@ -153,15 +153,18 @@ function insertAdjustments(quotationId, adjustments) {
   if (!adjustments || !adjustments.length) return;
   const stmt = db.prepare(
     `INSERT INTO quotation_adjustments
-       (quotation_id, position, kind, label, amount, mode, value_percent)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`
+       (quotation_id, position, kind, label, amount, mode, value_percent, so_bo, don_vi, don_gia)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   );
   for (const a of adjustments) {
     stmt.run(
       quotationId, a.position, a.kind, a.label,
       a.amount ?? 0,
       a.mode || 'fixed',
-      a.value_percent ?? null
+      a.value_percent ?? null,
+      a.so_bo ?? null,
+      a.don_vi ?? null,
+      a.don_gia ?? null
     );
   }
 }

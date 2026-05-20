@@ -30,7 +30,7 @@
     </div>
 
     <div class="bg-white border border-slate-200 rounded-xl p-4 mb-4 grid grid-cols-2 md:grid-cols-5 gap-3">
-      <input x-model="search" @input.debounce.400ms="load()" type="text" placeholder="Tìm số BG / KH / công trình..."
+      <input x-model="search" @input.debounce.400ms="load()" type="text"
              class="col-span-2 px-3 py-2 border border-slate-300 rounded-lg text-sm">
       <select x-model="filterStatus" @change="load()" class="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
         <option value="">Tất cả trạng thái</option>

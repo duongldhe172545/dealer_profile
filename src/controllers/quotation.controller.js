@@ -85,7 +85,18 @@ function updateImageCaption(req, res, next) {
   } catch (err) { next(err); }
 }
 
+async function setImageFromLibrary(req, res, next) {
+  try {
+    const imageId = req.body && req.body.image_id;
+    const data = await quotationService.setImageFromLibrary(
+      dealerId(req), Number(req.params.id), req.params.slot, imageId
+    );
+    res.json({ data });
+  } catch (err) { next(err); }
+}
+
 module.exports = {
   list, getOne, suggestNumber, create, update, remove,
   markSent, setStatus, clone, uploadImage, deleteImage, updateImageCaption,
+  setImageFromLibrary,
 };

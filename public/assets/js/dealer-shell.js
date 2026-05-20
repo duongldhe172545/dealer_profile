@@ -6,6 +6,7 @@
     { href: '/dealer/products.html',   label: 'Sản phẩm' },
     { href: '/dealer/customers.html',  label: 'Khách hàng' },
     { href: '/dealer/quotations.html', label: 'Báo giá' },
+    { href: '/dealer/images.html',     label: 'Kho ảnh' },
   ];
 
   function isActive(href, currentPath) {

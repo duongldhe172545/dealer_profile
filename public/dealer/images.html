@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kho ảnh · Đại Lý Số</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/dealer-shell.js"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: { brand: { 500:'#0a6fd6', 600:'#0858b3', 700:'#063f7a', 900:'#0b1f3a' } } } } };
+    const user = Auth.guard('dealer');
+    document.addEventListener('DOMContentLoaded', () => { if (user) DealerShell.mount(user); });
+  </script>
+  <style>
+    [x-cloak]{display:none!important}
+    .img-card { transition: all 0.15s; }
+    .img-card:hover { border-color: #0a6fd6; box-shadow: 0 2px 8px rgba(10,111,214,0.15); }
+    .img-thumb { aspect-ratio: 1; background: #f1f5f9; overflow: hidden; }
+    .img-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50">
+  <div id="dealer-shell"></div>
+
+  <main class="max-w-6xl mx-auto px-6 py-8" x-data="imagesPage()" x-init="load()">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h2 class="text-2xl font-bold text-slate-800">Kho ảnh</h2>
+        <p class="text-sm text-slate-500 mt-0.5">Ảnh "Kho chung" do admin chia sẻ — mọi đại lý đều thấy. "Kho của tôi" là ảnh bạn tự upload, chỉ bạn thấy.</p>
+      </div>
+      <button @click="openUpload()"
+              class="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-semibold">
+        + Tải ảnh lên kho của tôi
+      </button>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-xl p-3 mb-4 flex gap-2 flex-wrap items-center">
+      <input type="text" x-model="filterText" @input.debounce.300ms="renderFiltered()"
+             class="flex-1 min-w-[200px] px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-brand-500">
+      <select x-model="filterOwner" @change="renderFiltered()"
+              class="px-3 py-2 border border-slate-300 rounded-lg text-sm">
+        <option value="">Tất cả</option>
+        <option value="admin">Kho chung (admin)</option>
+        <option value="dealer">Kho của tôi</option>
+      </select>
+      <span class="text-xs text-slate-500" x-text="filtered.length + ' / ' + images.length + ' ảnh'"></span>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+      <template x-for="img in filtered" :key="img.id">
+        <div class="img-card bg-white border border-slate-200 rounded-lg overflow-hidden">
+          <div class="img-thumb">
+            <img :src="img.url" :alt="img.name" loading="lazy">
+          </div>
+          <div class="p-2">
+            <div class="text-xs font-semibold text-slate-800 truncate" :title="img.name" x-text="img.name"></div>
+            <div class="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between gap-1">
+              <span x-show="!img.dealer_id" class="bg-amber-100 text-amber-800 px-1.5 rounded font-semibold">CHUNG</span>
+              <span x-show="img.dealer_id" class="bg-blue-100 text-blue-800 px-1.5 rounded font-semibold">KHO TÔI</span>
+              <span class="text-slate-400" x-text="img.category || ''"></span>
+            </div>
+            <div class="flex gap-1 mt-1.5" x-show="img.dealer_id">
+              <button @click="openEdit(img)" class="flex-1 text-[11px] bg-slate-100 hover:bg-slate-200 py-1 rounded font-semibold">Sửa</button>
+              <button @click="remove(img)" class="text-[11px] bg-red-50 hover:bg-red-100 text-red-700 px-2 py-1 rounded font-semibold">Xoá</button>
+            </div>
+            <div class="text-[10px] italic text-slate-400 mt-1.5" x-show="!img.dealer_id">Ảnh chung — chỉ admin sửa được.</div>
+          </div>
+        </div>
+      </template>
+      <div x-show="!loading && filtered.length === 0" class="col-span-full text-center py-12 text-slate-400">
+        Kho ảnh trống. Bấm "Tải ảnh lên kho của tôi" để bắt đầu.
+      </div>
+    </div>
+
+    <div x-show="formOpen" x-cloak @keydown.escape.window="formOpen=false"
+         class="fixed inset-0 bg-black/50 flex items-start justify-center p-4 overflow-y-auto z-50">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg my-8" @click.outside="formOpen=false">
+        <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+          <h3 class="text-lg font-bold text-slate-800" x-text="editingId ? 'Sửa thông tin ảnh' : 'Tải ảnh mới vào kho của tôi'"></h3>
+          <button @click="formOpen=false" class="text-slate-400 hover:text-slate-600 text-2xl leading-none">&times;</button>
+        </div>
+        <div class="px-6 py-5 space-y-4">
+          <div x-show="!editingId">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">File ảnh *</label>
+            <input type="file" accept="image/jpeg,image/png,image/webp" @change="onFileChange($event)"
+                   class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+            <p class="text-xs text-slate-400 mt-1">JPG / PNG / WebP, tối đa 5MB.</p>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Tên ảnh *</label>
+            <input x-model="form.name" required
+                   class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Nhóm (tuỳ chọn)</label>
+            <input x-model="form.category"
+                   class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+          </div>
+          <div x-show="error" x-cloak class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2" x-text="error"></div>
+        </div>
+        <div class="px-6 py-4 border-t border-slate-200 flex justify-end gap-2">
+          <button @click="formOpen=false" class="px-4 py-2 text-sm rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">Huỷ</button>
+          <button @click="submit()" :disabled="saving"
+                  class="px-4 py-2 text-sm rounded-lg bg-brand-500 hover:bg-brand-600 text-white font-semibold disabled:opacity-50">
+            <span x-show="!saving" x-text="editingId ? 'Lưu' : 'Tải lên'"></span>
+            <span x-show="saving" x-cloak>Đang xử lý...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function imagesPage() {
+      return {
+        loading: true, images: [], filtered: [], formOpen: false, saving: false, error: '',
+        editingId: null, form: emptyForm(), pickedFile: null,
+        filterText: '', filterOwner: '',
+
+        async load() {
+          this.loading = true;
+          try { const r = await API.get('/api/dealer/images'); this.images = r.data || []; this.renderFiltered(); }
+          catch (e) { alert(e.message); }
+          finally { this.loading = false; }
+        },
+
+        renderFiltered() {
+          const kw = (this.filterText || '').toLowerCase().trim();
+          this.filtered = this.images.filter(img => {
+            if (this.filterOwner === 'admin' && img.dealer_id) return false;
+            if (this.filterOwner === 'dealer' && !img.dealer_id) return false;
+            if (kw && !((img.name || '').toLowerCase().includes(kw))) return false;
+            return true;
+          });
+        },
+
+        openUpload() {
+          this.editingId = null; this.form = emptyForm(); this.pickedFile = null; this.error = '';
+          this.formOpen = true;
+        },
+        openEdit(img) {
+          this.editingId = img.id;
+          this.form = { name: img.name || '', category: img.category || '' };
+          this.pickedFile = null; this.error = ''; this.formOpen = true;
+        },
+        onFileChange(e) {
+          const file = e.target.files && e.target.files[0];
+          this.pickedFile = file;
+          if (!this.form.name && file) {
+            this.form.name = file.name.replace(/\.[^.]+$/, '');
+          }
+        },
+
+        async submit() {
+          this.error = ''; this.saving = true;
+          try {
+            if (this.editingId) {
+              await API.put('/api/dealer/images/' + this.editingId, this.form);
+            } else {
+              if (!this.pickedFile) throw new Error('Vui lòng chọn file ảnh');
+              if (!this.form.name) throw new Error('Vui lòng nhập tên ảnh');
+              const fd = new FormData();
+              fd.append('file', this.pickedFile);
+              fd.append('name', this.form.name);
+              if (this.form.category) fd.append('category', this.form.category);
+              const res = await fetch('/api/dealer/images', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + API.getToken() },
+                body: fd,
+              });
+              const data = await res.json();
+              if (!res.ok) throw new Error(data.error || 'Tải lên thất bại');
+            }
+            this.formOpen = false;
+            await this.load();
+          } catch (e) { this.error = e.message; }
+          finally { this.saving = false; }
+        },
+
+        async remove(img) {
+          if (!confirm(`Xoá ảnh "${img.name}"?\nLưu ý: ảnh đã dùng trong báo giá vẫn hiển thị (vì BG copy URL riêng).`)) return;
+          try { await API.delete('/api/dealer/images/' + img.id); await this.load(); }
+          catch (e) { alert(e.message); }
+        },
+      };
+    }
+    function emptyForm() { return { name: '', category: '' }; }
+  </script>
+</body>
+</html>

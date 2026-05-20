@@ -5,8 +5,7 @@ const profileController = require('../controllers/profile.controller');
 const productController = require('../controllers/product.controller');
 const customerController = require('../controllers/customer.controller');
 const quotationController = require('../controllers/quotation.controller');
-const iconController = require('../controllers/icon-library.controller');
-const iconUploadController = require('../controllers/icon-upload.controller');
+const imageController = require('../controllers/image-library.controller');
 const dealerStatsController = require('../controllers/dealer-stats.controller');
 
 const router = express.Router();
@@ -22,12 +21,11 @@ router.put('/profile', profileController.updateMine);
 router.post('/profile/images/:slot', upload.single('file'), profileController.uploadImage);
 router.delete('/profile/images/:slot', profileController.deleteImage);
 
-// Icon library (read-only cho dealer)
-router.get('/icons', iconController.list);
-
-// Upload ảnh riêng làm icon (Cloudinary) cho catalog SP / per-item override BG
-router.post('/icon-upload', upload.single('file'), iconUploadController.upload);
-router.delete('/icon-upload', iconUploadController.remove);
+// Kho ảnh (xem ảnh shared của admin + ảnh riêng của đại lý)
+router.get('/images', imageController.dealerList);
+router.post('/images', upload.single('file'), imageController.dealerUpload);
+router.put('/images/:id', imageController.updateMeta);
+router.delete('/images/:id', imageController.remove);
 
 // Sản phẩm
 router.get('/products', productController.list);
@@ -54,6 +52,7 @@ router.post('/quotations/:id/mark-sent', quotationController.markSent);
 router.patch('/quotations/:id/status', quotationController.setStatus);
 router.post('/quotations/:id/clone', quotationController.clone);
 router.post('/quotations/:id/images/:slot', upload.single('file'), quotationController.uploadImage);
+router.post('/quotations/:id/images/:slot/from-library', quotationController.setImageFromLibrary);
 router.delete('/quotations/:id/images/:slot', quotationController.deleteImage);
 router.patch('/quotations/:id/images/:slot', quotationController.updateImageCaption);
 

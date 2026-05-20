@@ -32,7 +32,7 @@
     </div>
 
     <div class="bg-white border border-slate-200 rounded-xl p-4 mb-4">
-      <input x-model="search" @input.debounce.400ms="load()" type="text" placeholder="Tìm theo tên / mã / SĐT / người liên hệ..."
+      <input x-model="search" @input.debounce.400ms="load()" type="text"
              class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm">
     </div>
 
@@ -89,7 +89,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label class="block text-xs font-semibold text-slate-600 mb-1">Mã KH</label>
-              <input x-model="form.ma_kh" :placeholder="suggestedCode || 'Tự động'"
+              <input x-model="form.ma_kh"
                      class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm font-mono">
               <p class="text-xs text-slate-500 mt-1">Để trống → tự sinh</p>
             </div>

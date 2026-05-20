@@ -11,7 +11,6 @@
   <script src="/assets/js/common.js"></script>
   <script src="/assets/js/dealer-shell.js"></script>
   <script src="/assets/js/_helpers.js"></script>
-  <script src="/assets/js/icon-picker.js"></script>
   <script>
     tailwind.config = { theme: { extend: { colors: { brand: { 500:'#0a6fd6', 600:'#0858b3', 700:'#063f7a', 900:'#0b1f3a' } } } } };
     const user = Auth.guard('dealer');
@@ -35,7 +34,7 @@
 
     <!-- Filter -->
     <div class="bg-white border border-slate-200 rounded-xl p-4 mb-4 flex flex-wrap gap-3">
-      <input x-model="search" @input.debounce.400ms="load()" type="text" placeholder="Tìm theo mã / mô tả / nhóm..."
+      <input x-model="search" @input.debounce.400ms="load()" type="text"
              class="flex-1 min-w-[200px] px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm">
       <select x-model="filterGroup" @change="load()" class="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
         <option value="">Tất cả nhóm</option>
@@ -55,7 +54,6 @@
       <table class="w-full text-sm">
         <thead class="bg-slate-50 border-b border-slate-200 text-slate-600">
           <tr>
-            <th class="px-2 py-3 text-center font-semibold" style="width:48px">Ảnh MH</th>
             <th class="px-4 py-3 text-left font-semibold">Mã SP</th>
             <th class="px-4 py-3 text-left font-semibold">Tên SP</th>
             <th class="px-4 py-3 text-left font-semibold">Nhóm</th>
@@ -69,10 +67,6 @@
         <tbody class="divide-y divide-slate-100">
           <template x-for="p in products" :key="p.id">
             <tr class="hover:bg-slate-50">
-              <td class="px-2 py-2 text-center">
-                <span class="inline-flex items-center justify-center" style="width:32px;height:32px;color:#1e293b"
-                      x-html="resolveIconSvg(p)"></span>
-              </td>
               <td class="px-4 py-3 font-mono text-xs font-semibold" x-text="p.ma_sp"></td>
               <td class="px-4 py-3 font-semibold text-slate-800" x-text="p.ten_sp || '—'"></td>
               <td class="px-4 py-3" x-text="p.nhom_sp || '—'"></td>
@@ -90,10 +84,10 @@
             </tr>
           </template>
           <tr x-show="!loading && products.length === 0">
-            <td colspan="9" class="px-4 py-12 text-center text-slate-400">Chưa có sản phẩm. Bấm "Thêm sản phẩm" để bắt đầu.</td>
+            <td colspan="8" class="px-4 py-12 text-center text-slate-400">Chưa có sản phẩm. Bấm "Thêm sản phẩm" để bắt đầu.</td>
           </tr>
           <tr x-show="loading">
-            <td colspan="9" class="px-4 py-12 text-center text-slate-400">Đang tải...</td>
+            <td colspan="8" class="px-4 py-12 text-center text-slate-400">Đang tải...</td>
           </tr>
         </tbody>
       </table>
@@ -112,12 +106,12 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-semibold text-slate-600 mb-1">Mã sản phẩm *</label>
-              <input x-model="form.ma_sp" required placeholder="VD: NA-XINGFA01"
+              <input x-model="form.ma_sp" required
                      class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm font-mono">
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-600 mb-1">Nhóm sản phẩm</label>
-              <input x-model="form.nhom_sp" placeholder="VD: Cửa nhôm"
+              <input x-model="form.nhom_sp"
                      list="group-list"
                      class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm">
               <datalist id="group-list">
@@ -126,50 +120,28 @@
             </div>
             <div class="col-span-2">
               <label class="block text-xs font-semibold text-slate-600 mb-1">Tên sản phẩm *</label>
-              <input x-model="form.ten_sp" placeholder="VD: Cửa đi mở quay 1 cánh"
+              <input x-model="form.ten_sp"
                      class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm">
               <p class="text-xs text-slate-500 mt-1">Tên ngắn gọn của sản phẩm. Hiển thị trên báo giá ở cột "Tên SP".</p>
             </div>
             <div class="col-span-2">
               <label class="block text-xs font-semibold text-slate-600 mb-1">Mô tả chi tiết / quy cách</label>
-              <textarea x-model="form.mo_ta" rows="3" placeholder="VD: - Nhôm XF 55 Premium&#10;- Kính an toàn 8mm&#10;- Phụ kiện Kinlong đồng bộ"
+              <textarea x-model="form.mo_ta" rows="3"
                         class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm"></textarea>
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-600 mb-1">Đơn vị tính *</label>
-              <input x-model="form.dvt_mac_dinh" placeholder="VD: bộ, m², kg, cái, mét" required
+              <input x-model="form.dvt_mac_dinh" required
                      class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm">
               <p class="text-xs text-slate-500 mt-1">Đơn vị tính = chuẩn để tính tiền (Thành tiền = SL × Đơn giá).</p>
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-600 mb-1">Đơn giá mặc định (đ)</label>
-              <input type="text" inputmode="numeric" placeholder="0"
+              <input type="text" inputmode="numeric"
                      :value="Fmt.formatMoneyInput(form.don_gia_mac_dinh)"
                      @input="form.don_gia_mac_dinh = Fmt.parseMoneyInput($event.target.value)"
                      class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm tabular-nums text-right">
             </div>
-            <div class="col-span-2">
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Ảnh minh hoạ (Ảnh MH)</label>
-              <div class="flex items-center gap-3 p-2 border border-slate-300 rounded-lg bg-slate-50">
-                <span class="inline-flex items-center justify-center bg-white border border-slate-200 rounded"
-                      style="width:48px;height:48px;color:#0f172a"
-                      x-html="iconPreview(form)"></span>
-                <div class="flex-1">
-                  <div class="text-xs text-slate-600">
-                    <span x-show="form.icon_preset" x-text="'Đã chọn: ' + form.icon_preset"></span>
-                    <span x-show="!form.icon_preset" class="italic text-slate-400">Chưa chọn ảnh MH</span>
-                  </div>
-                  <div class="flex gap-2 mt-1">
-                    <button type="button" @click="pickIcon()"
-                            class="text-xs bg-brand-500 hover:bg-brand-600 text-white px-3 py-1 rounded font-semibold">Chọn từ thư viện</button>
-                    <button type="button" @click="form.icon_preset = null; form.icon_url = null; form.icon_public_id = null"
-                            x-show="form.icon_preset || form.icon_url"
-                            class="text-xs bg-red-50 hover:bg-red-100 text-red-700 px-3 py-1 rounded font-semibold">Xoá</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             <div class="col-span-2 flex items-center gap-2">
               <input type="checkbox" id="active" x-model="form.active" class="w-4 h-4">
               <label for="active" class="text-sm text-slate-700">Đang bán (có thể thêm vào báo giá)</label>
@@ -203,8 +175,6 @@
         async load() {
           this.loading = true;
           try {
-            // Preload icon library (cho thumb cột Icon + picker)
-            window.IconPicker && IconPicker.preload();
             const q = new URLSearchParams();
             if (this.search) q.set('search', this.search);
             if (this.filterGroup) q.set('nhom_sp', this.filterGroup);
@@ -214,35 +184,6 @@
             this.groups = res.groups;
           } catch (e) { alert(e.message); }
           finally { this.loading = false; }
-        },
-
-        // Hiển thị SVG icon của 1 product (preset → resolve từ library, hoặc img URL)
-        resolveIconSvg(p) {
-          if (p && p.icon_url) return `<img src="${p.icon_url}" alt="" style="max-width:100%;max-height:100%;object-fit:contain">`;
-          if (p && p.icon_preset && window.IconPicker) {
-            const svg = IconPicker.getSvgByKey(p.icon_preset);
-            if (svg) return svg;
-          }
-          return '<span style="color:#cbd5e1;font-size:18px">—</span>';
-        },
-        iconPreview(form) {
-          return this.resolveIconSvg(form);
-        },
-        pickIcon() {
-          IconPicker.open(
-            { icon_preset: this.form.icon_preset, icon_url: this.form.icon_url },
-            (val) => {
-              if (val) {
-                this.form.icon_preset = val.icon_preset || null;
-                this.form.icon_url = val.icon_url || null;
-                this.form.icon_public_id = val.icon_public_id || null;
-              } else {
-                this.form.icon_preset = null;
-                this.form.icon_url = null;
-                this.form.icon_public_id = null;
-              }
-            }
-          );
         },
 
         openCreate() {
@@ -258,9 +199,6 @@
             nhom_sp: p.nhom_sp || '', mo_ta: p.mo_ta || '',
             dvt_mac_dinh: p.dvt_mac_dinh || '',
             don_gia_mac_dinh: p.don_gia_mac_dinh || 0, active: !!p.active,
-            icon_preset: p.icon_preset || null,
-            icon_url: p.icon_url || null,
-            icon_public_id: p.icon_public_id || null,
           };
           this.error = '';
           this.formOpen = true;
@@ -288,7 +226,6 @@
       return {
         ma_sp: '', ten_sp: '', nhom_sp: '', mo_ta: '',
         dvt_mac_dinh: 'cái', don_gia_mac_dinh: 0, active: true,
-        icon_preset: null, icon_url: null, icon_public_id: null,
       };
     }
   </script>

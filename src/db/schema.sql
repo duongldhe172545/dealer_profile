@@ -112,9 +112,12 @@ CREATE TABLE IF NOT EXISTS products (
   id                  INTEGER PRIMARY KEY AUTOINCREMENT,
   dealer_id           INTEGER NOT NULL REFERENCES dealers(id) ON DELETE CASCADE,
   ma_sp               TEXT NOT NULL,
+  ten_sp              TEXT,
   nhom_sp             TEXT,
   mo_ta               TEXT,
   dvt_mac_dinh        TEXT,
+  -- cach_tinh_gia: LEGACY (mig 008+ rời UI nhập). Hiện FE luôn để default 'so_luong'.
+  -- Vẫn giữ cột để không break dữ liệu cũ + admin CSV export.
   cach_tinh_gia       TEXT NOT NULL DEFAULT 'so_luong' CHECK (cach_tinh_gia IN (
                         'kich_thuoc', 'dien_tich', 'dai', 'can', 'so_luong'
                       )),
@@ -163,6 +166,8 @@ CREATE TABLE IF NOT EXISTS quotations (
   ghi_chu_thuong_mai      TEXT,
 
   tam_tinh                INTEGER NOT NULL DEFAULT 0,
+  -- chi_phi_van_chuyen + chi_phi_lap_dat: LEGACY (mig 005 migrate sang quotation_adjustments).
+  -- Code mới luôn lưu 0; giữ cột để đọc lại BG cũ.
   chi_phi_van_chuyen      INTEGER NOT NULL DEFAULT 0,
   chi_phi_lap_dat         INTEGER NOT NULL DEFAULT 0,
   vat_percent             REAL NOT NULL DEFAULT 10,
@@ -199,14 +204,17 @@ CREATE TABLE IF NOT EXISTS quotation_items (
   id                  INTEGER PRIMARY KEY AUTOINCREMENT,
   quotation_id        INTEGER NOT NULL REFERENCES quotations(id) ON DELETE CASCADE,
   product_id          INTEGER REFERENCES products(id) ON DELETE SET NULL,
+  section_id          INTEGER REFERENCES quotation_sections(id) ON DELETE SET NULL,
   stt                 INTEGER NOT NULL,
 
   -- snapshot từ products tại lúc thêm
   ma_sp               TEXT,
+  ten_sp              TEXT,
   nhom_sp             TEXT,
   mo_ta               TEXT,
 
-  cach_tinh_gia       TEXT NOT NULL CHECK (cach_tinh_gia IN (
+  -- cach_tinh_gia + dai + can_nang: LEGACY — FE không nhập nữa, item luôn lưu 'so_luong' + null.
+  cach_tinh_gia       TEXT NOT NULL DEFAULT 'so_luong' CHECK (cach_tinh_gia IN (
                         'kich_thuoc', 'dien_tich', 'dai', 'can', 'so_luong'
                       )),
   rong                INTEGER,
@@ -222,6 +230,37 @@ CREATE TABLE IF NOT EXISTS quotation_items (
 );
 
 CREATE INDEX IF NOT EXISTS idx_qitems_quotation ON quotation_items(quotation_id);
+CREATE INDEX IF NOT EXISTS idx_qitems_section   ON quotation_items(section_id);
+
+-- -------------------------------------------------------------
+-- Nhóm sản phẩm trong báo giá (mig 005 — quotation v2)
+-- 1 BG có nhiều section, mỗi section có position (thứ tự A/B/C) + ten.
+-- -------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS quotation_sections (
+  id              INTEGER PRIMARY KEY AUTOINCREMENT,
+  quotation_id    INTEGER NOT NULL REFERENCES quotations(id) ON DELETE CASCADE,
+  position        INTEGER NOT NULL,
+  ten             TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_qsec_quotation ON quotation_sections(quotation_id);
+
+-- -------------------------------------------------------------
+-- Khoản cộng / trừ trong báo giá (mig 005 — quotation v2)
+-- kind='plus' (vận chuyển, lắp đặt, phụ phí…) | 'minus' (chiết khấu…).
+-- mode='fixed' → amount = đồng; mode='percent' → value_percent (vd 5.5 = 5.5%),
+-- amount tự tính = round(tạm_tính * pct/100) lưu lại cho audit.
+-- -------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS quotation_adjustments (
+  id              INTEGER PRIMARY KEY AUTOINCREMENT,
+  quotation_id    INTEGER NOT NULL REFERENCES quotations(id) ON DELETE CASCADE,
+  position        INTEGER NOT NULL,
+  kind            TEXT NOT NULL CHECK (kind IN ('plus', 'minus')),
+  label           TEXT NOT NULL,
+  amount          INTEGER NOT NULL DEFAULT 0,
+  mode            TEXT NOT NULL DEFAULT 'fixed' CHECK (mode IN ('fixed', 'percent')),
+  value_percent   REAL
+);
+CREATE INDEX IF NOT EXISTS idx_qadj_quotation ON quotation_adjustments(quotation_id);
 
 -- -------------------------------------------------------------
 -- Ảnh đính kèm báo giá (tối đa 5, slot 1..5)
@@ -238,6 +277,23 @@ CREATE TABLE IF NOT EXISTS quotation_images (
 );
 
 CREATE INDEX IF NOT EXISTS idx_qimg_quotation ON quotation_images(quotation_id);
+
+-- -------------------------------------------------------------
+-- Kho ảnh chung (mig 010)
+--   dealer_id IS NULL → admin upload, mọi đại lý đều thấy + chọn được
+--   dealer_id = X     → đại lý X upload, chỉ X + admin thấy
+-- -------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS image_library (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  dealer_id     INTEGER REFERENCES dealers(id) ON DELETE CASCADE,
+  name          TEXT NOT NULL,
+  url           TEXT NOT NULL,
+  public_id     TEXT,
+  category      TEXT,
+  created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_imglib_dealer   ON image_library(dealer_id);
+CREATE INDEX IF NOT EXISTS idx_imglib_category ON image_library(category);
 
 -- -------------------------------------------------------------
 -- Audit log — chỉ ghi 5 action quan trọng (theo yêu cầu user)

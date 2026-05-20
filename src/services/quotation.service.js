@@ -23,14 +23,14 @@ function num(value, label, { allowNull = true, integer = false, min = 0 } = {}) 
   return integer ? Math.round(n) : n;
 }
 
-// Thành tiền 1 dòng:
-//   - Có diện tích (m²): thanh_tien = diện tích × SL × đơn giá
-//   - Không có diện tích: thanh_tien = SL × đơn giá
+// Thành tiền 1 dòng (theo Excel BG):
+//   - Có khối lượng (dien_tich đã chứa số bộ): thanh_tien = khối_lượng × đơn_giá
+//   - Không có khối lượng: thanh_tien = số_bộ × đơn_giá   (fallback đơn vị 'cái', 'gói'…)
 function computeLineTotal(it) {
   const sl = Number(it.sl) || 0;
   const dg = Number(it.don_gia) || 0;
-  const dt = Number(it.dien_tich) || 0;
-  if (dt > 0) return Math.round(dt * sl * dg);
+  const kl = Number(it.dien_tich) || 0;
+  if (kl > 0) return Math.round(kl * dg);
   return Math.round(sl * dg);
 }
 
@@ -55,9 +55,6 @@ function normalizeItem(it) {
     dvt: clean(it.dvt, 50),
     don_gia: num(it.don_gia, 'Đơn giá', { allowNull: false, integer: true }),
     thanh_tien: 0,
-    icon_preset: clean(it.icon_preset, 80),
-    icon_url: clean(it.icon_url, 500),
-    icon_public_id: clean(it.icon_public_id, 200),
   };
   cleaned.thanh_tien = computeLineTotal(cleaned);
   return cleaned;
@@ -77,12 +74,34 @@ function normalizeAdjustment(a, idx) {
     if (!Number.isFinite(pct) || pct < 0 || pct > 1000) {
       throw badRequest('Phần trăm điều chỉnh phải 0–1000');
     }
-    return { position: idx, kind: a.kind, label, mode, amount: 0, value_percent: pct };
+    return {
+      position: idx, kind: a.kind, label, mode,
+      amount: 0, value_percent: pct,
+      so_bo: null, don_vi: null, don_gia: null,
+    };
   }
 
-  // fixed
-  const amount = num(a.amount, 'Số tiền điều chỉnh', { allowNull: false, integer: true }) || 0;
-  return { position: idx, kind: a.kind, label, mode, amount, value_percent: null };
+  // fixed — hỗ trợ 2 cách input:
+  //   (1) FE mới: gửi { so_bo, don_vi, don_gia } → amount tự tính = so_bo × don_gia
+  //   (2) BG cũ / quick input: chỉ gửi amount
+  const so_bo = a.so_bo != null && a.so_bo !== '' ? num(a.so_bo, 'Số bộ điều chỉnh', { integer: true }) : null;
+  const don_vi = clean(a.don_vi, 50) || null;
+  const don_gia = a.don_gia != null && a.don_gia !== '' ? num(a.don_gia, 'Đơn giá điều chỉnh', { integer: true }) : null;
+
+  let amount;
+  if (so_bo != null && don_gia != null) {
+    amount = Math.round((so_bo || 1) * don_gia);
+  } else if (don_gia != null && so_bo == null) {
+    amount = don_gia;   // gõ mỗi đơn giá → coi như số bộ = 1
+  } else {
+    amount = num(a.amount, 'Số tiền điều chỉnh', { allowNull: false, integer: true }) || 0;
+  }
+
+  return {
+    position: idx, kind: a.kind, label, mode,
+    amount, value_percent: null,
+    so_bo, don_vi, don_gia,
+  };
 }
 
 // Convert body của FE → cấu trúc chuẩn: { sections[], items[], adjustments[] }.
@@ -150,6 +169,13 @@ function normalizeHeader(dealerId, body, autoGenNumber, defaultVat = 0) {
   const vatProvided = body.vat_percent != null && body.vat_percent !== '';
   const vat_percent = vatProvided ? (num(body.vat_percent, 'VAT %') || 0) : defaultVat;
 
+  // Chiết khấu % độc lập (mig 013) — clamp 0..100
+  let chiet_khau_percent = 0;
+  if (body.chiet_khau_percent != null && body.chiet_khau_percent !== '') {
+    const ck = Number(body.chiet_khau_percent);
+    if (Number.isFinite(ck) && ck >= 0 && ck <= 100) chiet_khau_percent = ck;
+  }
+
   return {
     customer_id: body.customer_id ? Number(body.customer_id) : null,
     so_bao_gia,
@@ -161,30 +187,50 @@ function normalizeHeader(dealerId, body, autoGenNumber, defaultVat = 0) {
     chi_phi_van_chuyen: 0,
     chi_phi_lap_dat: 0,
     vat_percent,
-    thanh_toan: clean(body.thanh_toan, 300),
-    tien_do: clean(body.tien_do, 300),
-    bao_hanh: clean(body.bao_hanh, 300),
+    chiet_khau_percent,
+    thanh_toan: clean(body.thanh_toan, 500),
+    tien_do: clean(body.tien_do, 500),
+    bao_hanh: clean(body.bao_hanh, 500),
     status: body.status && VALID_STATUS.includes(body.status) ? body.status : 'draft',
   };
 }
 
-// Tổng cộng v2: tam_tinh = Σ items.thanh_tien
-//   pre_tax     = tam_tinh + Σ(plus) − Σ(minus)
-//   vat_amount  = pre_tax × vat% / 100   (VAT áp CUỐI CÙNG)
-//   tong_cong   = pre_tax + vat_amount
+// Tổng cộng v2 (Excel-style):
+//   tam_tinh            = Σ items.thanh_tien                       (TỔNG A+B+C+...)
+//   plus%               base = tam_tinh                            (phụ phí % tính trên giá SP)
+//   tong_cong_truoc_ck  = tam_tinh + Σ plus                        (Tổng cộng)
+//   minus%              base = tong_cong_truoc_ck                  (chiết khấu trên Tổng cộng)
+//   pre_tax             = tong_cong_truoc_ck − Σ minus             (Giá sau chiết khấu)
+//   vat_amount          = pre_tax × vat% / 100                     (VAT trên giá sau ck)
+//   tong_cong           = pre_tax + vat_amount                     (Thành tiền)
 function computeTotals(header, items, adjustments) {
   const tam_tinh = items.reduce((s, it) => s + (Number(it.thanh_tien) || 0), 0);
-  let plus_sum = 0, minus_sum = 0;
+
+  let plus_sum = 0;
   for (const a of adjustments) {
-    // mode='percent' → effective = tam_tinh × value_percent / 100 (tính trên giá gốc)
-    // mode='fixed'   → effective = amount
-    const effective = a.mode === 'percent'
-      ? Math.round(tam_tinh * (Number(a.value_percent) || 0) / 100)
-      : (Number(a.amount) || 0);
-    if (a.kind === 'plus') plus_sum += effective;
-    else if (a.kind === 'minus') minus_sum += effective;
+    if (a.kind !== 'plus') continue;
+    if (a.mode === 'percent') {
+      plus_sum += Math.round(tam_tinh * (Number(a.value_percent) || 0) / 100);
+    } else {
+      plus_sum += Number(a.amount) || 0;
+    }
   }
-  const pre_tax = tam_tinh + plus_sum - minus_sum;
+  const tong_cong_truoc_ck = tam_tinh + plus_sum;
+
+  // Chiết khấu: ưu tiên header.chiet_khau_percent (mig 013).
+  // Legacy: nếu BG cũ có minus adjustments → vẫn sum vào để không break.
+  const ck_pct = Number(header.chiet_khau_percent) || 0;
+  let minus_sum = Math.round(tong_cong_truoc_ck * ck_pct / 100);
+  for (const a of adjustments) {
+    if (a.kind !== 'minus') continue;
+    if (a.mode === 'percent') {
+      minus_sum += Math.round(tong_cong_truoc_ck * (Number(a.value_percent) || 0) / 100);
+    } else {
+      minus_sum += Number(a.amount) || 0;
+    }
+  }
+
+  const pre_tax = tong_cong_truoc_ck - minus_sum;
   const vat_amount = Math.round(pre_tax * (Number(header.vat_percent) || 0) / 100);
   const tong_cong = pre_tax + vat_amount;
   return { tam_tinh, vat_amount, tong_cong };
@@ -341,6 +387,7 @@ function clone(dealerId, id) {
 
 // ─── Ảnh đính kèm báo giá (tối đa 5 slot 1..5) ─────────────────────────────
 const uploadService = require('./upload.service');
+const imageModel = require('../models/image-library.model');
 
 async function uploadImage(dealerId, quotationId, slot, file) {
   if (!file) throw badRequest('Vui lòng chọn file');
@@ -366,6 +413,26 @@ async function deleteImage(dealerId, quotationId, slot) {
   if (oldPublicId) uploadService.deleteByPublicId(oldPublicId).catch(() => {});
 }
 
+// Đính ảnh từ kho ảnh chung vào 1 slot báo giá.
+// Snapshot URL — KHÔNG copy public_id (để xoá slot không đụng ảnh trong kho).
+async function setImageFromLibrary(dealerId, quotationId, slot, imageId) {
+  const slotNum = Number(slot);
+  if (!Number.isInteger(slotNum) || slotNum < 1 || slotNum > 5) {
+    throw badRequest('Vị trí ảnh không hợp lệ');
+  }
+  getById(dealerId, quotationId);
+  const img = imageModel.findById(Number(imageId));
+  if (!img) throw badRequest('Không tìm thấy ảnh trong kho');
+  // Quyền: admin's NULL (mọi đại lý xem được) hoặc của chính dealer
+  if (img.dealer_id != null && img.dealer_id !== dealerId) {
+    throw badRequest('Không có quyền dùng ảnh này');
+  }
+  const oldPublicId = quotationModel.upsertImage(quotationId, slotNum, { url: img.url, publicId: null });
+  // Nếu slot trước đó có ảnh Cloudinary riêng (upload trực tiếp), cleanup
+  if (oldPublicId) uploadService.deleteByPublicId(oldPublicId).catch(() => {});
+  return { slot: slotNum, url: img.url, public_id: null };
+}
+
 function updateImageCaption(dealerId, quotationId, slot, caption) {
   const slotNum = Number(slot);
   if (!Number.isInteger(slotNum) || slotNum < 1 || slotNum > 5) {
@@ -380,6 +447,6 @@ function updateImageCaption(dealerId, quotationId, slot, caption) {
 module.exports = {
   list, getById, suggestNumber, create, update, remove,
   markSent, setStatus, clone, computeLineTotal, computeTotals,
-  uploadImage, deleteImage, updateImageCaption,
+  uploadImage, deleteImage, updateImageCaption, setImageFromLibrary,
   VALID_PRICING, VALID_STATUS, VALID_METHODS, VALID_ADJ_KIND, DEFAULT_VAT_NEW,
 };

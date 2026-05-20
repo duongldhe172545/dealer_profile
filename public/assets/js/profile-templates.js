@@ -7,7 +7,7 @@
   if (!global.AppHelpers) {
     throw new Error('profile-templates.js cần _helpers.js load trước (window.AppHelpers).');
   }
-  const { esc, escMulti, lines, has } = global.AppHelpers;
+  const { esc, escMulti, lines, multiLine, has } = global.AppHelpers;
 
   // ============================================================
   // SVG icons (line-art, stroke-based)

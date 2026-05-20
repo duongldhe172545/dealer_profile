@@ -112,6 +112,125 @@
     .bs-table td.num input.field-input { max-width: 220px; }
 
     .action-bar { position: sticky; top: 0; z-index: 20; background: rgba(248,250,252,0.96); backdrop-filter: blur(8px); padding: 10px 0; border-bottom: 1px solid #e2e8f0; margin-bottom: 14px; }
+
+    /* ─── Mobile (≤ 768px): items + BS table → CARD VIEW (stacked, có label) ─── */
+    @media (max-width: 768px) {
+      main { padding-left: 8px !important; padding-right: 8px !important; }
+      .panel-bd { padding: 8px 6px; }
+      .action-bar h2 { font-size: 16px; }
+      .action-bar .text-xl { font-size: 16px; }
+
+      /* Input touch target lớn hơn */
+      .field-input, .field-textarea, .field-select { padding: 9px 10px; font-size: 15px; }
+
+      /* ===== ITEMS TABLE → CARD ===== */
+      .items-table { min-width: 0; display: block; }
+      .items-table thead { display: none; }
+      .items-table tbody { display: block; }
+      .items-table tbody tr {
+        display: grid; grid-template-columns: 1fr 1fr;
+        gap: 6px 8px;
+        padding: 10px 10px 8px;
+        margin-bottom: 10px;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        background: #fff;
+        position: relative;
+      }
+      .items-table tbody td { display: block; padding: 0; }
+      /* Label trên mỗi ô */
+      .items-table tbody td::before {
+        content: attr(data-label);
+        display: block;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #64748b;
+        margin-bottom: 3px;
+      }
+      .items-table tbody td:first-child::before { content: none; }
+      /* STT — góc trên trái, nhỏ */
+      .items-table tbody tr > td:nth-child(1) {
+        grid-column: 1 / -1;
+        font-weight: 700; color: #0a6fd6; font-size: 13px;
+        padding: 0 0 4px;
+        border-bottom: 1px solid #f1f5f9;
+        margin-bottom: 4px;
+      }
+      /* Tên SP + Mô tả: full width */
+      .items-table tbody tr > td:nth-child(3),
+      .items-table tbody tr > td:nth-child(4) { grid-column: 1 / -1; }
+      /* Thành tiền: full width, đậm */
+      .items-table tbody tr > td:nth-child(11) {
+        grid-column: 1 / -1;
+        border-top: 1px solid #f1f5f9;
+        padding-top: 6px; margin-top: 2px;
+      }
+      .items-table tbody tr > td:nth-child(11) span { font-size: 16px !important; }
+      /* Action cell (⇅ × menu) — float góc trên phải */
+      .items-table tbody tr > td:nth-child(12) {
+        position: absolute; top: 6px; right: 8px;
+        z-index: 2;
+      }
+      .items-table tbody tr > td:nth-child(12)::before { content: none; }
+      /* Inputs full width, bỏ max-width và field-sizing */
+      .items-table input.field-input, .items-table textarea.field-input {
+        font-size: 14px; padding: 8px 10px;
+        min-width: 0; max-width: none;
+        field-sizing: auto;
+      }
+      .items-table textarea.field-input { min-width: 0; }
+
+      /* ===== BS TABLE → CARD ===== */
+      .bs-table { display: block; }
+      .bs-table thead { display: none; }
+      .bs-table tbody { display: block; }
+      .bs-table tbody tr {
+        display: grid; grid-template-columns: 1fr 1fr;
+        gap: 6px 8px;
+        padding: 10px 10px 8px;
+        margin-bottom: 8px;
+        border-bottom: 1px solid #fde68a;
+        position: relative;
+      }
+      .bs-table tbody td { display: block; padding: 0; }
+      .bs-table tbody td::before {
+        content: attr(data-label);
+        display: block;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #92400e;
+        margin-bottom: 3px;
+      }
+      .bs-table tbody td:first-child::before { content: none; }
+      .bs-table tbody tr > td:nth-child(1) {
+        grid-column: 1 / -1;
+        font-weight: 700; color: #0a6fd6; font-size: 13px;
+        padding: 0 0 4px;
+        border-bottom: 1px solid #fef3c7;
+        margin-bottom: 4px;
+      }
+      .bs-table tbody tr > td:nth-child(2) { grid-column: 1 / -1; }   /* Tên BS full */
+      .bs-table tbody tr > td:nth-child(6) {                            /* Thành tiền full */
+        grid-column: 1 / -1;
+        border-top: 1px solid #fef3c7;
+        padding-top: 6px; margin-top: 2px;
+        text-align: left;
+      }
+      .bs-table tbody tr > td:nth-child(6) span { font-size: 15px !important; }
+      .bs-table tbody tr > td:nth-child(7) {                            /* × xoá: góc phải */
+        position: absolute; top: 6px; right: 8px;
+      }
+      .bs-table tbody tr > td:nth-child(7)::before { content: none; }
+      .bs-table input.field-input { font-size: 14px; padding: 8px 10px; min-width: 0; max-width: none; field-sizing: auto; }
+
+      /* Section bar buttons stack gọn */
+      .section-block .bg-rose-50 { flex-wrap: wrap; }
+
+      /* Adjustments form (chiết khấu + VAT) */
+      .field-input[type="number"] { font-size: 15px; }
+    }
   </style>
 </head>
 <body class="min-h-screen bg-slate-50">
@@ -259,8 +378,8 @@
                   <tbody>
                     <template x-for="(it, iIdx) in sec.items" :key="it._key">
                       <tr>
-                        <td class="text-center text-slate-500" x-text="iIdx + 1"></td>
-                        <td>
+                        <td class="text-center text-slate-500" x-text="'#' + (iIdx + 1)"></td>
+                        <td data-label="Mã SP">
                           <datalist :id="'pd-' + sIdx + '-' + iIdx">
                             <template x-for="p in products" :key="p.id">
                               <option :value="p.ma_sp" :label="(p.ten_sp || p.mo_ta || '')"></option>
@@ -269,43 +388,43 @@
                           <input class="field-input font-mono" x-model="it.ma_sp" :list="'pd-' + sIdx + '-' + iIdx"
                                  @input.debounce.200ms="onMaSpChange(sIdx, iIdx)" @change="onMaSpChange(sIdx, iIdx)">
                         </td>
-                        <td>
+                        <td data-label="Tên SP">
                           <input class="field-input font-semibold" x-model="it.ten_sp">
                         </td>
-                        <td>
+                        <td data-label="Mô tả">
                           <textarea class="field-input" rows="1" x-model="it.mo_ta"
                                     @input="autoGrow($event.target)"
                                     x-init="$nextTick(()=>autoGrow($el))"></textarea>
                         </td>
-                        <td>
+                        <td data-label="Rộng (mm)">
                           <input class="field-input" type="number" x-model.number="it.rong"
                                  @input="onDimensionChange(sIdx, iIdx)">
                         </td>
-                        <td>
+                        <td data-label="Cao (mm)">
                           <input class="field-input" type="number" x-model.number="it.cao"
                                  @input="onDimensionChange(sIdx, iIdx)">
                         </td>
-                        <td>
+                        <td data-label="Số bộ">
                           <input class="field-input" type="number" step="any" x-model.number="it.sl"
                                  @input="onDimensionChange(sIdx, iIdx)">
                         </td>
-                        <td>
+                        <td data-label="Khối lượng">
                           <input class="field-input" type="number" step="any" x-model.number="it.dien_tich"
                                  @input="onKhoiLuongInput(sIdx, iIdx, $event.target.value)"
                                  :readonly="isKhoiLuongLocked(it)"
                                  :class="isKhoiLuongLocked(it) ? 'bg-slate-100 cursor-not-allowed text-slate-600' : ''"
                                  :title="isKhoiLuongLocked(it) ? 'Tự động tính theo đơn vị — không sửa được. Đổi đơn vị nếu muốn nhập tay.' : ''">
                         </td>
-                        <td>
+                        <td data-label="Đơn vị">
                           <input class="field-input" x-model="it.dvt"
                                  @input="onDimensionChange(sIdx, iIdx)">
                         </td>
-                        <td class="num">
+                        <td class="num" data-label="Đơn giá (đ)">
                           <input class="field-input num" type="text" inputmode="numeric"
                                  :value="Fmt.formatMoneyInput(it.don_gia)"
                                  @input="it.don_gia = Fmt.parseMoneyInput($event.target.value); recalcItem(sIdx, iIdx)">
                         </td>
-                        <td class="num">
+                        <td class="num" data-label="Thành tiền">
                           <span class="font-bold tabular-nums text-brand-700" x-text="Fmt.formatMoney(it.thanh_tien)"></span>
                         </td>
                         <td class="text-center" style="position:relative;white-space:nowrap">
@@ -449,15 +568,15 @@
                     <template x-for="(a, aIdx) in plusAdjustments" :key="a._key">
                       <tr>
                         <td class="text-center text-brand-600 font-bold text-xs" x-text="'BS' + (aIdx + 1)"></td>
-                        <td><input class="field-input" x-model="a.label"></td>
-                        <td><input class="field-input tabular-nums text-center" type="number" step="any" min="0" x-model.number="a.so_bo"></td>
-                        <td><input class="field-input" x-model="a.don_vi"></td>
-                        <td class="num">
+                        <td data-label="Tên BS"><input class="field-input" x-model="a.label"></td>
+                        <td data-label="Số bộ"><input class="field-input tabular-nums text-center" type="number" step="any" min="0" x-model.number="a.so_bo"></td>
+                        <td data-label="Đơn vị"><input class="field-input" x-model="a.don_vi"></td>
+                        <td class="num" data-label="Đơn giá (đ)">
                           <input class="field-input num" type="text" inputmode="numeric"
                                  :value="Fmt.formatMoneyInput(a.don_gia)"
                                  @input="a.don_gia = Fmt.parseMoneyInput($event.target.value)">
                         </td>
-                        <td class="num">
+                        <td class="num" data-label="Thành tiền">
                           <span class="font-bold tabular-nums text-emerald-700" x-text="Fmt.formatMoney(adjFixedAmount(a))"></span>
                         </td>
                         <td class="text-center">

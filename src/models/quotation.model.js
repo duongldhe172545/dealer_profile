@@ -10,8 +10,12 @@ const HEADER_FIELDS = [
   'tam_tinh',
   'chi_phi_van_chuyen', 'chi_phi_lap_dat',   // legacy — luôn 0 trên save mới
   'vat_percent', 'vat_amount', 'tong_cong',
-  'chiet_khau_percent',                       // mig 013 — chiết khấu = 1 field độc lập
+  'chiet_khau_percent',                       // mig 013
   'thanh_toan', 'tien_do', 'bao_hanh',
+  // mig 014 — override profile mặc định (NULL = fallback dealer profile)
+  'dealer_name_override', 'dealer_address_override',
+  'dealer_phone_override', 'dealer_email_override',
+  'quote_title',
   'status', 'sent_at', 'sent_method', 'sent_note',
 ];
 

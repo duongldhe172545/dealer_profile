@@ -191,6 +191,12 @@ function normalizeHeader(dealerId, body, autoGenNumber, defaultVat = 0) {
     thanh_toan: clean(body.thanh_toan, 500),
     tien_do: clean(body.tien_do, 500),
     bao_hanh: clean(body.bao_hanh, 500),
+    // mig 014 — override profile mặc định cho phiếu này (NULL = fallback dealer profile)
+    dealer_name_override:    clean(body.dealer_name_override, 200) || null,
+    dealer_address_override: clean(body.dealer_address_override, 500) || null,
+    dealer_phone_override:   clean(body.dealer_phone_override, 50) || null,
+    dealer_email_override:   clean(body.dealer_email_override, 200) || null,
+    quote_title:             clean(body.quote_title, 200) || null,
     status: body.status && VALID_STATUS.includes(body.status) ? body.status : 'draft',
   };
 }

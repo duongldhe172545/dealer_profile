@@ -267,14 +267,21 @@
     sections = null, adjustments = [],
     items = [], quotationImages = [],
   }) {
-    // Header — info đại lý (left)
+    // Header — info đại lý (mig 014): override > dealer profile
+    const dealerName = has(quotation.dealer_name_override)
+      ? quotation.dealer_name_override
+      : (dealer.ten_dai_ly || 'Tên đại lý');
+    const dealerAddrFull = has(quotation.dealer_address_override)
+      ? quotation.dealer_address_override
+      : [dealer.address, dealer.district, dealer.province].filter(has).join(', ');
+    const dealerPhone = has(quotation.dealer_phone_override) ? quotation.dealer_phone_override : (dealer.phone || '');
+    const dealerEmail = has(quotation.dealer_email_override) ? quotation.dealer_email_override : (dealer.email || '');
     const dealerInfo = [
-      has(dealer.address || dealer.district || dealer.province) && [
-        dealer.address, dealer.district, dealer.province
-      ].filter(has).join(', '),
-      has(dealer.phone) && `📞 ${dealer.phone}`,
-      has(dealer.email) && `✉️ ${dealer.email}`,
+      has(dealerAddrFull) && dealerAddrFull,
+      has(dealerPhone) && `📞 ${dealerPhone}`,
+      has(dealerEmail) && `✉️ ${dealerEmail}`,
     ].filter(Boolean);
+    const quoteTitle = has(quotation.quote_title) ? quotation.quote_title : 'PHIẾU BÁO GIÁ';
 
     return `
       <section class="q-page">
@@ -286,7 +293,7 @@
                 : `<div class="no-img">LOGO<br>ĐẠI LÝ</div>`}
             </div>
             <div class="q-dealer">
-              <h1>${esc(dealer.ten_dai_ly || 'Tên đại lý')}</h1>
+              <h1>${esc(dealerName)}</h1>
               <div class="info">
                 ${dealerInfo.map(l => `<div>${esc(l)}</div>`).join('')}
               </div>
@@ -301,7 +308,7 @@
 
         <div class="q-body">
           <div class="q-title-banner">
-            <h2>PHIẾU BÁO GIÁ</h2>
+            <h2>${esc(quoteTitle)}</h2>
             <p>Số ${esc(quotation.so_bao_gia || '—')} · Ngày ${esc(fmtDate(quotation.ngay_bao_gia) || '—')}</p>
           </div>
 

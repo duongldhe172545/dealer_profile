@@ -26,16 +26,16 @@
 
     return `
       <header class="bg-brand-900 text-white">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-2 sm:gap-4">
-          <div class="flex flex-wrap items-center gap-3 sm:gap-6 flex-1 min-w-0">
-            <a href="/admin/" class="text-lg sm:text-xl font-bold whitespace-nowrap">Đại Lý Số</a>
-            <nav class="flex flex-wrap gap-1 overflow-x-auto">${navHtml}</nav>
+        <div class="max-w-6xl mx-auto px-3 sm:px-6 py-2 sm:py-4">
+          <div class="flex items-center justify-between gap-2">
+            <a href="/admin/" class="text-base sm:text-xl font-bold whitespace-nowrap">Đại Lý Số <span class="text-xs font-normal opacity-70">· Admin</span></a>
+            <div class="flex items-center gap-2">
+              <a href="/account.html" class="text-xs sm:text-sm text-blue-100 hover:text-white truncate max-w-[120px] sm:max-w-none" title="Tài khoản của tôi">${user.full_name || user.username}</a>
+              <button onclick="Auth.logout()"
+                class="text-xs sm:text-sm bg-white/10 hover:bg-white/20 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg whitespace-nowrap">Đăng xuất</button>
+            </div>
           </div>
-          <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-            <a href="/account.html" class="text-xs sm:text-sm text-blue-100 hover:text-white truncate max-w-[100px] sm:max-w-none" title="Tài khoản của tôi">${user.full_name || user.username}</a>
-            <button onclick="Auth.logout()"
-              class="text-xs sm:text-sm bg-white/10 hover:bg-white/20 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg whitespace-nowrap">Đăng xuất</button>
-          </div>
+          <nav class="flex gap-1 overflow-x-auto mt-2 -mx-1 px-1 pb-1" style="scrollbar-width:thin">${navHtml}</nav>
         </div>
       </header>
     `;

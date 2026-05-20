@@ -112,6 +112,8 @@
     .bs-table td.num input.field-input { max-width: 220px; }
 
     .action-bar { position: sticky; top: 0; z-index: 20; background: rgba(248,250,252,0.96); backdrop-filter: blur(8px); padding: 10px 0; border-bottom: 1px solid #e2e8f0; margin-bottom: 14px; }
+    .action-bar-btns { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .action-bar-btns button { white-space: nowrap; }
 
     /* ─── Mobile (≤ 768px): items + BS table → CARD VIEW (stacked, có label) ─── */
     @media (max-width: 768px) {
@@ -239,37 +241,40 @@
   <main class="max-w-[1480px] mx-auto px-4 py-6" x-data="quoteForm()" x-init="init()">
     <!-- Action bar -->
     <div class="action-bar">
-      <div class="flex items-center justify-between gap-3 flex-wrap">
-        <div>
-          <h2 class="text-xl font-bold text-slate-800">
-            <span x-show="editingId" x-text="'Báo giá #' + (form.so_bao_gia || '')"></span>
-            <span x-show="!editingId">Tạo báo giá mới</span>
+      <!-- Row 1: title + status (mobile) -->
+      <div class="flex items-center justify-between gap-2 mb-2">
+        <div class="min-w-0 flex-1">
+          <h2 class="text-base sm:text-xl font-bold text-slate-800 truncate">
+            <a href="/dealer/quotations.html" class="text-slate-400 hover:text-brand-600 mr-1" title="Quay lại danh sách">←</a>
+            <span x-show="editingId" x-text="'BG ' + (form.so_bao_gia || '')"></span>
+            <span x-show="!editingId">Báo giá mới</span>
           </h2>
-          <p class="text-xs text-slate-500 mt-0.5">
-            <a href="/dealer/quotations.html" class="hover:text-brand-600">← Quay lại danh sách</a>
+          <p class="text-[11px] text-slate-500 mt-0.5 flex items-center gap-2">
+            <span x-show="form.status && form.status !== 'draft'" x-cloak
+                  class="px-1.5 py-0.5 rounded font-semibold"
+                  :class="form.status === 'sent' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-700'"
+                  x-text="statusLabel(form.status)"></span>
+            <span :class="statusClass()" x-text="statusText()" title="Tự lưu sau mỗi 3 phút nếu có thay đổi"></span>
           </p>
         </div>
-        <div class="flex items-center gap-2 flex-wrap">
-          <span x-show="form.status && form.status !== 'draft'" x-cloak
-                class="text-xs px-2 py-1 rounded font-semibold"
-                :class="form.status === 'sent' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-700'"
-                x-text="statusLabel(form.status)"></span>
-          <span class="text-xs" :class="statusClass()" x-text="statusText()" title="Tự lưu sau mỗi 3 phút nếu có thay đổi"></span>
-          <button @click="exportPDF()" :disabled="saving || !form.so_bao_gia" type="button"
-                  class="border border-slate-300 hover:bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-50">
-            📄 Xuất PDF
-          </button>
-          <button @click="sendEmail()" :disabled="saving || !form.so_bao_gia" type="button"
-                  class="border border-slate-300 hover:bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-50"
-                  title="Mở app email mặc định với nội dung soạn sẵn (đại lý tự đính kèm PDF và sửa nếu cần)">
-            ✉ Gửi email
-          </button>
-          <button @click="save()" :disabled="saving" type="button"
-                  class="bg-brand-500 hover:bg-brand-600 text-white px-5 py-2 rounded-lg text-sm font-semibold disabled:opacity-50">
-            <span x-show="!saving">Lưu báo giá</span>
-            <span x-show="saving" x-cloak>Đang lưu...</span>
-          </button>
-        </div>
+      </div>
+      <!-- Row 2: action buttons -->
+      <div class="action-bar-btns">
+        <button @click="save()" :disabled="saving" type="button"
+                class="bg-brand-500 hover:bg-brand-600 text-white px-3 sm:px-5 py-2 rounded-lg text-sm font-semibold disabled:opacity-50 flex-1 sm:flex-none">
+          <span x-show="!saving">💾 Lưu</span>
+          <span x-show="saving" x-cloak>Đang lưu...</span>
+        </button>
+        <button @click="exportPDF()" :disabled="saving || !form.so_bao_gia" type="button"
+                title="Xuất PDF"
+                class="border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-2 rounded-lg text-sm font-semibold disabled:opacity-50">
+          📄<span class="hidden sm:inline ml-1">PDF</span>
+        </button>
+        <button @click="sendEmail()" :disabled="saving || !form.so_bao_gia" type="button"
+                title="Gửi email"
+                class="border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-2 rounded-lg text-sm font-semibold disabled:opacity-50">
+          ✉<span class="hidden sm:inline ml-1">Email</span>
+        </button>
       </div>
       <div x-show="error" x-cloak class="mt-2 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2" x-text="error"></div>
     </div>
@@ -314,6 +319,39 @@
               <label class="field-label">Ghi chú hồ sơ</label>
               <textarea class="field-textarea" rows="2" x-model="form.ghi_chu_ho_so"></textarea>
             </div>
+          </div>
+        </div>
+
+        <!-- Tiêu đề & thông tin đại lý (override cho phiếu này) -->
+        <div class="panel" x-data="{ openDealerInfo: false }">
+          <div class="panel-hd flex items-center justify-between gap-2 cursor-pointer" @click="openDealerInfo = !openDealerInfo">
+            <h3>Tiêu đề & thông tin đại lý <span class="text-xs font-normal text-slate-500">(tuỳ chọn — sửa nếu muốn khác với hồ sơ)</span></h3>
+            <span class="text-slate-500 text-xs" x-text="openDealerInfo ? '▲ Thu' : '▼ Mở'"></span>
+          </div>
+          <div class="panel-bd grid grid-cols-1 sm:grid-cols-2 gap-3" x-show="openDealerInfo" x-cloak>
+            <div class="col-span-1 sm:col-span-2">
+              <label class="field-label">Tiêu đề phiếu</label>
+              <input class="field-input" x-model="form.quote_title" placeholder="PHIẾU BÁO GIÁ">
+              <p class="text-[11px] text-slate-400 mt-1">Bỏ trống → dùng mặc định "PHIẾU BÁO GIÁ".</p>
+            </div>
+            <div>
+              <label class="field-label">Tên đại lý</label>
+              <input class="field-input" x-model="form.dealer_name_override" :placeholder="dealer.ten_dai_ly || ''">
+            </div>
+            <div>
+              <label class="field-label">Số điện thoại</label>
+              <input class="field-input" x-model="form.dealer_phone_override" :placeholder="dealer.phone || ''">
+            </div>
+            <div>
+              <label class="field-label">Email</label>
+              <input class="field-input" x-model="form.dealer_email_override" :placeholder="dealer.email || ''">
+            </div>
+            <div>
+              <label class="field-label">Địa chỉ đầy đủ</label>
+              <textarea class="field-textarea" rows="2" x-model="form.dealer_address_override"
+                        :placeholder="[dealer.address, dealer.district, dealer.province].filter(Boolean).join(', ')"></textarea>
+            </div>
+            <div class="col-span-1 sm:col-span-2 text-[11px] text-slate-400 italic">Bỏ trống bất kỳ ô nào → dùng giá trị trong "Hồ sơ" hiện tại.</div>
           </div>
         </div>
 
@@ -508,15 +546,15 @@
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
               <template x-for="slot in [1,2,3,4,5]" :key="slot">
                 <div class="img-slot">
-                  <div class="img-slot-label">Ảnh <span x-text="slot"></span></div>
-                  <div class="text-[10px] text-slate-500 mb-1 italic">Ngang 4:3 · ~1200×900px</div>
+                  <div class="img-slot-label" x-text="(getQImg(slot) && getQImg(slot).caption) ? getQImg(slot).caption : ('Ảnh ' + slot)"></div>
                   <template x-if="getQImg(slot)">
                     <div>
                       <div class="img-thumb mb-1"><img :src="getQImg(slot).url" :alt="'Ảnh ' + slot"></div>
                       <input type="text" maxlength="200"
                              :value="getQImg(slot).caption || ''"
                              @blur="saveCaption(slot, $event.target.value)"
-                             class="w-full text-[10px] px-2 py-1 mb-1 border border-slate-200 rounded outline-none focus:border-brand-500">
+                             :placeholder="'Tên ảnh (vd: Cửa cuốn nhà ABC) — bỏ trống = Ảnh ' + slot"
+                             class="w-full text-[11px] px-2 py-1.5 mb-1 border border-slate-300 rounded outline-none focus:border-brand-500">
                       <div class="flex gap-1">
                         <button @click="pickQuotationImage(slot)" type="button" :disabled="qImgUploading[slot]"
                                 class="flex-1 text-[10px] bg-slate-100 hover:bg-slate-200 px-1.5 py-1 rounded font-semibold disabled:opacity-50">Đổi</button>

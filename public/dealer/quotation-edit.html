@@ -241,8 +241,8 @@
   <main class="max-w-[1480px] mx-auto px-4 py-6" x-data="quoteForm()" x-init="init()">
     <!-- Action bar -->
     <div class="action-bar">
-      <!-- Row 1: title + status (mobile) -->
-      <div class="flex items-center justify-between gap-2 mb-2">
+      <div class="flex items-center justify-between gap-2 flex-wrap">
+        <!-- Title block (trái) -->
         <div class="min-w-0 flex-1">
           <h2 class="text-base sm:text-xl font-bold text-slate-800 truncate">
             <a href="/dealer/quotations.html" class="text-slate-400 hover:text-brand-600 mr-1" title="Quay lại danh sách">←</a>
@@ -257,24 +257,24 @@
             <span :class="statusClass()" x-text="statusText()" title="Tự lưu sau mỗi 3 phút nếu có thay đổi"></span>
           </p>
         </div>
-      </div>
-      <!-- Row 2: action buttons -->
-      <div class="action-bar-btns">
-        <button @click="save()" :disabled="saving" type="button"
-                class="bg-brand-500 hover:bg-brand-600 text-white px-3 sm:px-5 py-2 rounded-lg text-sm font-semibold disabled:opacity-50 flex-1 sm:flex-none">
-          <span x-show="!saving">💾 Lưu</span>
-          <span x-show="saving" x-cloak>Đang lưu...</span>
-        </button>
-        <button @click="exportPDF()" :disabled="saving || !form.so_bao_gia" type="button"
-                title="Xuất PDF"
-                class="border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-2 rounded-lg text-sm font-semibold disabled:opacity-50">
-          📄<span class="hidden sm:inline ml-1">PDF</span>
-        </button>
-        <button @click="sendEmail()" :disabled="saving || !form.so_bao_gia" type="button"
-                title="Gửi email"
-                class="border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-2 rounded-lg text-sm font-semibold disabled:opacity-50">
-          ✉<span class="hidden sm:inline ml-1">Email</span>
-        </button>
+        <!-- Buttons (phải) — flex-wrap để xuống dòng khi chật -->
+        <div class="action-bar-btns ml-auto">
+          <button @click="save()" :disabled="saving" type="button"
+                  class="bg-brand-500 hover:bg-brand-600 text-white px-3 sm:px-5 py-2 rounded-lg text-sm font-semibold disabled:opacity-50">
+            <span x-show="!saving">💾 Lưu</span>
+            <span x-show="saving" x-cloak>Đang lưu...</span>
+          </button>
+          <button @click="exportPDF()" :disabled="saving || !form.so_bao_gia" type="button"
+                  title="Xuất PDF"
+                  class="border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-2 rounded-lg text-sm font-semibold disabled:opacity-50">
+            📄<span class="hidden sm:inline ml-1">PDF</span>
+          </button>
+          <button @click="sendEmail()" :disabled="saving || !form.so_bao_gia" type="button"
+                  title="Gửi email"
+                  class="border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-2 rounded-lg text-sm font-semibold disabled:opacity-50">
+            ✉<span class="hidden sm:inline ml-1">Email</span>
+          </button>
+        </div>
       </div>
       <div x-show="error" x-cloak class="mt-2 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2" x-text="error"></div>
     </div>
@@ -331,27 +331,24 @@
           <div class="panel-bd grid grid-cols-1 sm:grid-cols-2 gap-3" x-show="openDealerInfo" x-cloak>
             <div class="col-span-1 sm:col-span-2">
               <label class="field-label">Tiêu đề phiếu</label>
-              <input class="field-input" x-model="form.quote_title" placeholder="PHIẾU BÁO GIÁ">
-              <p class="text-[11px] text-slate-400 mt-1">Bỏ trống → dùng mặc định "PHIẾU BÁO GIÁ".</p>
+              <input class="field-input" x-model="form.quote_title">
             </div>
             <div>
               <label class="field-label">Tên đại lý</label>
-              <input class="field-input" x-model="form.dealer_name_override" :placeholder="dealer.ten_dai_ly || ''">
+              <input class="field-input" x-model="form.dealer_name_override">
             </div>
             <div>
               <label class="field-label">Số điện thoại</label>
-              <input class="field-input" x-model="form.dealer_phone_override" :placeholder="dealer.phone || ''">
+              <input class="field-input" x-model="form.dealer_phone_override">
             </div>
             <div>
               <label class="field-label">Email</label>
-              <input class="field-input" x-model="form.dealer_email_override" :placeholder="dealer.email || ''">
+              <input class="field-input" x-model="form.dealer_email_override">
             </div>
-            <div>
+            <div class="col-span-1 sm:col-span-2">
               <label class="field-label">Địa chỉ đầy đủ</label>
-              <textarea class="field-textarea" rows="2" x-model="form.dealer_address_override"
-                        :placeholder="[dealer.address, dealer.district, dealer.province].filter(Boolean).join(', ')"></textarea>
+              <textarea class="field-textarea" rows="2" x-model="form.dealer_address_override"></textarea>
             </div>
-            <div class="col-span-1 sm:col-span-2 text-[11px] text-slate-400 italic">Bỏ trống bất kỳ ô nào → dùng giá trị trong "Hồ sơ" hiện tại.</div>
           </div>
         </div>
 

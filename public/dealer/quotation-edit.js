@@ -425,10 +425,16 @@ function quoteForm() {
         if (this.editingId) {
           await this.loadQuotation(this.editingId);
         } else {
-          // tạo mới: gợi ý số BG
+          // Tạo mới: gợi ý số BG + snapshot thông tin đại lý từ hồ sơ vào override
+          // (user thấy text luôn, sửa free; profile dealer KHÔNG bị đụng khi save BG).
           const ngay = this.form.ngay_bao_gia;
           const r = await API.get('/api/dealer/quotations/suggest-number?ngay_bao_gia=' + ngay);
           this.form.so_bao_gia = r.so_bao_gia;
+          this.form.quote_title             = 'PHIẾU BÁO GIÁ';
+          this.form.dealer_name_override    = this.dealer.ten_dai_ly || '';
+          this.form.dealer_phone_override   = this.dealer.phone || '';
+          this.form.dealer_email_override   = this.dealer.email || '';
+          this.form.dealer_address_override = [this.dealer.address, this.dealer.district, this.dealer.province].filter(Boolean).join(', ');
         }
         this.recalcAll();
         this.$nextTick(() => {
@@ -578,8 +584,11 @@ function quoteForm() {
         const legacyMinusPct = (q.adjustments || []).find(a => a.kind === 'minus' && a.mode === 'percent' && Number(a.value_percent) > 0);
         if (legacyMinusPct) chiet_khau_percent = Number(legacyMinusPct.value_percent) || 0;
       }
-      // Bỏ luôn các minus adjustments khỏi FE state — chiết khấu giờ là field độc lập
       const adjustmentsPlusOnly = adjustments.filter(a => a.kind === 'plus');
+
+      // Override fields (mig 014): nếu DB có giá trị → dùng. Rỗng/null (BG cũ) → fallback dealer profile live.
+      const ovr = (val, fb) => (val != null && val !== '') ? val : (fb || '');
+      const dealerAddrFb = [this.dealer.address, this.dealer.district, this.dealer.province].filter(Boolean).join(', ');
 
       this.form = {
         so_bao_gia: q.so_bao_gia, ngay_bao_gia: q.ngay_bao_gia,
@@ -592,12 +601,11 @@ function quoteForm() {
         thanh_toan: q.thanh_toan || '',
         tien_do: q.tien_do || '',
         bao_hanh: q.bao_hanh || '',
-        // Override (mig 014) — rỗng = dùng profile
-        dealer_name_override:    q.dealer_name_override    || '',
-        dealer_address_override: q.dealer_address_override || '',
-        dealer_phone_override:   q.dealer_phone_override   || '',
-        dealer_email_override:   q.dealer_email_override   || '',
-        quote_title:             q.quote_title             || '',
+        quote_title:             ovr(q.quote_title, 'PHIẾU BÁO GIÁ'),
+        dealer_name_override:    ovr(q.dealer_name_override,    this.dealer.ten_dai_ly),
+        dealer_phone_override:   ovr(q.dealer_phone_override,   this.dealer.phone),
+        dealer_email_override:   ovr(q.dealer_email_override,   this.dealer.email),
+        dealer_address_override: ovr(q.dealer_address_override, dealerAddrFb),
         status: q.status,
         sections,
         adjustments: adjustmentsPlusOnly,

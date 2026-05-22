@@ -11,6 +11,24 @@ const VALID_STATUS  = ['draft', 'sent', 'confirmed', 'cancelled'];
 const VALID_METHODS = ['zalo', 'email', 'in_giay', 'khac'];
 const VALID_ADJ_KIND = ['plus', 'minus'];
 const VALID_ADJ_MODE = ['fixed', 'percent'];
+const VALID_ORDER_STATUS = ['cho_san_xuat', 'san_xuat', 'lap_dat', 'hoan_thien'];
+// 5 logical status FE: combine (status DB, ready_to_send flag) → 1 enum
+const VALID_LOGICAL_STATUS = ['nhap', 'chua_gui', 'da_gui', 'da_chot', 'da_truot'];
+const LOGICAL_TO_DB = {
+  nhap:     { status: 'draft',     ready_to_send: 0 },
+  chua_gui: { status: 'draft',     ready_to_send: 1 },
+  da_gui:   { status: 'sent',      ready_to_send: 0 },
+  da_chot:  { status: 'confirmed', ready_to_send: 0 },
+  da_truot: { status: 'cancelled', ready_to_send: 0 },
+};
+function dbToLogicalStatus(status, ready_to_send) {
+  if (status === 'draft' && ready_to_send) return 'chua_gui';
+  if (status === 'draft')     return 'nhap';
+  if (status === 'sent')      return 'da_gui';
+  if (status === 'confirmed') return 'da_chot';
+  if (status === 'cancelled') return 'da_truot';
+  return 'nhap';
+}
 const DEFAULT_VAT_NEW = 8;   // báo giá mới mặc định VAT 8% (theo mẫu mới)
 
 const clean = (value, max = 500) => cleanString(value, max);
@@ -200,6 +218,8 @@ function normalizeHeader(dealerId, body, autoGenNumber, defaultVat = 0) {
     status: body.status && VALID_STATUS.includes(body.status) ? body.status : 'draft',
   };
 }
+// Note: order_status, ready_to_send, thanh_toan_thuc, gia_von KHÔNG có trong normalizeHeader.
+// Update qua endpoint riêng để không bị reset khi full PUT từ BG editor.
 
 // Tổng cộng v2 (Excel-style):
 //   tam_tinh            = Σ items.thanh_tien                       (TỔNG A+B+C+...)
@@ -243,12 +263,18 @@ function computeTotals(header, items, adjustments) {
 }
 
 function list(dealerId, filter) {
-  return quotationModel.list(dealerId, filter);
+  const rows = quotationModel.list(dealerId, filter);
+  return rows.map(r => ({
+    ...r,
+    logical_status: dbToLogicalStatus(r.status, r.ready_to_send),
+  }));
 }
 
 function getById(dealerId, id) {
   const q = quotationModel.findById(dealerId, id);
   if (!q) throw notFound('Không tìm thấy báo giá');
+  // Tính logical_status từ (status, ready_to_send) cho FE
+  q.logical_status = dbToLogicalStatus(q.status, q.ready_to_send);
   return q;
 }
 
@@ -283,14 +309,13 @@ function create(dealerId, body, ctx) {
     items_count: items.length, sections_count: sections.length,
     customer_id: header.customer_id,
   });
-  return quotationModel.findById(dealerId, id);
+  return getById(dealerId, id);
 }
 
 function update(dealerId, id, body) {
   const existing = getById(dealerId, id);
-  if (existing.status !== 'draft') {
-    throw badRequest('Báo giá đã gửi, không thể sửa. Tạo bản sao để sửa.');
-  }
+  // Sếp chốt: cho sửa BG ở mọi status (đã gửi/đã chốt/đã trượt vẫn sửa được).
+  // Phát sinh / giảm scope → cứ sửa thẳng items + tài chính, không tạo BG phụ.
 
   const { sections, items, adjustments } = prepareSectionedPayload(body);
   // KHÔNG check items.length — cho phép save draft trống. Sẽ kiểm khi markSent.
@@ -313,7 +338,7 @@ function update(dealerId, id, body) {
   header.sent_note = existing.sent_note;
 
   quotationModel.update(dealerId, id, header, sections, items, adjustments);
-  return quotationModel.findById(dealerId, id);
+  return getById(dealerId, id);
 }
 
 function remove(dealerId, id) {
@@ -338,7 +363,7 @@ function markSent(dealerId, id, body, ctx) {
   audit.log(ctx, 'quotation.send', 'quotation', id, {
     so_bao_gia: existing.so_bao_gia, sent_method,
   });
-  return quotationModel.findById(dealerId, id);
+  return getById(dealerId, id);
 }
 
 function setStatus(dealerId, id, status, ctx) {
@@ -350,45 +375,58 @@ function setStatus(dealerId, id, status, ctx) {
       so_bao_gia: existing.so_bao_gia, tong_cong: existing.tong_cong,
     });
   }
-  return quotationModel.findById(dealerId, id);
+  return getById(dealerId, id);
 }
 
-// Clone báo giá: tạo bản nháp mới từ báo giá cũ, giữ nguyên sections + adjustments.
-function clone(dealerId, id) {
-  const original = getById(dealerId, id);
-
-  // Group items theo section_id để rebuild structure
-  const itemsBySection = new Map();
-  for (const it of (original.items || [])) {
-    const sId = it.section_id;
-    if (!itemsBySection.has(sId)) itemsBySection.set(sId, []);
-    itemsBySection.get(sId).push(it);
+// Đổi logical status (mig 015) — 5 trạng thái Nháp/Chưa gửi/Đã gửi/Đã chốt/Đã trượt.
+// Khi chuyển sang 'da_truot' (cancelled): order_status auto null hoá (BG huỷ không sản xuất).
+// Khi từ 'da_truot' về status khác: order_status auto set 'cho_san_xuat' nếu đang null.
+function setLogicalStatus(dealerId, id, logical_status, ctx) {
+  if (!VALID_LOGICAL_STATUS.includes(logical_status)) {
+    throw badRequest('Trạng thái BG không hợp lệ');
   }
+  const existing = getById(dealerId, id);
+  const map = LOGICAL_TO_DB[logical_status];
+  quotationModel.setLogicalStatus(dealerId, id, map.status, map.ready_to_send);
+  // Sync order_status với status BG
+  if (logical_status === 'da_truot') {
+    quotationModel.setOrderStatus(dealerId, id, null);
+  } else if (!existing.order_status) {
+    quotationModel.setOrderStatus(dealerId, id, 'cho_san_xuat');
+  }
+  if (map.status === 'confirmed') {
+    audit.log(ctx, 'quotation.confirm', 'quotation', id, {
+      so_bao_gia: existing.so_bao_gia, tong_cong: existing.tong_cong,
+    });
+  }
+  return getById(dealerId, id);
+}
 
-  const sections = (original.sections || []).map(s => ({
-    ten: s.ten,
-    items: itemsBySection.get(s.id) || [],
-  }));
-  // Items không thuộc section nào (legacy edge case) → 1 section "Khác" cuối cùng
-  const orphanItems = itemsBySection.get(null) || [];
-  if (orphanItems.length) sections.push({ ten: 'Khác', items: orphanItems });
+function setOrderStatus(dealerId, id, order_status) {
+  if (order_status != null && !VALID_ORDER_STATUS.includes(order_status)) {
+    throw badRequest('Trạng thái đơn hàng không hợp lệ');
+  }
+  getById(dealerId, id);    // verify ownership
+  quotationModel.setOrderStatus(dealerId, id, order_status);
+  return getById(dealerId, id);
+}
 
-  const body = {
-    customer_id: original.customer_id,
-    ngay_bao_gia: new Date().toISOString().slice(0, 10),
-    dia_chi_cong_trinh: original.dia_chi_cong_trinh,
-    ghi_chu_ho_so: original.ghi_chu_ho_so,
-    ghi_chu_thuong_mai: original.ghi_chu_thuong_mai,
-    vat_percent: original.vat_percent,
-    thanh_toan: original.thanh_toan,
-    tien_do: original.tien_do,
-    bao_hanh: original.bao_hanh,
-    sections,
-    adjustments: (original.adjustments || []).map(a => ({
-      kind: a.kind, label: a.label, amount: a.amount,
-    })),
-  };
-  return create(dealerId, body);
+function setFinancials(dealerId, id, { thanh_toan_thuc, gia_von }) {
+  getById(dealerId, id);
+  // Cho phép null (clear) hoặc số nguyên >= 0
+  if (thanh_toan_thuc != null && thanh_toan_thuc !== '') {
+    const n = Number(thanh_toan_thuc);
+    if (!Number.isFinite(n) || n < 0) throw badRequest('Thanh toán phải là số ≥ 0');
+  }
+  if (gia_von != null && gia_von !== '') {
+    const n = Number(gia_von);
+    if (!Number.isFinite(n) || n < 0) throw badRequest('Giá vốn phải là số ≥ 0');
+  }
+  quotationModel.setFinancials(dealerId, id, {
+    thanh_toan_thuc: thanh_toan_thuc == null || thanh_toan_thuc === '' ? null : thanh_toan_thuc,
+    gia_von:         gia_von         == null || gia_von         === '' ? null : gia_von,
+  });
+  return getById(dealerId, id);
 }
 
 // ─── Ảnh đính kèm báo giá (tối đa 5 slot 1..5) ─────────────────────────────
@@ -452,7 +490,9 @@ function updateImageCaption(dealerId, quotationId, slot, caption) {
 
 module.exports = {
   list, getById, suggestNumber, create, update, remove,
-  markSent, setStatus, clone, computeLineTotal, computeTotals,
+  markSent, setStatus, setLogicalStatus, setOrderStatus, setFinancials,
+  computeLineTotal, computeTotals,
   uploadImage, deleteImage, updateImageCaption, setImageFromLibrary,
-  VALID_PRICING, VALID_STATUS, VALID_METHODS, VALID_ADJ_KIND, DEFAULT_VAT_NEW,
+  VALID_PRICING, VALID_STATUS, VALID_LOGICAL_STATUS, VALID_ORDER_STATUS,
+  VALID_METHODS, VALID_ADJ_KIND, DEFAULT_VAT_NEW,
 };

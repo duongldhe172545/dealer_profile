@@ -14,6 +14,7 @@ router.use(requireAuth, requireRole('dealer'));
 
 // Dashboard tổng quan của đại lý
 router.get('/dashboard', dealerStatsController.dashboard);
+router.get('/dashboard/v4', dealerStatsController.dashboardV4);   // mig 015 — 5 sections + filter
 
 // Hồ sơ
 router.get('/profile', profileController.getMine);
@@ -43,6 +44,7 @@ router.put('/customers/:id', customerController.update);
 
 // Báo giá
 router.get('/quotations/suggest-number', quotationController.suggestNumber);
+router.get('/quotations/export.xlsx', quotationController.exportXlsx);  // mig 015 — xuất Excel
 router.get('/quotations', quotationController.list);
 router.post('/quotations', quotationController.create);
 router.get('/quotations/:id', quotationController.getOne);
@@ -50,7 +52,10 @@ router.put('/quotations/:id', quotationController.update);
 router.delete('/quotations/:id', quotationController.remove);
 router.post('/quotations/:id/mark-sent', quotationController.markSent);
 router.patch('/quotations/:id/status', quotationController.setStatus);
-router.post('/quotations/:id/clone', quotationController.clone);
+// mig 015: 5 logical status (Nháp/Chưa gửi/Đã gửi/Đã chốt/Đã trượt) + order status + tài chính
+router.patch('/quotations/:id/logical-status', quotationController.setLogicalStatus);
+router.patch('/quotations/:id/order-status',   quotationController.setOrderStatus);
+router.patch('/quotations/:id/financials',     quotationController.setFinancials);
 router.post('/quotations/:id/images/:slot', upload.single('file'), quotationController.uploadImage);
 router.post('/quotations/:id/images/:slot/from-library', quotationController.setImageFromLibrary);
 router.delete('/quotations/:id/images/:slot', quotationController.deleteImage);

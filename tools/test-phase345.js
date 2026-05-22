@@ -137,17 +137,12 @@ async function ensureDealer() {
     console.log('  ✓ Đã chặn sửa báo giá đã gửi:', e.message.slice(0, 80));
   }
 
-  // Clone
-  const cloned = await api('POST', `/api/dealer/quotations/${q1.data.id}/clone`, token, {});
-  console.log('  ✓ Clone báo giá → mã mới:', cloned.data.so_bao_gia, '· status:', cloned.data.status);
-
   // List
   const list = await api('GET', '/api/dealer/quotations', token);
   console.log('  ✓ List báo giá:', list.data.length, 'cái');
 
   // Cleanup: xoá báo giá test
   await api('DELETE', `/api/dealer/quotations/${q1.data.id}`, token);
-  await api('DELETE', `/api/dealer/quotations/${cloned.data.id}`, token);
   // Xoá KH (chỉ KH chưa có báo giá còn lại)
   await api('DELETE', `/api/dealer/customers/${c2.data.id}`, token);
   await api('DELETE', `/api/dealer/customers/${c1.data.id}`, token);

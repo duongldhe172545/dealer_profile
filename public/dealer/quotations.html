@@ -14,24 +14,75 @@
     tailwind.config = { theme: { extend: { colors: { brand: { 500:'#0a6fd6', 600:'#0858b3', 700:'#063f7a', 900:'#0b1f3a' } } } } };
     const user = Auth.guard('dealer');
     document.addEventListener('DOMContentLoaded', () => { if (user) DealerShell.mount(user); });
+
+    // Mapping 5 logical status BG ↔ label (gán vào window để Alpine truy cập được;
+    // const trong <script> KHÔNG tự attach vào window)
+    window.BG_STATUS_OPTIONS = [
+      { value: 'nhap',     label: 'Nháp',      cls: 'bg-slate-100 text-slate-700' },
+      { value: 'chua_gui', label: 'Chưa gửi',  cls: 'bg-amber-100 text-amber-800' },
+      { value: 'da_gui',   label: 'Đã gửi',    cls: 'bg-blue-100 text-blue-700' },
+      { value: 'da_chot',  label: 'Đã chốt',   cls: 'bg-green-100 text-green-700' },
+      { value: 'da_truot', label: 'Đã trượt',  cls: 'bg-red-100 text-red-700' },
+    ];
+    window.ORDER_STATUS_OPTIONS = [
+      { value: 'cho_san_xuat', label: 'Chờ sản xuất', cls: 'bg-amber-50 text-amber-800' },
+      { value: 'san_xuat',     label: 'Sản xuất',     cls: 'bg-teal-50 text-teal-800' },
+      { value: 'lap_dat',      label: 'Lắp đặt',      cls: 'bg-orange-50 text-orange-800' },
+      { value: 'hoan_thien',   label: 'Hoàn thiện',   cls: 'bg-green-50 text-green-800' },
+    ];
   </script>
-  <style>[x-cloak]{display:none!important}</style>
+  <style>
+    [x-cloak]{display:none!important}
+    /* Bảng list — auto-fit theo content, scroll ngang khi tổng width vượt */
+    .qlist-wrap { overflow-x: auto; }
+    .qlist { border-collapse: collapse; font-size: 13px; table-layout: auto; }
+    .qlist thead th { background: #f8fafc; color: #475569; font-weight: 700; font-size: 11px; text-transform: uppercase; padding: 12px 14px; text-align: left; border-bottom: 1px solid #e2e8f0; white-space: nowrap; letter-spacing: 0.02em; }
+    .qlist tbody td { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; white-space: nowrap; }
+    .qlist tbody tr:hover { background: #fafbfc; }
+    .qlist .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .qlist .center { text-align: center; }
+    .qlist .money { font-weight: 600; }
+    /* Chỉ cột Công trình mới truncate (vì có thể text dài), max 320px */
+    .qlist td.ct-cell { max-width: 320px; overflow: hidden; text-overflow: ellipsis; }
+    .status-select { padding: 4px 6px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 0; cursor: pointer; outline: none; }
+    .status-select:focus { box-shadow: 0 0 0 2px rgba(10,111,214,0.3); }
+    /* Inline edit cho cột số (Thanh toán / Giá vốn) — gõ trực tiếp vào cell */
+    .inline-edit {
+      width: 100%; min-width: 110px;
+      padding: 6px 8px;
+      border: 1px dashed #cbd5e1; border-radius: 6px;
+      background: #fafbfc;
+      font-size: 13px; font-variant-numeric: tabular-nums;
+      text-align: right; color: #334155;
+      outline: none; transition: 0.15s;
+    }
+    .inline-edit:hover { background: #fff; border-color: #94a3b8; border-style: solid; }
+    .inline-edit:focus { background: #fff; border-color: #0a6fd6; border-style: solid; box-shadow: 0 0 0 3px rgba(10,111,214,0.12); }
+    .inline-edit::placeholder { color: #cbd5e1; font-style: italic; }
+  </style>
 </head>
 <body class="min-h-screen bg-slate-50">
   <div id="dealer-shell"></div>
 
-  <main class="max-w-6xl mx-auto px-6 py-8" x-data="quotationsPage()" x-init="init()">
-    <div class="flex items-center justify-between mb-6 gap-4">
+  <main class="max-w-[1480px] mx-auto px-4 sm:px-6 py-6" x-data="quotationsPage()" x-init="init()">
+    <div class="flex items-center justify-between mb-6 gap-4 flex-wrap">
       <div>
         <h2 class="text-2xl font-bold text-slate-800">Báo giá</h2>
-        <p class="text-sm text-slate-500 mt-0.5">Tạo, lưu, gửi báo giá cho khách hàng.</p>
+        <p class="text-sm text-slate-500 mt-0.5">Quản lý danh sách báo giá, trạng thái sản xuất, và tài chính.</p>
       </div>
-      <a href="/dealer/quotation-edit.html" class="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-semibold inline-block">
-        + Tạo báo giá
-      </a>
+      <div class="flex gap-2">
+        <button @click="exportXlsx()" :disabled="exporting"
+                class="border border-slate-300 hover:bg-slate-100 text-slate-700 px-3 py-2 rounded-lg text-sm font-semibold whitespace-nowrap disabled:opacity-50">
+          <span x-show="!exporting">⬇ Xuất Excel</span>
+          <span x-show="exporting" x-cloak>Đang tạo file...</span>
+        </button>
+        <a href="/dealer/quotation-edit.html" class="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap">
+          + Tạo báo giá
+        </a>
+      </div>
     </div>
 
-    <!-- Banner filter KH (khi đến từ trang KH) -->
+    <!-- Banner filter KH -->
     <div x-show="filterCustomerObj" x-cloak class="bg-blue-50 border border-blue-200 text-blue-800 rounded-xl px-4 py-3 mb-4 flex items-center justify-between gap-3">
       <div class="text-sm">
         Đang lọc theo khách hàng:
@@ -41,122 +92,145 @@
       <button @click="clearCustomerFilter()" class="text-sm font-semibold text-blue-700 hover:underline">Bỏ lọc</button>
     </div>
 
-    <div class="bg-white border border-slate-200 rounded-xl p-4 mb-4 flex flex-wrap gap-3">
+    <!-- Filters -->
+    <div class="bg-white border border-slate-200 rounded-xl p-3 mb-4 flex flex-wrap gap-2">
       <input x-model="search" @input.debounce.400ms="load()" type="text"
+             placeholder="Tìm theo số BG / khách hàng / công trình..."
              class="flex-1 min-w-[200px] px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm">
       <select x-model="filterStatus" @change="load()" class="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
-        <option value="">Tất cả trạng thái</option>
-        <option value="draft">Bản nháp</option>
-        <option value="sent">Đã gửi</option>
-        <option value="confirmed">Đã xác nhận</option>
-        <option value="cancelled">Đã huỷ</option>
+        <option value="">Tất cả tình trạng BG</option>
+        <template x-for="opt in bgStatusOptions" :key="opt.value">
+          <option :value="opt.value" x-text="opt.label"></option>
+        </template>
+      </select>
+      <select x-model="filterOrderStatus" @change="loadFiltered()" class="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
+        <option value="">Tất cả tình trạng đơn hàng</option>
+        <template x-for="opt in orderStatusOptions" :key="opt.value">
+          <option :value="opt.value" x-text="opt.label"></option>
+        </template>
       </select>
     </div>
 
-    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-      <table class="w-full text-sm">
-        <thead class="bg-slate-50 border-b border-slate-200 text-slate-600">
+    <!-- Bảng list -->
+    <div class="bg-white border border-slate-200 rounded-xl qlist-wrap">
+      <table class="qlist">
+        <thead>
           <tr>
-            <th class="px-4 py-3 text-left font-semibold">Số BG</th>
-            <th class="px-4 py-3 text-left font-semibold">Ngày</th>
-            <th class="px-4 py-3 text-left font-semibold">Khách hàng</th>
-            <th class="px-4 py-3 text-left font-semibold">Công trình</th>
-            <th class="px-4 py-3 text-center font-semibold">Dòng SP</th>
-            <th class="px-4 py-3 text-right font-semibold">Tổng cộng</th>
-            <th class="px-4 py-3 text-center font-semibold">Trạng thái</th>
-            <th class="px-4 py-3 text-right font-semibold">Thao tác</th>
+            <th>Số BG</th>
+            <th>Ngày</th>
+            <th>Khách hàng</th>
+            <th>Công trình</th>
+            <th>Tình trạng BG</th>
+            <th>Tình trạng đơn hàng</th>
+            <th class="num">Giá trị BG</th>
+            <th class="num">Thanh toán</th>
+            <th class="num">Công nợ</th>
+            <th class="num">Giá vốn</th>
+            <th class="num">Lợi nhuận</th>
+            <th class="num">Thao tác</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100">
-          <template x-for="q in quotations" :key="q.id">
-            <tr class="hover:bg-slate-50">
-              <td class="px-4 py-3 font-mono text-xs font-bold" x-text="q.so_bao_gia"></td>
-              <td class="px-4 py-3" x-text="Fmt.formatDate(q.ngay_bao_gia)"></td>
-              <td class="px-4 py-3">
+        <tbody>
+          <template x-for="q in filtered" :key="q.id">
+            <tr>
+              <td><span class="font-mono text-xs font-bold" x-text="q.so_bao_gia"></span></td>
+              <td x-text="Fmt.formatDate(q.ngay_bao_gia)"></td>
+              <td>
                 <div class="font-semibold text-slate-800" x-text="q.customer_name || '—'"></div>
-                <div class="text-xs text-slate-500 font-mono" x-text="q.customer_code || ''"></div>
+                <div class="text-[10px] text-slate-500 font-mono" x-text="q.customer_code || ''"></div>
               </td>
-              <td class="px-4 py-3 text-xs text-slate-600" x-text="q.dia_chi_cong_trinh || '—'"></td>
-              <td class="px-4 py-3 text-center tabular-nums" x-text="q.items_count"></td>
-              <td class="px-4 py-3 text-right font-semibold tabular-nums" x-text="Fmt.formatMoney(q.tong_cong)"></td>
-              <td class="px-4 py-3 text-center">
-                <span :class="statusClass(q.status)" x-text="statusLabel(q.status)" class="px-2 py-0.5 rounded text-xs font-semibold inline-block"></span>
+              <td class="ct-cell text-xs text-slate-600" :title="q.dia_chi_cong_trinh" x-text="q.dia_chi_cong_trinh || '—'"></td>
+              <!-- Tình trạng BG (dropdown inline) -->
+              <td>
+                <select class="status-select"
+                        :class="statusBgClass(q.logical_status)"
+                        @change="changeLogicalStatus(q, $event.target.value)">
+                  <template x-for="opt in bgStatusOptions" :key="opt.value">
+                    <option :value="opt.value" :selected="opt.value === q.logical_status" x-text="opt.label"></option>
+                  </template>
+                </select>
               </td>
-              <td class="px-4 py-3 text-right space-x-2">
-                <a :href="'/dealer/quotation-edit.html?id=' + q.id" class="text-brand-600 hover:text-brand-700 text-sm font-semibold">Mở</a>
-                <button x-show="q.status === 'draft'" @click="openMarkSent(q)" class="text-green-600 hover:text-green-700 text-sm font-semibold">Đã gửi</button>
-                <button x-show="q.status === 'sent'" @click="confirmOrCancel(q, 'confirmed')" class="text-green-700 hover:text-green-800 text-sm font-semibold">KH chốt</button>
-                <button x-show="q.status === 'sent'" @click="confirmOrCancel(q, 'cancelled')" class="text-orange-600 hover:text-orange-700 text-sm">KH huỷ</button>
-                <button @click="cloneQuote(q)" class="text-slate-600 hover:text-slate-800 text-sm">Sao chép</button>
-                <button @click="remove(q)" class="text-red-600 hover:text-red-700 text-sm">Xoá</button>
+              <!-- Tình trạng đơn hàng -->
+              <td>
+                <template x-if="q.logical_status !== 'da_truot' && q.order_status">
+                  <select class="status-select"
+                          :class="orderStatusClass(q.order_status)"
+                          @change="changeOrderStatus(q, $event.target.value)">
+                    <template x-for="opt in orderStatusOptions" :key="opt.value">
+                      <option :value="opt.value" :selected="opt.value === q.order_status" x-text="opt.label"></option>
+                    </template>
+                  </select>
+                </template>
+                <template x-if="q.logical_status === 'da_truot' || !q.order_status">
+                  <span class="text-xs text-slate-400 italic">—</span>
+                </template>
+              </td>
+              <td class="num money" x-text="Fmt.formatNumber(q.tong_cong)"></td>
+              <td class="num">
+                <input type="text" inputmode="numeric"
+                       class="inline-edit"
+                       :value="Fmt.formatMoneyInput(q.thanh_toan_thuc || 0)"
+                       @blur="saveFin(q, 'thanh_toan_thuc', Fmt.parseMoneyInput($event.target.value))"
+                       @keydown.enter="$event.target.blur()"
+                       placeholder="0">
+              </td>
+              <td class="num money" :class="(q.tong_cong - (q.thanh_toan_thuc || 0)) > 0 ? 'text-orange-700' : 'text-slate-500'">
+                <span x-text="Fmt.formatNumber(q.tong_cong - (q.thanh_toan_thuc || 0))"></span>
+              </td>
+              <td class="num">
+                <input type="text" inputmode="numeric"
+                       class="inline-edit"
+                       :value="q.gia_von != null ? Fmt.formatMoneyInput(q.gia_von) : ''"
+                       @blur="saveFin(q, 'gia_von', $event.target.value === '' ? null : Fmt.parseMoneyInput($event.target.value))"
+                       @keydown.enter="$event.target.blur()"
+                       placeholder="—">
+              </td>
+              <td class="num money" :class="q.gia_von != null ? ((q.tong_cong - q.gia_von) > 0 ? 'text-green-700' : 'text-red-700') : 'text-slate-400'">
+                <span x-text="q.gia_von != null ? Fmt.formatNumber(q.tong_cong - q.gia_von) : '—'"></span>
+              </td>
+              <td class="num">
+                <div class="flex justify-end gap-1.5 whitespace-nowrap">
+                  <a :href="'/dealer/quotation-edit.html?id=' + q.id" title="Mở / Sửa"
+                     class="text-brand-600 hover:text-brand-700 text-sm font-semibold">Sửa</a>
+                  <a :href="'/dealer/quotation-edit.html?id=' + q.id + '&print=1'" target="_blank" title="Mở để tải PDF"
+                     class="text-emerald-600 hover:text-emerald-700 text-sm font-semibold">Tải</a>
+                  <button @click="remove(q)" title="Xoá" class="text-red-600 hover:text-red-700 text-sm">Xoá</button>
+                </div>
               </td>
             </tr>
           </template>
-          <tr x-show="!loading && quotations.length === 0">
-            <td colspan="8" class="px-4 py-12 text-center text-slate-400">Chưa có báo giá. Bấm "Tạo báo giá".</td>
+          <tr x-show="!loading && filtered.length === 0">
+            <td colspan="12" class="px-4 py-12 text-center text-slate-400">Chưa có báo giá nào. Bấm "Tạo báo giá".</td>
           </tr>
           <tr x-show="loading">
-            <td colspan="8" class="px-4 py-12 text-center text-slate-400">Đang tải...</td>
+            <td colspan="12" class="px-4 py-12 text-center text-slate-400">Đang tải...</td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <!-- Modal đánh dấu đã gửi -->
-    <div x-show="sentOpen" x-cloak @keydown.escape.window="sentOpen=false"
-         class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md" @click.outside="sentOpen=false">
-        <div class="px-6 py-4 border-b border-slate-200">
-          <h3 class="text-lg font-bold text-slate-800">Đánh dấu đã gửi</h3>
-          <p class="text-sm text-slate-500 mt-0.5" x-text="`Báo giá ${sentTarget?.so_bao_gia}`"></p>
-        </div>
-        <div class="px-6 py-5 space-y-3">
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Gửi qua *</label>
-            <select x-model="sentForm.sent_method"
-                    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
-              <option value="zalo">Zalo</option>
-              <option value="email">Email</option>
-              <option value="in_giay">In giấy đưa tận tay</option>
-              <option value="khac">Khác</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Ghi chú (tùy chọn)</label>
-            <textarea x-model="sentForm.sent_note" rows="2"
-                      class="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm"></textarea>
-          </div>
-          <div x-show="error" x-cloak class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2" x-text="error"></div>
-        </div>
-        <div class="px-6 py-4 border-t border-slate-200 flex justify-end gap-2">
-          <button @click="sentOpen=false" class="px-4 py-2 text-sm rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">Huỷ</button>
-          <button @click="submitMarkSent()" :disabled="saving"
-                  class="px-4 py-2 text-sm rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold disabled:opacity-50">
-            <span x-show="!saving">Xác nhận đã gửi</span>
-            <span x-show="saving" x-cloak>Đang lưu...</span>
-          </button>
-        </div>
-      </div>
-    </div>
   </main>
 
   <script>
     function quotationsPage() {
       return {
-        quotations: [], loading: false, error: '', saving: false,
-        search: '', filterStatus: '', filterCustomer: '', filterCustomerObj: null,
-        sentOpen: false, sentTarget: null, sentForm: { sent_method: 'zalo', sent_note: '' },
+        quotations: [], loading: false, error: '', saving: false, exporting: false,
+        search: '', filterStatus: '', filterOrderStatus: '',
+        filterCustomer: '', filterCustomerObj: null,
         Fmt: window.Fmt,
+        bgStatusOptions:    window.BG_STATUS_OPTIONS,
+        orderStatusOptions: window.ORDER_STATUS_OPTIONS,
+
+        get filtered() {
+          if (!this.filterOrderStatus) return this.quotations;
+          return this.quotations.filter(q => q.order_status === this.filterOrderStatus);
+        },
 
         async init() {
-          // Đọc query param ?customer_id=X từ trang KH chuyển sang
           const cid = new URLSearchParams(location.search).get('customer_id');
           if (cid) {
             this.filterCustomer = cid;
-            try {
-              const c = await API.get('/api/dealer/customers/' + cid);
-              this.filterCustomerObj = c.data;
-            } catch {}
+            try { const c = await API.get('/api/dealer/customers/' + cid); this.filterCustomerObj = c.data; } catch {}
           }
           await this.load();
         },
@@ -172,64 +246,90 @@
           try {
             const q = new URLSearchParams();
             if (this.search)         q.set('search', this.search);
-            if (this.filterStatus)   q.set('status', this.filterStatus);
+            if (this.filterStatus)   q.set('logical_status', this.filterStatus);
             if (this.filterCustomer) q.set('customer_id', this.filterCustomer);
             const res = await API.get('/api/dealer/quotations' + (q.toString() ? '?' + q : ''));
             this.quotations = res.data;
-          } catch (e) { alert(e.message); }
+          } catch (e) { if (!e.silent) alert(e.message); }
           finally { this.loading = false; }
         },
+        loadFiltered() { /* server filter status BG; client filter order_status */ },
 
-        statusLabel(s) {
-          return ({ draft: 'Bản nháp', sent: 'Đã gửi', confirmed: 'Đã xác nhận', cancelled: 'Đã huỷ' })[s] || s;
+        statusBgClass(logical) {
+          const opt = this.bgStatusOptions.find(o => o.value === logical);
+          return opt ? opt.cls : 'bg-slate-100 text-slate-700';
         },
-        statusClass(s) {
-          return ({
-            draft: 'bg-slate-100 text-slate-700',
-            sent: 'bg-blue-100 text-blue-700',
-            confirmed: 'bg-green-100 text-green-700',
-            cancelled: 'bg-red-100 text-red-700',
-          })[s] || 'bg-slate-100 text-slate-700';
+        orderStatusClass(s) {
+          const opt = this.orderStatusOptions.find(o => o.value === s);
+          return opt ? opt.cls : 'bg-slate-100 text-slate-700';
         },
 
-        openMarkSent(q) {
-          this.sentTarget = q;
-          this.sentForm = { sent_method: 'zalo', sent_note: '' };
-          this.error = '';
-          this.sentOpen = true;
-        },
-        async submitMarkSent() {
-          this.error = '';
-          this.saving = true;
+        async changeLogicalStatus(q, newLogical) {
+          if (newLogical === q.logical_status) return;
           try {
-            await API.post('/api/dealer/quotations/' + this.sentTarget.id + '/mark-sent', this.sentForm);
-            this.sentOpen = false;
-            await this.load();
-          } catch (e) { this.error = e.message; }
-          finally { this.saving = false; }
+            const res = await API.patch('/api/dealer/quotations/' + q.id + '/logical-status', { logical_status: newLogical });
+            // Merge updated fields vào row hiện tại để khỏi reload toàn bảng
+            Object.assign(q, {
+              status:         res.data.status,
+              ready_to_send:  res.data.ready_to_send,
+              logical_status: res.data.logical_status,
+              order_status:   res.data.order_status,
+            });
+          } catch (e) { if (!e.silent) alert(e.message); }
         },
 
-        async confirmOrCancel(q, newStatus) {
-          const label = newStatus === 'confirmed' ? 'đã chốt' : 'đã huỷ';
-          if (!confirm(`Xác nhận báo giá ${q.so_bao_gia} ${label}?`)) return;
+        async changeOrderStatus(q, newOrder) {
+          if (newOrder === q.order_status) return;
           try {
-            await API.patch('/api/dealer/quotations/' + q.id + '/status', { status: newStatus });
-            await this.load();
+            const res = await API.patch('/api/dealer/quotations/' + q.id + '/order-status', { order_status: newOrder });
+            q.order_status = res.data.order_status;
+          } catch (e) { if (!e.silent) alert(e.message); }
+        },
+
+        // Inline save khi user blur khỏi ô Thanh toán / Giá vốn.
+        // Field: 'thanh_toan_thuc' hoặc 'gia_von'. Value: số hoặc null.
+        async saveFin(q, field, value) {
+          // Skip nếu không thay đổi (so sánh int)
+          const newVal = value === null || value === '' ? null : Number(value);
+          const curVal = q[field] == null ? null : Number(q[field]);
+          if (newVal === curVal) return;
+          try {
+            // Gửi cả 2 field hiện tại, chỉ override field vừa edit
+            const payload = {
+              thanh_toan_thuc: field === 'thanh_toan_thuc' ? newVal : q.thanh_toan_thuc,
+              gia_von:         field === 'gia_von'         ? newVal : q.gia_von,
+            };
+            const res = await API.patch('/api/dealer/quotations/' + q.id + '/financials', payload);
+            q.thanh_toan_thuc = res.data.thanh_toan_thuc;
+            q.gia_von         = res.data.gia_von;
+          } catch (e) { if (!e.silent) alert('Không lưu được: ' + e.message); }
+        },
+
+        async exportXlsx() {
+          this.exporting = true;
+          try {
+            const q = new URLSearchParams();
+            if (this.search)         q.set('search', this.search);
+            if (this.filterStatus)   q.set('logical_status', this.filterStatus);
+            if (this.filterCustomer) q.set('customer_id', this.filterCustomer);
+            const url = '/api/dealer/quotations/export.xlsx' + (q.toString() ? '?' + q : '');
+            const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + API.getToken() } });
+            if (!res.ok) throw new Error('Không tạo được file Excel (' + res.status + ')');
+            const blob = await res.blob();
+            const dlUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = dlUrl;
+            a.download = 'bao-gia-' + new Date().toISOString().slice(0, 10) + '.xlsx';
+            document.body.appendChild(a); a.click(); a.remove();
+            URL.revokeObjectURL(dlUrl);
           } catch (e) { alert(e.message); }
-        },
-
-        async cloneQuote(q) {
-          if (!confirm(`Tạo bản sao của ${q.so_bao_gia}?`)) return;
-          try {
-            const res = await API.post('/api/dealer/quotations/' + q.id + '/clone', {});
-            window.location.href = '/dealer/quotation-edit.html?id=' + res.data.id;
-          } catch (e) { alert(e.message); }
+          finally { this.exporting = false; }
         },
 
         async remove(q) {
           if (!confirm(`Xoá báo giá ${q.so_bao_gia}?`)) return;
           try { await API.delete('/api/dealer/quotations/' + q.id); await this.load(); }
-          catch (e) { alert(e.message); }
+          catch (e) { if (!e.silent) alert(e.message); }
         },
       };
     }

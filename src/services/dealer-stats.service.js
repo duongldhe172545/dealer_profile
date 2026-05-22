@@ -11,4 +11,13 @@ function dashboard(dealerId) {
   };
 }
 
-module.exports = { dashboard };
+// V4 — Dashboard 5 sections theo mockup sếp
+function dashboardV4(dealerId, filter) {
+  // Normalize filter
+  const f = { mode: 'month', period: new Date().toISOString().slice(0, 7) };
+  if (filter && (filter.mode === 'month' || filter.mode === 'year')) f.mode = filter.mode;
+  if (filter && filter.period) f.period = String(filter.period).trim();
+  return m.dashboardV4(dealerId, f);
+}
+
+module.exports = { dashboard, dashboardV4 };

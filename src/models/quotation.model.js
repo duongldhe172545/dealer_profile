@@ -4,6 +4,11 @@
 // bảng quotation_adjustments khi migrate 005.
 const db = require('../config/database');
 
+// HEADER_FIELDS = full set, dùng cho create (INSERT all).
+// HEADER_FIELDS_UPDATE = subset, dùng cho update (UPDATE chỉ core fields).
+// Loại trừ 4 field cập nhật qua endpoint riêng (PATCH order-status / financials)
+// để full PUT từ BG editor không vô tình reset chúng về null.
+const PARTIAL_FIELDS = ['order_status', 'ready_to_send', 'thanh_toan_thuc', 'gia_von'];
 const HEADER_FIELDS = [
   'customer_id', 'so_bao_gia', 'ngay_bao_gia', 'dia_chi_cong_trinh',
   'ghi_chu_ho_so', 'ghi_chu_thuong_mai',
@@ -12,12 +17,15 @@ const HEADER_FIELDS = [
   'vat_percent', 'vat_amount', 'tong_cong',
   'chiet_khau_percent',                       // mig 013
   'thanh_toan', 'tien_do', 'bao_hanh',
-  // mig 014 — override profile mặc định (NULL = fallback dealer profile)
+  // mig 014
   'dealer_name_override', 'dealer_address_override',
   'dealer_phone_override', 'dealer_email_override',
   'quote_title',
+  // mig 015 — 2 trục state + tài chính nhập tay (cập nhật qua endpoint riêng)
+  ...PARTIAL_FIELDS,
   'status', 'sent_at', 'sent_method', 'sent_note',
 ];
+const HEADER_FIELDS_UPDATE = HEADER_FIELDS.filter(f => !PARTIAL_FIELDS.includes(f));
 
 const ITEM_FIELDS = [
   'product_id', 'stt', 'ma_sp', 'ten_sp', 'nhom_sp', 'mo_ta',
@@ -26,21 +34,38 @@ const ITEM_FIELDS = [
   'section_id',                              // v2 — trỏ về quotation_sections.id
 ];
 
-function list(dealerId, { search, status, customer_id, from, to } = {}) {
+// Filter `status` (DB enum) hoặc `logical_status` (5 trạng thái FE).
+// logical_status map ngược về (status, ready_to_send) theo bảng:
+//   'nhap'     → status='draft'     AND ready_to_send=0
+//   'chua_gui' → status='draft'     AND ready_to_send=1
+//   'da_gui'   → status='sent'
+//   'da_chot'  → status='confirmed'
+//   'da_truot' → status='cancelled'
+function list(dealerId, { search, status, logical_status, customer_id, from, to } = {}) {
   const where = ['q.dealer_id = @dealer_id'];
   const params = { dealer_id: dealerId };
   if (search) {
     where.push('(q.so_bao_gia LIKE @kw OR q.dia_chi_cong_trinh LIKE @kw OR c.ten_kh LIKE @kw)');
     params.kw = `%${search}%`;
   }
-  if (status) { where.push('q.status = @status'); params.status = status; }
+  if (logical_status) {
+    if      (logical_status === 'nhap')     { where.push("q.status = 'draft' AND q.ready_to_send = 0"); }
+    else if (logical_status === 'chua_gui') { where.push("q.status = 'draft' AND q.ready_to_send = 1"); }
+    else if (logical_status === 'da_gui')   { where.push("q.status = 'sent'"); }
+    else if (logical_status === 'da_chot')  { where.push("q.status = 'confirmed'"); }
+    else if (logical_status === 'da_truot') { where.push("q.status = 'cancelled'"); }
+  } else if (status) {
+    where.push('q.status = @status');
+    params.status = status;
+  }
   if (customer_id) { where.push('q.customer_id = @customer_id'); params.customer_id = Number(customer_id); }
   if (from) { where.push('q.ngay_bao_gia >= @from'); params.from = from; }
   if (to)   { where.push('q.ngay_bao_gia <= @to');   params.to = to; }
 
   return db.prepare(`
-    SELECT q.id, q.so_bao_gia, q.ngay_bao_gia, q.status, q.sent_at, q.sent_method,
+    SELECT q.id, q.so_bao_gia, q.ngay_bao_gia, q.status, q.ready_to_send, q.sent_at, q.sent_method,
            q.tong_cong, q.dia_chi_cong_trinh,
+           q.order_status, q.thanh_toan_thuc, q.gia_von,
            q.customer_id, c.ten_kh AS customer_name, c.ma_kh AS customer_code,
            (SELECT COUNT(*) FROM quotation_items i WHERE i.quotation_id = q.id) AS items_count
     FROM quotations q
@@ -175,11 +200,21 @@ function insertAdjustments(quotationId, adjustments) {
 
 function create(dealerId, header, sections, items, adjustments) {
   const tx = db.transaction(() => {
+    // BG mới: default cho 4 partial fields (mig 015)
+    const PARTIAL_DEFAULTS = {
+      order_status:    'cho_san_xuat',
+      ready_to_send:   0,
+      thanh_toan_thuc: null,
+      gia_von:         null,
+    };
     const cols = ['dealer_id', ...HEADER_FIELDS].join(', ');
     const placeholders = ['@dealer_id', ...HEADER_FIELDS.map(f => `@${f}`)].join(', ');
     const payload = {
       dealer_id: dealerId,
-      ...Object.fromEntries(HEADER_FIELDS.map(f => [f, header[f] ?? null])),
+      ...Object.fromEntries(HEADER_FIELDS.map(f => [
+        f,
+        header[f] !== undefined ? header[f] : (PARTIAL_DEFAULTS[f] !== undefined ? PARTIAL_DEFAULTS[f] : null),
+      ])),
     };
     const info = db.prepare(`INSERT INTO quotations (${cols}) VALUES (${placeholders})`).run(payload);
     const quotationId = info.lastInsertRowid;
@@ -193,10 +228,10 @@ function create(dealerId, header, sections, items, adjustments) {
 
 function update(dealerId, id, header, sections, items, adjustments) {
   const tx = db.transaction(() => {
-    const sets = HEADER_FIELDS.map(f => `${f} = @${f}`).join(', ');
+    const sets = HEADER_FIELDS_UPDATE.map(f => `${f} = @${f}`).join(', ');
     const payload = {
       dealer_id: dealerId, id,
-      ...Object.fromEntries(HEADER_FIELDS.map(f => [f, header[f] ?? null])),
+      ...Object.fromEntries(HEADER_FIELDS_UPDATE.map(f => [f, header[f] ?? null])),
     };
     db.prepare(`UPDATE quotations SET ${sets}, updated_at = CURRENT_TIMESTAMP
       WHERE dealer_id = @dealer_id AND id = @id`).run(payload);
@@ -214,6 +249,37 @@ function update(dealerId, id, header, sections, items, adjustments) {
 
 function remove(dealerId, id) {
   const info = db.prepare('DELETE FROM quotations WHERE dealer_id = ? AND id = ?').run(dealerId, id);
+  return info.changes > 0;
+}
+
+// Partial update — chỉ set order_status (mig 015)
+function setOrderStatus(dealerId, id, order_status) {
+  const info = db.prepare(`
+    UPDATE quotations SET order_status = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE dealer_id = ? AND id = ?
+  `).run(order_status, dealerId, id);
+  return info.changes > 0;
+}
+
+// Partial update — set logical status (status + ready_to_send) qua mapping
+function setLogicalStatus(dealerId, id, dbStatus, ready_to_send) {
+  const info = db.prepare(`
+    UPDATE quotations SET status = ?, ready_to_send = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE dealer_id = ? AND id = ?
+  `).run(dbStatus, ready_to_send ? 1 : 0, dealerId, id);
+  return info.changes > 0;
+}
+
+// Partial update — financial fields (mig 015)
+function setFinancials(dealerId, id, { thanh_toan_thuc, gia_von }) {
+  const info = db.prepare(`
+    UPDATE quotations SET thanh_toan_thuc = ?, gia_von = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE dealer_id = ? AND id = ?
+  `).run(
+    thanh_toan_thuc == null ? null : Math.round(Number(thanh_toan_thuc)),
+    gia_von == null ? null : Math.round(Number(gia_von)),
+    dealerId, id
+  );
   return info.changes > 0;
 }
 
@@ -237,5 +303,6 @@ function setStatus(dealerId, id, status) {
 module.exports = {
   HEADER_FIELDS, ITEM_FIELDS,
   list, findById, nextNumber, create, update, remove, markSent, setStatus,
+  setOrderStatus, setLogicalStatus, setFinancials,
   getImages, upsertImage, deleteImage, updateImageCaption,
 };

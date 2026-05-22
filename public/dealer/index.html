@@ -6,7 +6,6 @@
   <title>Trang chính · Đại Lý Số</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="/assets/js/api.js"></script>
   <script src="/assets/js/auth.js"></script>
   <script src="/assets/js/common.js"></script>
@@ -16,336 +15,621 @@
     const user = Auth.guard('dealer');
     document.addEventListener('DOMContentLoaded', () => { if (user) DealerShell.mount(user); });
   </script>
-  <style>[x-cloak]{display:none!important}</style>
+  <style>
+    [x-cloak]{display:none!important}
+    body {
+      background:
+        radial-gradient(circle at 8% -5%, rgba(10,111,214,0.08), transparent 28%),
+        radial-gradient(circle at 92% -5%, rgba(124,58,237,0.06), transparent 26%),
+        #f4f7fb;
+    }
+
+    /* KPI hero — to, gradient, có aura */
+    .kpi-card {
+      position: relative; overflow: hidden;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 22px 22px 20px;
+      box-shadow: 0 4px 16px rgba(15,23,42,0.04);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(15,23,42,0.08); }
+    .kpi-card::after {
+      content: ""; position: absolute; right: -32px; top: -32px;
+      width: 120px; height: 120px; border-radius: 50%;
+      opacity: .08; pointer-events: none;
+    }
+    .kpi-card.blue::after   { background: #0a6fd6; }
+    .kpi-card.orange::after { background: #d97706; }
+    .kpi-card.slate::after  { background: #334155; }
+    .kpi-card .label-icon { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; }
+    .kpi-card.blue   .label-icon { background: #dbeafe; color: #1e40af; }
+    .kpi-card.orange .label-icon { background: #fef3c7; color: #92400e; }
+    .kpi-card.slate  .label-icon { background: #e2e8f0; color: #334155; }
+    .kpi-card .value { font-size: 32px; font-weight: 900; line-height: 1.05; margin-top: 12px; letter-spacing: -0.01em; }
+    .kpi-card.blue   .value { color: #0a6fd6; }
+    .kpi-card.orange .value { color: #d97706; }
+    .kpi-card.slate  .value { color: #1e293b; }
+    .kpi-card .desc { font-size: 12px; color: #64748b; margin-top: 8px; line-height: 1.5; }
+
+    /* Section card — đậm chất glass + shadow nhẹ */
+    .section-card {
+      background: #fff;
+      border: 1px solid #e6edf5;
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: 0 4px 16px rgba(15,23,42,0.04);
+    }
+    .section-card h3 {
+      font-size: 16px; font-weight: 800; color: #0f172a;
+      margin-bottom: 16px; padding-bottom: 12px;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-card h3 .num-tag {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 26px; height: 26px; border-radius: 8px;
+      background: linear-gradient(135deg, #0a6fd6, #1e40af);
+      color: #fff; font-size: 13px; font-weight: 800;
+    }
+    .section-card h3 .sub { font-size: 11px; font-weight: 500; color: #94a3b8; margin-left: auto; }
+
+    /* Filter bar — gọn + sang */
+    .filter-bar {
+      background: linear-gradient(135deg, #fff, #f8fbff);
+      border: 1px solid #e2e8f0; border-radius: 16px;
+      padding: 14px 18px;
+      box-shadow: 0 4px 12px rgba(15,23,42,0.03);
+    }
+    .filter-bar select {
+      padding: 8px 14px; border: 1px solid #cbd5e1; border-radius: 10px;
+      font-size: 13px; font-weight: 600; background: #fff;
+      color: #1e293b; outline: none; cursor: pointer;
+      transition: 0.15s;
+    }
+    .filter-bar select:hover  { border-color: #94a3b8; }
+    .filter-bar select:focus  { border-color: #0a6fd6; box-shadow: 0 0 0 3px rgba(10,111,214,0.12); }
+
+    /* Progress (cho section B, C) */
+    .progress-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; margin-bottom: 6px; }
+    .progress-row .name { font-size: 13px; color: #475569; font-weight: 500; }
+    .progress-row .val  { font-size: 16px; font-weight: 800; color: #0f172a; min-width: 32px; text-align: right; font-variant-numeric: tabular-nums; }
+    .progress-track { height: 8px; background: #f1f5f9; border-radius: 999px; overflow: hidden; margin-bottom: 14px; }
+    .progress-fill  { height: 100%; border-radius: inherit; transition: width 0.4s ease; }
+
+    /* Finance grid 5 cards (Section A) */
+    .fin-card {
+      background: linear-gradient(180deg, #fff, #f8fbff);
+      border: 1px solid #e6edf5; border-radius: 14px;
+      padding: 14px 12px;
+      text-align: center;
+      transition: transform .15s;
+    }
+    .fin-card:hover { transform: translateY(-2px); }
+    .fin-card .lbl { font-size: 10.5px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 6px; }
+    .fin-card .val { font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; }
+    .fin-card.blue    .val { color: #1d4ed8; }
+    .fin-card.emerald .val { color: #047857; }
+    .fin-card.green   .val { color: #15803d; }
+    .fin-card.rose    .val { color: #be123c; }
+    .fin-card.orange  .val { color: #c2410c; }
+
+    /* Customer cards (Section D) — design icon-left, value-right */
+    .cust-card {
+      display: flex; align-items: center; gap: 14px;
+      padding: 16px;
+      border-radius: 14px;
+      border: 1px solid transparent;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .cust-card:hover { transform: translateX(2px); box-shadow: 0 8px 20px rgba(15,23,42,0.06); }
+    .cust-card .icon {
+      flex-shrink: 0;
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+    .cust-card .body { flex: 1; min-width: 0; }
+    .cust-card .lbl { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.03em; }
+    .cust-card .val { font-size: 26px; font-weight: 900; line-height: 1.1; font-variant-numeric: tabular-nums; margin-top: 2px; }
+    .cust-card .desc { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+    .cust-card.blue    { background: linear-gradient(135deg, #eff6ff, #dbeafe); border-color: #bfdbfe; }
+    .cust-card.blue    .icon { background: #fff; color: #1d4ed8; }
+    .cust-card.blue    .val { color: #1d4ed8; }
+    .cust-card.purple  { background: linear-gradient(135deg, #faf5ff, #ede9fe); border-color: #ddd6fe; }
+    .cust-card.purple  .icon { background: #fff; color: #6d28d9; }
+    .cust-card.purple  .val { color: #6d28d9; }
+    .cust-card.emerald { background: linear-gradient(135deg, #ecfdf5, #d1fae5); border-color: #a7f3d0; }
+    .cust-card.emerald .icon { background: #fff; color: #047857; }
+    .cust-card.emerald .val { color: #047857; }
+
+    /* Product groups table */
+    .pg-table { width: 100%; border-collapse: collapse; }
+    .pg-table th {
+      font-size: 11px; text-transform: uppercase; color: #64748b;
+      font-weight: 700; padding: 10px 12px; text-align: left;
+      border-bottom: 1px solid #e2e8f0; background: #fafbfd;
+      letter-spacing: 0.04em;
+    }
+    .pg-table th:first-child { border-radius: 10px 0 0 0; }
+    .pg-table th:last-child  { border-radius: 0 10px 0 0; }
+    .pg-table td { padding: 12px; font-size: 13px; border-bottom: 1px solid #f1f5f9; }
+    .pg-table td.num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+    .pg-table tbody tr:hover { background: #fafbfd; }
+    .pg-bar { display: block; height: 8px; background: #f1f5f9; border-radius: 999px; overflow: hidden; }
+    .pg-bar > span { display: block; height: 100%; background: linear-gradient(90deg, #0a6fd6, #60a5fa); border-radius: inherit; transition: width 0.4s; }
+
+    /* Time-series chart (vertical bars) — cho year + all mode */
+    .chart-css {
+      display: flex; align-items: flex-end; gap: 8px;
+      height: 220px; padding: 12px 8px 4px;
+      border-bottom: 1px solid #e2e8f0;
+      background: linear-gradient(180deg, transparent 0%, rgba(15,23,42,0.02) 100%);
+      border-radius: 8px;
+    }
+    .chart-col {
+      flex: 1; min-width: 0;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      height: 100%;
+      transition: 0.2s;
+    }
+    .chart-col.active { transform: translateY(-3px); }
+    .chart-bars {
+      flex: 1; width: 100%; max-width: 48px;
+      display: flex; gap: 3px; align-items: flex-end;
+    }
+    .chart-bar {
+      flex: 1; min-height: 1px;
+      border-radius: 6px 6px 2px 2px;
+      transition: height 0.4s ease;
+    }
+    .chart-bar.bar-bg { background: linear-gradient(180deg, #60a5fa, #2563eb); }   /* Tổng GT BG */
+    .chart-bar.bar-dh { background: linear-gradient(180deg, #4ade80, #16a34a); }   /* Tổng GT đơn hàng */
+    .chart-bar.bar-ln { background: linear-gradient(180deg, #34d399, #10b981); }   /* Lợi nhuận */
+    .chart-bar.bar-cp { background: linear-gradient(180deg, #fb7185, #e11d48); }   /* Chi phí */
+    .chart-bar.bar-cn { background: linear-gradient(180deg, #fbbf24, #d97706); }   /* Công nợ */
+    .chart-col.active .chart-bar { box-shadow: 0 4px 12px rgba(37,99,235,0.25); }
+    .chart-lbl { font-size: 11px; color: #64748b; font-weight: 600; }
+    .chart-col.active .chart-lbl { color: #0a6fd6; font-weight: 800; }
+
+    /* Horizontal bars chart — cho month mode (5 metric trong 1 kỳ) */
+    .hbars { display: grid; gap: 14px; padding: 8px 4px; }
+    .hbar-row { display: grid; grid-template-columns: 160px 1fr 140px; gap: 14px; align-items: center; }
+    .hbar-label { font-size: 13px; font-weight: 600; color: #475569; }
+    .hbar-track { height: 22px; background: #f1f5f9; border-radius: 6px; overflow: hidden; position: relative; }
+    .hbar-fill { height: 100%; border-radius: inherit; transition: width 0.5s ease; display: flex; align-items: center; justify-content: flex-end; padding-right: 0; }
+    .hbar-value { font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; text-align: right; }
+    /* màu cho từng metric */
+    .hbar-1 .hbar-fill { background: linear-gradient(90deg, #60a5fa, #2563eb); }
+    .hbar-1 .hbar-value { color: #1d4ed8; }
+    .hbar-2 .hbar-fill { background: linear-gradient(90deg, #4ade80, #16a34a); }
+    .hbar-2 .hbar-value { color: #047857; }
+    .hbar-3 .hbar-fill { background: linear-gradient(90deg, #34d399, #10b981); }
+    .hbar-3 .hbar-value { color: #15803d; }
+    .hbar-4 .hbar-fill { background: linear-gradient(90deg, #fb7185, #e11d48); }
+    .hbar-4 .hbar-value { color: #be123c; }
+    .hbar-5 .hbar-fill { background: linear-gradient(90deg, #fbbf24, #d97706); }
+    .hbar-5 .hbar-value { color: #c2410c; }
+    @media (max-width: 640px) {
+      .hbar-row { grid-template-columns: 110px 1fr 100px; gap: 8px; }
+      .hbar-label { font-size: 12px; }
+    }
+
+    /* Tỉ lệ chuyển đổi */
+    .conversion-box {
+      background: linear-gradient(135deg, #eff6ff, #dbeafe);
+      border: 1px solid #bfdbfe; border-radius: 14px;
+      padding: 16px; margin-top: 16px;
+    }
+    .conversion-box .rate { font-size: 36px; font-weight: 900; color: #1d4ed8; line-height: 1; letter-spacing: -0.02em; }
+
+    /* Total đơn hàng box (Section B head) */
+    .order-total-box {
+      background: linear-gradient(135deg, #0f172a, #1e3a8a);
+      color: #fff; border-radius: 14px;
+      padding: 16px 18px;
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 16px;
+    }
+    .order-total-box .lbl { font-size: 12px; opacity: 0.85; font-weight: 600; }
+    .order-total-box .val { font-size: 32px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
+
+    @media (max-width: 640px) {
+      .kpi-card .value { font-size: 26px; }
+      .section-card { padding: 16px; border-radius: 16px; }
+    }
+  </style>
 </head>
 <body class="min-h-screen bg-slate-50">
   <div id="dealer-shell"></div>
 
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6" x-data="dealerDashboard()" x-init="load()">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6" x-data="dealerDashboard()" x-init="init()">
 
-    <!-- Header bar: greeting + quick action -->
+    <!-- Header bar -->
     <div class="flex items-center justify-between gap-3 mb-5 flex-wrap">
       <div>
-        <h2 class="text-2xl font-bold text-slate-800">
-          Chào <span x-text="firstName"></span>!
-        </h2>
-        <p class="text-sm text-slate-500 mt-0.5" x-text="todayLabel"></p>
+        <h2 class="text-2xl font-bold text-slate-800">Chào <span x-text="firstName"></span>!</h2>
+        <p class="text-sm text-slate-500 mt-0.5" x-text="today"></p>
       </div>
       <div class="flex gap-2">
-        <a href="/dealer/quotation-edit.html" class="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap">
-          + Báo giá mới
-        </a>
+        <a href="/dealer/quotations.html" class="border border-slate-300 hover:bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold">Danh sách BG</a>
+        <a href="/dealer/quotation-edit.html" class="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-semibold">+ Tạo báo giá</a>
       </div>
     </div>
 
-    <div x-show="loading" class="text-center text-slate-400 py-12">Đang tải...</div>
-
-    <div x-show="!loading" class="space-y-5">
-
-      <!-- KPI cards -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div class="bg-white rounded-xl border border-slate-200 p-4">
-          <div class="text-xs text-slate-500 font-semibold uppercase tracking-wide">Doanh số tháng này</div>
-          <div class="text-2xl font-black text-green-700 mt-2 tabular-nums" x-text="Fmt.formatMoney(kpi.revenue_month)"></div>
-          <div class="text-xs text-slate-400 mt-1">
-            <span x-text="kpi.quotations_month"></span> báo giá · <span x-text="kpi.sent_month"></span> đã gửi
-          </div>
-        </div>
-        <div class="bg-white rounded-xl border border-slate-200 p-4">
-          <div class="text-xs text-slate-500 font-semibold uppercase tracking-wide">Báo giá draft</div>
-          <div class="text-2xl font-black text-amber-600 mt-2 tabular-nums" x-text="kpi.draft_count"></div>
-          <div class="text-xs text-slate-400 mt-1">cần hoàn thành / gửi</div>
-        </div>
-        <div class="bg-white rounded-xl border border-slate-200 p-4">
-          <div class="text-xs text-slate-500 font-semibold uppercase tracking-wide">Khách hàng mới</div>
-          <div class="text-2xl font-black text-brand-700 mt-2 tabular-nums" x-text="kpi.new_customers_week"></div>
-          <div class="text-xs text-slate-400 mt-1">trong 7 ngày qua · tổng <span x-text="kpi.customers_total"></span></div>
-        </div>
-        <div class="bg-white rounded-xl border border-slate-200 p-4">
-          <div class="text-xs text-slate-500 font-semibold uppercase tracking-wide">Tổng hợp</div>
-          <div class="text-sm text-slate-700 mt-2 space-y-0.5">
-            <div>Sản phẩm catalog: <span class="font-bold tabular-nums" x-text="kpi.products_total"></span></div>
-            <div>Khách hàng: <span class="font-bold tabular-nums" x-text="kpi.customers_total"></span></div>
-            <div>Tổng báo giá: <span class="font-bold tabular-nums" x-text="kpi.quotations_total"></span></div>
-          </div>
-        </div>
+    <!-- Filter báo cáo -->
+    <div class="filter-bar mb-5 flex items-center justify-between gap-3 flex-wrap">
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-bold uppercase text-slate-500 tracking-wider">Bộ lọc báo cáo</span>
       </div>
-
-      <!-- Alerts: BG cần xử lý -->
-      <div x-show="alertCount > 0" class="bg-amber-50 border border-amber-300 rounded-xl p-4">
-        <h3 class="text-sm font-bold text-amber-800 mb-2">⚠ Cần xử lý (<span x-text="alertCount"></span>)</h3>
-        <div class="space-y-2">
-          <template x-for="bg in alerts.stale_draft" :key="bg.id">
-            <a :href="'/dealer/quotation-edit.html?id=' + bg.id"
-               class="block bg-white hover:bg-amber-50 rounded-lg p-3 border border-amber-200 transition">
-              <div class="flex justify-between items-center gap-2 flex-wrap">
-                <div>
-                  <span class="font-mono font-bold text-sm text-slate-800" x-text="bg.so_bao_gia"></span>
-                  <span class="text-xs text-slate-500 ml-2" x-text="bg.customer_name || '— chưa KH —'"></span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <span class="text-xs font-semibold text-amber-700">Draft <span x-text="daysAgo(bg.created_at)"></span></span>
-                  <span class="text-sm font-bold tabular-nums text-slate-700" x-text="Fmt.formatMoney(bg.tong_cong)"></span>
-                </div>
-              </div>
-            </a>
+      <div class="flex gap-2 items-center flex-wrap">
+        <select x-model="filterMode" @change="onModeChange()">
+          <option value="all">Tất cả thời gian</option>
+          <option value="month">Theo tháng</option>
+          <option value="year">Theo năm</option>
+        </select>
+        <select x-show="filterMode !== 'all'" x-cloak x-model="filterPeriod" @change="load()" class="min-w-[140px]">
+          <template x-for="opt in periodOptions" :key="opt.value">
+            <option :value="opt.value" x-text="opt.label"></option>
           </template>
-          <template x-for="bg in alerts.stale_pending" :key="'p-' + bg.id">
-            <a :href="'/dealer/quotation-edit.html?id=' + bg.id"
-               class="block bg-white hover:bg-amber-50 rounded-lg p-3 border border-amber-200 transition">
-              <div class="flex justify-between items-center gap-2 flex-wrap">
-                <div>
-                  <span class="font-mono font-bold text-sm text-slate-800" x-text="bg.so_bao_gia"></span>
-                  <span class="text-xs text-slate-500 ml-2" x-text="bg.customer_name || '— chưa KH —'"></span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <span class="text-xs font-semibold text-blue-700">Đã gửi <span x-text="daysAgo(bg.sent_at)"></span></span>
-                  <span class="text-sm font-bold tabular-nums text-slate-700" x-text="Fmt.formatMoney(bg.tong_cong)"></span>
-                </div>
-              </div>
-            </a>
-          </template>
-        </div>
+        </select>
       </div>
+    </div>
 
-      <!-- Recent quotations + Top customers (2 col) -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <!-- 3 KPI hero (theo bộ lọc) -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
+      <div class="kpi-card blue">
+        <span class="label-icon">💰 Tổng GT đơn hàng</span>
+        <div class="value tabular-nums" x-text="Fmt.formatMoney(kpi.doanh_thu || 0)"></div>
+        <div class="desc">Tổng giá trị các BG đã chốt trong kỳ.</div>
+      </div>
+      <div class="kpi-card orange">
+        <span class="label-icon">⏱ Công nợ</span>
+        <div class="value tabular-nums" x-text="Fmt.formatMoney(kpi.cong_no || 0)"></div>
+        <div class="desc">Số tiền chưa thu của BG đã chốt.</div>
+      </div>
+      <div class="kpi-card slate">
+        <span class="label-icon">📦 Số đơn hàng</span>
+        <div class="value tabular-nums" x-text="(kpi.so_don_hang || 0).toLocaleString('vi-VN')"></div>
+        <div class="desc">Số BG đã chốt trong kỳ.</div>
+      </div>
+    </div>
 
-        <!-- Recent quotations -->
-        <div class="bg-white rounded-xl border border-slate-200">
-          <div class="px-4 py-3 border-b border-slate-100 flex justify-between items-center">
-            <h3 class="text-sm font-bold text-slate-800">Báo giá gần đây</h3>
-            <a href="/dealer/quotations.html" class="text-xs text-brand-600 hover:underline">Xem tất cả →</a>
+    <!-- 5 sections -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <!-- A. Tài chính (full row) -->
+      <div class="section-card lg:col-span-12">
+        <h3><span class="num-tag">1</span>Báo cáo tài chính<span class="sub">Theo bộ lọc</span></h3>
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-5">
+          <div class="fin-card blue">
+            <div class="lbl">Tổng GT BG</div>
+            <div class="val" x-text="Fmt.formatMoney(financial.doanh_so || 0)"></div>
           </div>
-          <div class="divide-y divide-slate-100">
-            <template x-for="bg in recentQuotations" :key="bg.id">
-              <a :href="'/dealer/quotation-edit.html?id=' + bg.id"
-                 class="block px-4 py-3 hover:bg-slate-50 transition">
-                <div class="flex justify-between items-center gap-2 flex-wrap">
-                  <div class="min-w-0 flex-1">
-                    <div class="flex items-center gap-2">
-                      <span class="font-mono font-bold text-sm text-slate-800" x-text="bg.so_bao_gia"></span>
-                      <span class="text-xs px-2 py-0.5 rounded font-semibold" :class="statusClass(bg.status)" x-text="statusLabel(bg.status)"></span>
-                    </div>
-                    <div class="text-xs text-slate-500 mt-0.5 truncate" x-text="bg.customer_name || '— chưa chọn KH —'"></div>
-                  </div>
-                  <div class="text-right">
-                    <div class="text-sm font-bold tabular-nums text-brand-700" x-text="Fmt.formatMoney(bg.tong_cong)"></div>
-                    <div class="text-xs text-slate-400" x-text="relativeTime(bg.updated_at)"></div>
-                  </div>
+          <div class="fin-card emerald">
+            <div class="lbl">Tổng GT đơn hàng</div>
+            <div class="val" x-text="Fmt.formatMoney(financial.doanh_thu || 0)"></div>
+          </div>
+          <div class="fin-card green">
+            <div class="lbl">Lợi nhuận</div>
+            <div class="val" x-text="Fmt.formatMoney(financial.loi_nhuan || 0)"></div>
+          </div>
+          <div class="fin-card rose">
+            <div class="lbl">Chi phí</div>
+            <div class="val" x-text="Fmt.formatMoney(financial.chi_phi || 0)"></div>
+          </div>
+          <div class="fin-card orange">
+            <div class="lbl">Công nợ</div>
+            <div class="val" x-text="Fmt.formatMoney(financial.cong_no || 0)"></div>
+          </div>
+        </div>
+        <div class="text-xs text-slate-500 mb-3 font-semibold uppercase tracking-wider" x-text="chartTitle"></div>
+
+        <!-- MONTH mode: 5 horizontal bars (5 metric của tháng đó) -->
+        <template x-if="filterMode === 'month'">
+          <div class="hbars">
+            <template x-for="(bar, idx) in horizontalBars" :key="bar.key">
+              <div class="hbar-row" :class="'hbar-' + (idx + 1)">
+                <div class="hbar-label" x-text="bar.label"></div>
+                <div class="hbar-track">
+                  <div class="hbar-fill" :style="`width: ${bar.pct}%`"></div>
                 </div>
-              </a>
+                <div class="hbar-value" x-text="Fmt.formatMoney(bar.value)"></div>
+              </div>
             </template>
-            <div x-show="recentQuotations.length === 0" class="px-4 py-8 text-center text-slate-400 italic text-sm">
-              Chưa có báo giá nào. <a href="/dealer/quotation-edit.html" class="text-brand-600 font-semibold">+ Tạo mới</a>
+          </div>
+        </template>
+
+        <!-- YEAR / ALL mode: time-series vertical bars (5 bars per period) -->
+        <template x-if="filterMode !== 'month'">
+          <div>
+            <div class="chart-css">
+              <template x-for="bar in chartBars" :key="bar.key">
+                <div class="chart-col" :class="bar.active ? 'active' : ''">
+                  <div class="chart-bars">
+                    <div class="chart-bar bar-bg" :style="`height: ${bar.h_bg}%`" :title="'Tổng GT BG: ' + Fmt.formatMoney(bar.bg)"></div>
+                    <div class="chart-bar bar-dh" :style="`height: ${bar.h_dh}%`" :title="'Tổng GT đơn hàng: ' + Fmt.formatMoney(bar.dh)"></div>
+                    <div class="chart-bar bar-ln" :style="`height: ${bar.h_ln}%`" :title="'Lợi nhuận: ' + Fmt.formatMoney(bar.ln)"></div>
+                    <div class="chart-bar bar-cp" :style="`height: ${bar.h_cp}%`" :title="'Chi phí: ' + Fmt.formatMoney(bar.cp)"></div>
+                    <div class="chart-bar bar-cn" :style="`height: ${bar.h_cn}%`" :title="'Công nợ: ' + Fmt.formatMoney(bar.cn)"></div>
+                  </div>
+                  <div class="chart-lbl" x-text="bar.label"></div>
+                </div>
+              </template>
+            </div>
+            <div class="flex gap-3 mt-3 justify-center text-xs flex-wrap">
+              <span class="flex items-center gap-1.5"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:linear-gradient(180deg,#60a5fa,#2563eb)"></span><span class="text-slate-600 font-semibold">Tổng GT BG</span></span>
+              <span class="flex items-center gap-1.5"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:linear-gradient(180deg,#4ade80,#16a34a)"></span><span class="text-slate-600 font-semibold">Tổng GT đơn hàng</span></span>
+              <span class="flex items-center gap-1.5"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:linear-gradient(180deg,#34d399,#10b981)"></span><span class="text-slate-600 font-semibold">Lợi nhuận</span></span>
+              <span class="flex items-center gap-1.5"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:linear-gradient(180deg,#fb7185,#e11d48)"></span><span class="text-slate-600 font-semibold">Chi phí</span></span>
+              <span class="flex items-center gap-1.5"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:linear-gradient(180deg,#fbbf24,#d97706)"></span><span class="text-slate-600 font-semibold">Công nợ</span></span>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- B. Đơn hàng (cùng row với C) -->
+      <div class="section-card lg:col-span-6">
+        <h3><span class="num-tag">2</span>Báo cáo đơn hàng<span class="sub">Đã chốt</span></h3>
+        <div class="order-total-box">
+          <div>
+            <div class="lbl">Tổng số đơn hàng</div>
+            <div class="text-[10px] opacity-75 mt-1">trong kỳ đã lọc</div>
+          </div>
+          <div class="val" x-text="orders.total || 0"></div>
+        </div>
+        <template x-for="item in orderItems" :key="item.key">
+          <div>
+            <div class="progress-row">
+              <span class="name" x-text="item.label"></span>
+              <span class="val" x-text="item.value"></span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" :style="`width: ${item.pct}%; background: linear-gradient(90deg, ${item.color}, ${item.color}cc)`"></div>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- C. Báo giá (cùng row với B) -->
+      <div class="section-card lg:col-span-6">
+        <h3><span class="num-tag">3</span>Báo cáo báo giá<span class="sub">Theo trạng thái</span></h3>
+        <template x-for="item in quoteItems" :key="item.key">
+          <div>
+            <div class="progress-row">
+              <span class="name" x-text="item.label"></span>
+              <span class="val" x-text="item.value"></span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" :style="`width: ${item.pct}%; background: linear-gradient(90deg, ${item.color}, ${item.color}cc)`"></div>
+            </div>
+          </div>
+        </template>
+        <div class="conversion-box">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <div class="text-xs text-slate-700 font-bold uppercase tracking-wider">Tỉ lệ chuyển đổi</div>
+              <div class="text-[11px] text-slate-500 mt-1" x-text="'Chốt / Đã gửi (' + (quotations.da_chot || 0) + '/' + (quotations.conversion_base || 0) + ')'"></div>
+            </div>
+            <div class="rate" x-text="(quotations.conversion_rate || 0) + '%'"></div>
+          </div>
+          <div class="progress-track" style="margin-top:10px;margin-bottom:0;height:10px"><div class="progress-fill" :style="`width: ${quotations.conversion_rate || 0}%; background: linear-gradient(90deg, #0a6fd6, #16a34a)`"></div></div>
+        </div>
+      </div>
+
+      <!-- D. Khách hàng (col-span-4, narrow, 3 cards stack vertical) -->
+      <div class="section-card lg:col-span-4">
+        <h3><span class="num-tag">4</span>Chỉ số khách hàng</h3>
+        <div class="grid grid-cols-1 gap-3">
+          <div class="cust-card blue">
+            <div class="icon">👤</div>
+            <div class="body">
+              <div class="lbl">Khách hàng mới</div>
+              <div class="val" x-text="customers.new_in_period || 0"></div>
+              <div class="desc" x-text="filterMode === 'year' ? ('năm ' + filterPeriod) : ('tháng ' + filterPeriod)"></div>
+            </div>
+          </div>
+          <div class="cust-card purple">
+            <div class="icon">👥</div>
+            <div class="body">
+              <div class="lbl">Tổng số khách hàng</div>
+              <div class="val" x-text="customers.total || 0"></div>
+              <div class="desc">Toàn bộ thời gian</div>
+            </div>
+          </div>
+          <div class="cust-card emerald">
+            <div class="icon">🔄</div>
+            <div class="body">
+              <div class="lbl">Khách hàng quay lại</div>
+              <div class="val" x-text="customers.returning || 0"></div>
+              <div class="desc">Có ≥ 2 báo giá</div>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Top customers -->
-        <div class="bg-white rounded-xl border border-slate-200">
-          <div class="px-4 py-3 border-b border-slate-100 flex justify-between items-center">
-            <h3 class="text-sm font-bold text-slate-800">Top khách hàng (doanh số)</h3>
-            <a href="/dealer/customers.html" class="text-xs text-brand-600 hover:underline">Xem tất cả →</a>
-          </div>
-          <table class="w-full text-sm">
-            <tbody class="divide-y divide-slate-100">
-              <template x-for="(c, i) in topCustomers" :key="c.id">
-                <tr class="hover:bg-slate-50">
-                  <td class="px-4 py-2.5 text-slate-400 font-bold w-8 tabular-nums" x-text="i + 1"></td>
-                  <td class="px-2 py-2.5">
-                    <div class="font-semibold text-slate-800" x-text="c.ten_kh"></div>
-                    <div class="text-xs text-slate-400 font-mono" x-text="c.ma_kh + (c.phone ? ' · ' + c.phone : '')"></div>
-                  </td>
-                  <td class="px-2 py-2.5 text-right">
-                    <div class="text-sm font-bold tabular-nums text-green-700" x-text="Fmt.formatMoney(c.revenue)"></div>
-                    <div class="text-xs text-slate-400"><span x-text="c.bg_count"></span> BG</div>
-                  </td>
+      <!-- E. Nhóm SP (col-span-8, wide) -->
+      <div class="section-card lg:col-span-8">
+        <h3><span class="num-tag">5</span>Nhóm sản phẩm<span class="sub">Xếp theo giá trị · tất cả BG</span></h3>
+        <div class="overflow-x-auto">
+          <table class="pg-table">
+            <thead>
+              <tr>
+                <th>Nhóm sản phẩm</th>
+                <th class="num" style="text-align:right">Giá trị BG (đ)</th>
+                <th class="num" style="text-align:right">Số đơn</th>
+                <th class="num" style="text-align:right">Tỉ trọng</th>
+                <th style="min-width:180px">Phân bổ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="p in product_groups" :key="p.nhom_sp">
+                <tr>
+                  <td class="font-semibold text-slate-800" x-text="p.nhom_sp"></td>
+                  <td class="num" x-text="Fmt.formatMoney(p.doanh_thu)"></td>
+                  <td class="num" x-text="p.so_don"></td>
+                  <td class="num font-bold text-blue-700" x-text="p.ti_trong_pct + '%'"></td>
+                  <td><div class="pg-bar"><span :style="`width: ${p.ti_trong_pct}%`"></span></div></td>
                 </tr>
               </template>
-              <tr x-show="topCustomers.length === 0">
-                <td class="px-4 py-8 text-center text-slate-400 italic text-sm" colspan="3">
-                  Chưa có doanh số. Tạo báo giá để bắt đầu tracking.
-                </td>
+              <tr x-show="!product_groups.length">
+                <td colspan="5" class="text-center text-slate-400 italic py-10">Chưa có dữ liệu nhóm sản phẩm trong kỳ này.</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
-
-      <!-- Chart 6 tháng + Top SP (2 col) -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-
-        <!-- Chart -->
-        <div class="bg-white rounded-xl border border-slate-200 p-4 lg:col-span-2">
-          <h3 class="text-sm font-bold text-slate-800 mb-2">Doanh số 6 tháng gần nhất</h3>
-          <div class="h-64"><canvas id="chart-monthly"></canvas></div>
-        </div>
-
-        <!-- Top products -->
-        <div class="bg-white rounded-xl border border-slate-200">
-          <div class="px-4 py-3 border-b border-slate-100">
-            <h3 class="text-sm font-bold text-slate-800">Sản phẩm bán chạy</h3>
-          </div>
-          <table class="w-full text-sm">
-            <tbody class="divide-y divide-slate-100">
-              <template x-for="(p, i) in topProducts" :key="p.ma_sp">
-                <tr class="hover:bg-slate-50">
-                  <td class="px-3 py-2.5 text-slate-400 font-bold w-7 tabular-nums" x-text="i + 1"></td>
-                  <td class="px-2 py-2.5">
-                    <div class="font-mono font-bold text-xs text-slate-800" x-text="p.ma_sp"></div>
-                    <div class="text-xs text-slate-500" x-text="p.ten_sp || '—'"></div>
-                  </td>
-                  <td class="px-2 py-2.5 text-right">
-                    <div class="text-sm font-bold tabular-nums text-brand-700"><span x-text="p.times_used"></span>×</div>
-                    <div class="text-xs text-slate-400" x-text="Fmt.formatMoney(p.total_value)"></div>
-                  </td>
-                </tr>
-              </template>
-              <tr x-show="topProducts.length === 0">
-                <td class="px-4 py-8 text-center text-slate-400 italic text-sm" colspan="3">
-                  Chưa có dữ liệu
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Quick menu (giữ lại cho mobile / new dealer chưa quen) -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
-        <a href="/dealer/profile.html" class="bg-white rounded-xl border border-slate-200 hover:border-brand-500 transition p-4 text-center">
-          <div class="text-2xl mb-1">📋</div>
-          <div class="text-sm font-semibold text-slate-700">Hồ sơ</div>
-        </a>
-        <a href="/dealer/products.html" class="bg-white rounded-xl border border-slate-200 hover:border-brand-500 transition p-4 text-center">
-          <div class="text-2xl mb-1">📦</div>
-          <div class="text-sm font-semibold text-slate-700">Sản phẩm</div>
-        </a>
-        <a href="/dealer/customers.html" class="bg-white rounded-xl border border-slate-200 hover:border-brand-500 transition p-4 text-center">
-          <div class="text-2xl mb-1">👥</div>
-          <div class="text-sm font-semibold text-slate-700">Khách hàng</div>
-        </a>
-        <a href="/dealer/quotations.html" class="bg-white rounded-xl border border-slate-200 hover:border-brand-500 transition p-4 text-center">
-          <div class="text-2xl mb-1">📝</div>
-          <div class="text-sm font-semibold text-slate-700">Báo giá</div>
-        </a>
-      </div>
-
     </div>
   </main>
 
   <script>
     function dealerDashboard() {
       return {
-        loading: true,
-        kpi: { revenue_month: 0, quotations_month: 0, sent_month: 0, draft_count: 0, new_customers_week: 0, quotations_total: 0, customers_total: 0, products_total: 0 },
-        alerts: { stale_draft: [], stale_pending: [] },
-        recentQuotations: [], topCustomers: [], topProducts: [], monthly: [],
-        Fmt: window.Fmt,
-        _chart: null,
+        loading: true, Fmt: window.Fmt,
+        firstName: '', today: '',
+        filterMode: 'month', filterPeriod: new Date().toISOString().slice(0, 7),
+        periodOptions: [],
+        order_progress: { total: 0, cho_san_xuat: 0, san_xuat: 0, lap_dat: 0, hoan_thien: 0 },
+        kpi: {}, financial: {}, orders: {}, quotations: {}, customers: {}, product_groups: [],
 
-        get firstName() {
-          const u = Auth.getUser();
-          if (!u) return '';
-          // Ưu tiên full_name, fallback username
-          const name = u.full_name || u.username || '';
-          // Lấy tên gọi (từ cuối) hoặc cả tên nếu ngắn
-          const parts = name.trim().split(/\s+/);
-          return parts.length > 1 ? parts[parts.length - 1] : name;
+        async init() {
+          const u = JSON.parse(localStorage.getItem('dls_user') || '{}');
+          this.firstName = (u.full_name || u.username || '').split(' ').pop();
+          this.today = new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+          this.buildPeriodOptions();
+          await this.load();
         },
-        get todayLabel() {
-          const d = new Date();
-          const days = ['Chủ nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
-          return `${days[d.getDay()]}, ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+
+        buildPeriodOptions() {
+          if (this.filterMode === 'all') { this.periodOptions = []; return; }
+          const now = new Date();
+          const opts = [];
+          if (this.filterMode === 'year') {
+            for (let y = now.getFullYear(); y >= now.getFullYear() - 4; y--) {
+              opts.push({ value: String(y), label: 'Năm ' + y });
+            }
+          } else {
+            for (let i = 0; i < 24; i++) {
+              const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+              const y = d.getFullYear();
+              const m = String(d.getMonth() + 1).padStart(2, '0');
+              opts.push({ value: `${y}-${m}`, label: `Tháng ${parseInt(m)}/${y}` });
+            }
+          }
+          this.periodOptions = opts;
+          if (!opts.find(o => o.value === this.filterPeriod)) this.filterPeriod = opts[0].value;
         },
-        get alertCount() {
-          return this.alerts.stale_draft.length + this.alerts.stale_pending.length;
+
+        onModeChange() {
+          this.buildPeriodOptions();
+          this.load();
         },
 
         async load() {
           this.loading = true;
           try {
-            const r = await API.get('/api/dealer/dashboard');
-            this.kpi = r.data.kpi;
-            this.alerts = r.data.alerts;
-            this.recentQuotations = r.data.recent_quotations;
-            this.topCustomers = r.data.top_customers;
-            this.topProducts = r.data.top_products;
-            this.monthly = r.data.monthly;
-            this.$nextTick(() => this.drawChart());
-          } catch (e) { console.error(e); alert('Lỗi tải dashboard: ' + e.message); }
+            const q = new URLSearchParams();
+            if (this.filterMode !== 'all' && this.filterPeriod) {
+              q.set('mode', this.filterMode);
+              q.set('period', this.filterPeriod);
+            }
+            const res = await API.get('/api/dealer/dashboard/v4?' + q);
+            const d = res.data;
+            this.order_progress = d.order_progress;
+            this.kpi = d.kpi;
+            this.financial = d.financial;
+            this.orders = d.orders;
+            this.quotations = d.quotations;
+            this.customers = d.customers;
+            this.product_groups = d.product_groups;
+          } catch (e) { if (!e.silent) alert(e.message); }
           finally { this.loading = false; }
         },
 
-        drawChart() {
-          const ctx = document.getElementById('chart-monthly');
-          if (!ctx) return;
-          if (this._chart) this._chart.destroy();
-          // Fill 6 tháng đủ (kể cả tháng không có data)
-          const map = Object.fromEntries(this.monthly.map(m => [m.ym, m]));
-          const labels = [], counts = [], revenues = [];
-          for (let i = 5; i >= 0; i--) {
-            const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - i);
-            const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-            labels.push(`T${d.getMonth()+1}/${d.getFullYear().toString().slice(-2)}`);
-            const r = map[ym];
-            counts.push(r ? r.count : 0);
-            revenues.push(r ? Math.round(r.revenue / 1e6) : 0);
+        get chartTitle() {
+          if (this.filterMode === 'all')   return 'Biểu đồ 5 năm gần nhất';
+          if (this.filterMode === 'year')  return 'Biểu đồ 12 tháng năm ' + (this.filterPeriod || '');
+          const [y, m] = (this.filterPeriod || '').split('-');
+          return 'Biểu đồ tháng ' + parseInt(m || '0') + '/' + (y || '') + ' — 5 chỉ số tài chính';
+        },
+
+        // 5 horizontal bars cho month mode — width tỉ lệ với max
+        get horizontalBars() {
+          const f = this.financial;
+          const items = [
+            { key: 'bg',  label: 'Tổng GT BG',         value: Number(f.doanh_so)  || 0 },
+            { key: 'dh',  label: 'Tổng GT đơn hàng',   value: Number(f.doanh_thu) || 0 },
+            { key: 'ln',  label: 'Lợi nhuận',          value: Number(f.loi_nhuan) || 0 },
+            { key: 'cp',  label: 'Chi phí',            value: Number(f.chi_phi)   || 0 },
+            { key: 'cn',  label: 'Công nợ',            value: Number(f.cong_no)   || 0 },
+          ];
+          const max = Math.max(1, ...items.map(x => x.value));
+          return items.map(x => ({
+            ...x,
+            pct: x.value > 0 ? Math.max(2, x.value / max * 100) : 0,
+          }));
+        },
+
+        // Biểu đồ time-series cho year + all mode. Mỗi period = 5 bars (BG/Đơn/LN/CP/CN).
+        get chartBars() {
+          const mode = this.filterMode;
+          let series = [], activeLabel = '';
+          if (mode === 'all') {
+            series = (this.financial.years_series || []).map(s => ({
+              label: String(s.year), key: String(s.year),
+              bg: Number(s.doanh_so)  || 0,
+              dh: Number(s.doanh_thu) || 0,
+              ln: Number(s.loi_nhuan) || 0,
+              cp: Number(s.chi_phi)   || 0,
+              cn: Number(s.cong_no)   || 0,
+            }));
+            activeLabel = String(new Date().getFullYear());
+          } else { // year (month mode uses horizontal bars, not this)
+            series = (this.financial.months_series || []).map(s => ({
+              label: 'T' + s.month, key: String(s.month),
+              bg: Number(s.doanh_so)  || 0,
+              dh: Number(s.doanh_thu) || 0,
+              ln: Number(s.loi_nhuan) || 0,
+              cp: Number(s.chi_phi)   || 0,
+              cn: Number(s.cong_no)   || 0,
+            }));
           }
-          this._chart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-              labels,
-              datasets: [
-                { label: 'Doanh số (triệu đ)', data: revenues, backgroundColor: '#0a6fd6', yAxisID: 'y', borderRadius: 4 },
-                { label: 'Số BG', data: counts, type: 'line', borderColor: '#d4a55b', backgroundColor: '#d4a55b', tension: 0.3, yAxisID: 'y1' },
-              ]
-            },
-            options: {
-              responsive: true, maintainAspectRatio: false,
-              scales: {
-                y:  { beginAtZero: true, position: 'left',  title: { display: true, text: 'Triệu đ' } },
-                y1: { beginAtZero: true, position: 'right', title: { display: true, text: 'Số BG' }, grid: { drawOnChartArea: false }, ticks: { stepSize: 1 } },
-              },
-              plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } }
-            }
-          });
+          // Max chuẩn hoá theo TẤT CẢ 5 metric (để các metric nhỏ vẫn nhìn thấy)
+          const max = Math.max(1, ...series.flatMap(s => [s.bg, s.dh, s.ln, s.cp, s.cn]));
+          const heightFor = v => v > 0 ? Math.max(1, Math.min(100, v / max * 100)) : 0;
+          return series.map(s => ({
+            ...s,
+            h_bg: heightFor(s.bg),
+            h_dh: heightFor(s.dh),
+            h_ln: heightFor(s.ln),
+            h_cp: heightFor(s.cp),
+            h_cn: heightFor(s.cn),
+            active: s.key === activeLabel,
+          }));
         },
 
-        statusLabel(s) {
-          return ({ draft: 'Nháp', sent: 'Đã gửi', confirmed: 'Đã xác nhận', cancelled: 'Đã huỷ' })[s] || s;
+        get orderItems() {
+          const total = this.orders.total || 1;
+          return [
+            { key: 'cho_san_xuat', label: 'Chờ sản xuất', value: this.orders.cho_san_xuat || 0, color: '#f59e0b', pct: (this.orders.cho_san_xuat || 0) / total * 100 },
+            { key: 'san_xuat',     label: 'Sản xuất',     value: this.orders.san_xuat || 0,     color: '#14b8a6', pct: (this.orders.san_xuat || 0)     / total * 100 },
+            { key: 'lap_dat',      label: 'Lắp đặt',      value: this.orders.lap_dat || 0,      color: '#f97316', pct: (this.orders.lap_dat || 0)      / total * 100 },
+            { key: 'hoan_thien',   label: 'Hoàn thiện',   value: this.orders.hoan_thien || 0,   color: '#22c55e', pct: (this.orders.hoan_thien || 0)   / total * 100 },
+          ];
         },
-        statusClass(s) {
-          return ({
-            draft: 'bg-slate-100 text-slate-700',
-            sent: 'bg-blue-100 text-blue-700',
-            confirmed: 'bg-green-100 text-green-700',
-            cancelled: 'bg-red-100 text-red-700',
-          })[s] || 'bg-slate-100 text-slate-700';
+        get quoteItems() {
+          const total = this.quotations.total || 1;
+          return [
+            { key: 'nhap',     label: 'Nháp',     value: this.quotations.nhap || 0,     color: '#94a3b8', pct: (this.quotations.nhap || 0)     / total * 100 },
+            { key: 'chua_gui', label: 'Chưa gửi', value: this.quotations.chua_gui || 0, color: '#f59e0b', pct: (this.quotations.chua_gui || 0) / total * 100 },
+            { key: 'da_gui',   label: 'Đã gửi',   value: this.quotations.da_gui || 0,   color: '#2563eb', pct: (this.quotations.da_gui || 0)   / total * 100 },
+            { key: 'da_chot',  label: 'Đã chốt',  value: this.quotations.da_chot || 0,  color: '#22c55e', pct: (this.quotations.da_chot || 0)  / total * 100 },
+            { key: 'da_truot', label: 'Đã trượt', value: this.quotations.da_truot || 0, color: '#ef4444', pct: (this.quotations.da_truot || 0) / total * 100 },
+          ];
         },
 
-        daysAgo(iso) {
-          if (!iso) return '';
-          const d = new Date(iso);
-          const days = Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24));
-          if (days === 0) return 'hôm nay';
-          if (days === 1) return '1 ngày trước';
-          return days + ' ngày trước';
-        },
-        relativeTime(iso) {
-          if (!iso) return '';
-          const d = new Date(iso);
-          const diff = Date.now() - d.getTime();
-          const mins = Math.floor(diff / 60000);
-          if (mins < 1) return 'vừa xong';
-          if (mins < 60) return mins + ' phút trước';
-          const hrs = Math.floor(mins / 60);
-          if (hrs < 24) return hrs + ' giờ trước';
-          const days = Math.floor(hrs / 24);
-          if (days < 30) return days + ' ngày trước';
-          return d.toLocaleDateString('vi-VN');
-        },
       };
     }
   </script>

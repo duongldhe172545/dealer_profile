@@ -441,9 +441,11 @@ function quoteForm() {
           this.setupAutoFit();
           this.setupAutoSave();
           this._initializing = false;
-          // Sau load: nếu đang edit BG cũ → đồng bộ với server.
-          // BG mới → user phải save tay lần đầu để có id.
           if (this.editingId) this.lastSavedAt = new Date();
+          // Auto-export PDF khi mở từ nút "Tải" trên list (URL có ?print=1)
+          if (new URLSearchParams(location.search).get('print') === '1' && this.editingId) {
+            setTimeout(() => this.exportPDF(), 600);   // chờ preview render xong rồi mới capture
+          }
         });
       } catch (e) { this.error = e.message; }
       finally { this.loading = false; }

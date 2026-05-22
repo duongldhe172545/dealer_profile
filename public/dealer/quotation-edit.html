@@ -33,6 +33,12 @@
     body.view-only .editor-grid { grid-template-columns: 1fr !important; }
     body.view-only .preview-col { position: static !important; max-width: 900px; margin: 0 auto; }
     body.view-only .view-hide { display: none !important; }
+    /* Embed-only (iframe trong modal): ẩn dealer-shell + action-bar + padding ngoài */
+    body.embed-only #dealer-shell, body.embed-only .action-bar { display: none !important; }
+    body.embed-only main { padding: 8px !important; max-width: none !important; }
+    body.embed-only .panel { border: none !important; }
+    body.embed-only .panel-hd { display: none !important; }
+    body.embed-only .panel-bd { padding: 0 !important; }
     .q-preview-stage .q-page { transform: scale(var(--pv-scale, 1)); transform-origin: top center; margin-bottom: calc(-297mm * (1 - var(--pv-scale, 1))); }
 
     .panel { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; }

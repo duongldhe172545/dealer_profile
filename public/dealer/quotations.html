@@ -190,8 +190,8 @@
               </td>
               <td class="num">
                 <div class="flex justify-end gap-1.5 whitespace-nowrap">
-                  <a :href="'/dealer/quotation-edit.html?id=' + q.id + '&view=1'" target="_blank" title="Xem nhanh báo giá"
-                     class="text-slate-600 hover:text-slate-800 text-sm font-semibold">Xem</a>
+                  <button @click="openView(q)" title="Xem nhanh báo giá"
+                     class="text-slate-600 hover:text-slate-800 text-sm font-semibold">Xem</button>
                   <a :href="'/dealer/quotation-edit.html?id=' + q.id" title="Mở / Sửa"
                      class="text-brand-600 hover:text-brand-700 text-sm font-semibold">Sửa</a>
                   <a :href="'/dealer/quotation-edit.html?id=' + q.id + '&print=1'" target="_blank" title="Mở để tải PDF"
@@ -211,6 +211,37 @@
       </table>
     </div>
 
+    <!-- Modal: Xem nhanh báo giá (iframe embed mode) -->
+    <div x-show="viewOpen" x-cloak
+         @keydown.escape.window="closeView()"
+         class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-2 sm:p-6"
+         @click.self="closeView()">
+      <div class="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[95vh] flex flex-col overflow-hidden">
+        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-slate-50">
+          <div class="min-w-0">
+            <div class="font-bold text-slate-800 truncate">
+              Báo giá <span x-text="viewQuote?.so_bao_gia || ''" class="text-brand-600"></span>
+            </div>
+            <div class="text-xs text-slate-500 truncate" x-text="viewQuote?.ten_kh || ''"></div>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <a x-show="viewQuote" :href="viewQuote ? ('/dealer/quotation-edit.html?id=' + viewQuote.id) : '#'"
+               class="text-xs sm:text-sm text-brand-600 hover:text-brand-700 font-semibold px-2 py-1">Mở để sửa</a>
+            <a x-show="viewQuote" :href="viewQuote ? ('/dealer/quotation-edit.html?id=' + viewQuote.id + '&print=1') : '#'"
+               target="_blank"
+               class="text-xs sm:text-sm text-emerald-600 hover:text-emerald-700 font-semibold px-2 py-1">Tải PDF</a>
+            <button @click="closeView()" type="button" title="Đóng"
+                    class="text-slate-500 hover:text-slate-800 text-xl leading-none px-2">&times;</button>
+          </div>
+        </div>
+        <div class="flex-1 overflow-auto bg-slate-100">
+          <iframe x-show="viewQuote" :src="viewQuote ? ('/dealer/quotation-edit.html?id=' + viewQuote.id + '&view=1&embed=1') : ''"
+                  class="w-full h-full min-h-[600px] block bg-white"
+                  style="border:0"></iframe>
+        </div>
+      </div>
+    </div>
+
   </main>
 
   <script>
@@ -219,6 +250,8 @@
         quotations: [], loading: false, error: '', saving: false, exporting: false,
         search: '', filterStatus: '', filterOrderStatus: '',
         filterCustomer: '', filterCustomerObj: null,
+        // Modal xem nhanh BG — iframe embed
+        viewOpen: false, viewQuote: null,
         Fmt: window.Fmt,
         bgStatusOptions:    window.BG_STATUS_OPTIONS,
         orderStatusOptions: window.ORDER_STATUS_OPTIONS,
@@ -333,6 +366,9 @@
           try { await API.delete('/api/dealer/quotations/' + q.id); await this.load(); }
           catch (e) { if (!e.silent) alert(e.message); }
         },
+
+        openView(q) { this.viewQuote = q; this.viewOpen = true; document.body.style.overflow = 'hidden'; },
+        closeView() { this.viewOpen = false; this.viewQuote = null; document.body.style.overflow = ''; },
       };
     }
   </script>

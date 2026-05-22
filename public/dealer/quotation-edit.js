@@ -424,6 +424,9 @@ function quoteForm() {
       const qs = new URLSearchParams(location.search);
       this.editingId = qs.get('id');
       this.viewMode  = qs.get('view') === '1';
+      // Embed mode (iframe trong modal): ẩn DealerShell + action bar — chỉ còn preview
+      this.embedMode = qs.get('embed') === '1';
+      if (this.embedMode) { this.viewMode = true; document.body.classList.add('embed-only'); }
       this._initializing = true;
       try {
         await Promise.all([this.loadProfile(), this.loadCustomers(), this.loadProducts()]);

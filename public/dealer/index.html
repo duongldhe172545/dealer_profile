@@ -266,14 +266,19 @@
         <span class="text-xs font-bold uppercase text-slate-500 tracking-wider">Bộ lọc báo cáo</span>
       </div>
       <div class="flex gap-2 items-center flex-wrap">
-        <select x-model="filterMode" @change="onModeChange()">
-          <option value="all">Tất cả thời gian</option>
-          <option value="month">Theo tháng</option>
-          <option value="year">Theo năm</option>
+        <select x-model="filterYear" @change="onFilterChange()" class="min-w-[130px]">
+          <option value="">Tất cả các năm</option>
+          <template x-for="y in yearOptions" :key="y">
+            <option :value="String(y)" x-text="'Năm ' + y"></option>
+          </template>
         </select>
-        <select x-show="filterMode !== 'all'" x-cloak x-model="filterPeriod" @change="load()" class="min-w-[140px]">
-          <template x-for="opt in periodOptions" :key="opt.value">
-            <option :value="opt.value" x-text="opt.label"></option>
+        <select x-model="filterMonth" @change="onFilterChange()"
+                :disabled="!filterYear"
+                :title="!filterYear ? 'Chọn năm trước để lọc theo tháng' : ''"
+                class="min-w-[130px] disabled:opacity-50 disabled:cursor-not-allowed">
+          <option value="">Cả năm</option>
+          <template x-for="m in 12" :key="m">
+            <option :value="String(m).padStart(2,'0')" x-text="'Tháng ' + m"></option>
           </template>
         </select>
       </div>
@@ -428,7 +433,7 @@
             <div class="body">
               <div class="lbl">Khách hàng mới</div>
               <div class="val" x-text="customers.new_in_period || 0"></div>
-              <div class="desc" x-text="filterMode === 'year' ? ('năm ' + filterPeriod) : ('tháng ' + filterPeriod)"></div>
+              <div class="desc" x-text="filterMode === 'all' ? 'Toàn bộ thời gian' : (filterMode === 'year' ? ('Năm ' + filterPeriod) : ('Tháng ' + parseInt(filterMonth) + '/' + filterYear))"></div>
             </div>
           </div>
           <div class="cust-card purple">
@@ -489,41 +494,41 @@
       return {
         loading: true, Fmt: window.Fmt,
         firstName: '', today: '',
-        filterMode: 'month', filterPeriod: new Date().toISOString().slice(0, 7),
-        periodOptions: [],
+        // Bộ lọc mới: 2 dropdown độc lập.
+        //   year='' + month=''  → all time
+        //   year=YYYY + month=''→ cả năm đó
+        //   year=YYYY + month=MM→ tháng MM/YYYY
+        filterYear: String(new Date().getFullYear()),
+        filterMonth: String(new Date().getMonth() + 1).padStart(2, '0'),
         order_progress: { total: 0, cho_san_xuat: 0, san_xuat: 0, lap_dat: 0, hoan_thien: 0 },
         kpi: {}, financial: {}, orders: {}, quotations: {}, customers: {}, product_groups: [],
+
+        // Mode derived từ 2 dropdown — KHÔNG state riêng
+        get filterMode() {
+          if (!this.filterYear)  return 'all';
+          if (!this.filterMonth) return 'year';
+          return 'month';
+        },
+        get filterPeriod() {
+          if (this.filterMode === 'all')   return '';
+          if (this.filterMode === 'year')  return this.filterYear;
+          return this.filterYear + '-' + this.filterMonth;
+        },
+        get yearOptions() {
+          const y = new Date().getFullYear();
+          return [y, y - 1, y - 2, y - 3, y - 4];
+        },
 
         async init() {
           const u = JSON.parse(localStorage.getItem('dls_user') || '{}');
           this.firstName = (u.full_name || u.username || '').split(' ').pop();
           this.today = new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
-          this.buildPeriodOptions();
           await this.load();
         },
 
-        buildPeriodOptions() {
-          if (this.filterMode === 'all') { this.periodOptions = []; return; }
-          const now = new Date();
-          const opts = [];
-          if (this.filterMode === 'year') {
-            for (let y = now.getFullYear(); y >= now.getFullYear() - 4; y--) {
-              opts.push({ value: String(y), label: 'Năm ' + y });
-            }
-          } else {
-            for (let i = 0; i < 24; i++) {
-              const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-              const y = d.getFullYear();
-              const m = String(d.getMonth() + 1).padStart(2, '0');
-              opts.push({ value: `${y}-${m}`, label: `Tháng ${parseInt(m)}/${y}` });
-            }
-          }
-          this.periodOptions = opts;
-          if (!opts.find(o => o.value === this.filterPeriod)) this.filterPeriod = opts[0].value;
-        },
-
-        onModeChange() {
-          this.buildPeriodOptions();
+        onFilterChange() {
+          // Bỏ năm → bỏ luôn tháng (không thể chọn tháng mà không có năm)
+          if (!this.filterYear) this.filterMonth = '';
           this.load();
         },
 

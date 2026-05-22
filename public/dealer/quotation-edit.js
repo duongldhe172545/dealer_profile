@@ -125,6 +125,9 @@ function quoteForm() {
   return {
     loading: true, saving: false, savedFlash: false, error: '',
     editingId: null,
+    // View-only mode: mở từ nút "Xem" trên list (URL có ?view=1)
+    //   → ẩn cột form bên trái, chỉ hiện preview + nút PDF
+    viewMode: false,
     // Dirty tracking — đồng nhất behavior save với profile
     dirty: false, lastSavedAt: null,
     _initializing: true, _autoSaveTimer: null,
@@ -418,7 +421,9 @@ function quoteForm() {
 
     // ─── Lifecycle ───────────────────────────────────────────────────────
     async init() {
-      this.editingId = new URLSearchParams(location.search).get('id');
+      const qs = new URLSearchParams(location.search);
+      this.editingId = qs.get('id');
+      this.viewMode  = qs.get('view') === '1';
       this._initializing = true;
       try {
         await Promise.all([this.loadProfile(), this.loadCustomers(), this.loadProducts()]);
@@ -446,12 +451,15 @@ function quoteForm() {
           if (new URLSearchParams(location.search).get('print') === '1' && this.editingId) {
             setTimeout(() => this.exportPDF(), 600);   // chờ preview render xong rồi mới capture
           }
+          if (this.viewMode) document.body.classList.add('view-only');
         });
       } catch (e) { this.error = e.message; }
       finally { this.loading = false; }
     },
 
     setupAutoSave() {
+      // View-only: KHÔNG hook auto-save, KHÔNG cảnh báo beforeunload
+      if (this.viewMode) return;
       // Mỗi thay đổi vào form → đánh dấu dirty
       this.$watch('form', () => this.markDirty(), { deep: true });
 

@@ -24,13 +24,13 @@
       .dls-bar   { max-width: 1480px; margin: 0 auto; padding: 0 16px; display: flex; align-items: center; gap: 12px; height: 56px; }
       .dls-logo  { display: flex; align-items: center; gap: 8px; text-decoration: none; color: #0b1f3a; font-weight: 800; font-size: 16px; white-space: nowrap; letter-spacing: -0.01em; }
       .dls-logo-icon { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg, #0a6fd6 0%, #063f7a 100%); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 900; box-shadow: 0 2px 6px rgba(10,111,214,0.25); }
-      .dls-nav   { display: flex; gap: 2px; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: thin; -webkit-overflow-scrolling: touch; }
+      .dls-nav   { display: flex; gap: 2px; flex: 1; min-width: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; -webkit-overflow-scrolling: touch; }
       .dls-nav::-webkit-scrollbar { height: 3px; }
       .dls-nav::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
       .dls-link  { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; font-size: 13.5px; font-weight: 600; color: #475569; text-decoration: none; border-radius: 8px; white-space: nowrap; transition: all .15s; position: relative; }
       .dls-link:hover { background: #f1f5f9; color: #0b1f3a; }
       .dls-link.active { color: #0858b3; background: #eff6ff; }
-      .dls-link.active::after { content: ''; position: absolute; left: 12px; right: 12px; bottom: -1px; height: 2px; background: #0a6fd6; border-radius: 2px; }
+      .dls-link.active::after { content: ''; position: absolute; left: 12px; right: 12px; bottom: 2px; height: 2px; background: #0a6fd6; border-radius: 2px; }
       .dls-link-ico { font-size: 14px; line-height: 1; }
       .dls-user  { display: flex; align-items: center; gap: 8px; margin-left: auto; flex-shrink: 0; }
       .dls-user-name { font-size: 13px; color: #475569; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-decoration: none; font-weight: 600; padding: 6px 10px; border-radius: 8px; }

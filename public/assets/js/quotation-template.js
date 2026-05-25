@@ -1,5 +1,9 @@
-// Template render báo giá A4. Nhận data { dealer, profile, images, customer, quotation, items }
-// và trả về HTML string của 1 trang A4.
+// Template render báo giá A4 — Whitelabel version.
+// Nhận data { dealer, profile, images, customer, quotation, items, sections, adjustments, quotationImages }
+// và trả về HTML string khớp layout mẫu UI/UX (template_bao_gia_mau.jfif).
+//
+// Whitelabel: profile.brand_primary + profile.brand_secondary → inject CSS variables
+// → toàn bộ tông màu template tự đổi.
 (function (global) {
   if (!global.AppHelpers) {
     throw new Error('quotation-template.js cần _helpers.js load trước (window.AppHelpers).');
@@ -7,9 +11,6 @@
   const { esc, has, multiLine } = global.AppHelpers;
   const money = v => (Number(v) || 0).toLocaleString('vi-VN') + ' đ';
   const num = (v, d = 0) => (Number(v) || 0).toLocaleString('vi-VN', { minimumFractionDigits: d, maximumFractionDigits: d });
-  // Số lượng: cho phép thập phân (vd 10.224), giữ dấu chấm làm decimal separator,
-  // không format kiểu vi-VN tránh nhầm lẫn với dấu cách hàng nghìn.
-  // Integer → "10", decimal → "10.224", trim trailing zero.
   const numQty = v => {
     const n = Number(v) || 0;
     if (Number.isInteger(n)) return String(n);
@@ -21,103 +22,122 @@
     if (Number.isNaN(d.getTime())) return v;
     return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
   };
-
-  function infoLine(k, v, fallback = '—') {
-    const isEmpty = !has(v);
-    const body = isEmpty ? esc(fallback) : multiLine(v);
-    return `<div>
-      <span class="k">${esc(k)}</span>
-      <div class="v ${isEmpty ? 'empty' : ''}">${body}</div>
-    </div>`;
-  }
-
-  // Số nguyên (rộng/cao mm) — không thập phân
   const numInt = v => has(v) ? Number(v).toLocaleString('vi-VN', { maximumFractionDigits: 0 }) : '—';
-  // Diện tích m² — 2 chữ số thập phân, trim trailing zero
   const numArea = v => {
     if (!has(v) || Number(v) === 0) return '—';
     const n = Number(v);
     return n.toFixed(2).replace(/\.?0+$/, '');
   };
 
-  // Render 1 item row.
-  // Bảng 11 cột: STT | Mã SP | Tên SP | Mô tả | Rộng | Cao | Số bộ | Khối lượng | Đơn vị | Đơn giá | Thành tiền
+  // ── SVG Icons (inline, stroke-based) ─────────────────────────────────
+  const IC = {
+    user: `<svg class="q-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>`,
+    phone: `<svg class="q-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.6a2 2 0 0 1-.5 2.1L7.9 9.7a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.7.5 2.6.6a2 2 0 0 1 1.7 2z"/></svg>`,
+    pin: `<svg class="q-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7 8-13a8 8 0 0 0-16 0c0 6 8 13 8 13z"/><circle cx="12" cy="9" r="3"/></svg>`,
+    camera: `<svg class="q-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h3l2-3h6l2 3h3v13H4z"/><circle cx="12" cy="13" r="4"/></svg>`,
+    clipboard: `<svg class="q-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 3h6v3H9z"/><path d="M9 12h6M9 16h4"/></svg>`,
+    banknote: `<svg class="q-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M2 9h2M20 9h2M2 15h2M20 15h2"/></svg>`,
+    clock: `<svg class="q-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`,
+    shield: `<svg class="q-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>`,
+    grid: `<svg class="q-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>`,
+    fileText: `<svg class="q-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h10l4 4v14H5z"/><path d="M9 9h6M9 13h6M9 17h4"/></svg>`,
+    list: `<svg class="q-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>`,
+  };
+
+  // ── Helpers ───────────────────────────────────────────────────────────
+  function adjAmount(a, tamTinh, plusSum) {
+    if (!a) return 0;
+    if (a.mode === 'percent') {
+      const pct = Number(a.value_percent ?? a.amount) || 0;
+      const base = a.kind === 'minus'
+        ? (Number(tamTinh) || 0) + (Number(plusSum) || 0)
+        : (Number(tamTinh) || 0);
+      return Math.round(base * pct / 100);
+    }
+    const sb = Number(a.so_bo) || 0;
+    const dg = Number(a.don_gia) || 0;
+    if (dg > 0) return Math.round((sb || 1) * dg);
+    return Number(a.amount) || 0;
+  }
+
+  function sumPlus(adjustments, tamTinh) {
+    if (!Array.isArray(adjustments)) return 0;
+    return adjustments.filter(a => a.kind === 'plus')
+      .reduce((s, a) => s + adjAmount(a, tamTinh, 0), 0);
+  }
+
+  // ── Section header bar ────────────────────────────────────────────────
+  function sectionHdr(icon, title) {
+    return `<div class="q-sec-hdr">
+      <span class="q-sec-icon">${icon}</span>
+      <span class="q-sec-title">${esc(title)}</span>
+    </div>`;
+  }
+
+  // ── Render item row ───────────────────────────────────────────────────
   function renderItemRow(it, stt) {
     return `
       <tr>
         <td class="center">${stt}</td>
-        <td class="ma">${esc(it.ma_sp || '—')}</td>
         <td class="ten-sp">${esc(it.ten_sp || '—')}</td>
+        <td class="ma">${esc(it.ma_sp || '—')}</td>
         <td class="desc">${multiLine(it.mo_ta)}</td>
         <td class="center">${numInt(it.rong)}</td>
         <td class="center">${numInt(it.cao)}</td>
         <td class="center qty-cell">${numQty(it.sl)}</td>
-        <td class="center area-cell">${numArea(it.dien_tich)}</td>
         <td class="center">${esc(it.dvt || '')}</td>
         <td class="num">${money(it.don_gia)}</td>
         <td class="num total">${money(it.thanh_tien)}</td>
       </tr>`;
   }
 
-  // Width A4 portrait usable = ~688px:
-  //   STT 22 + Mã 42 + Tên SP 100 + Mô tả flex + Rộng 38 + Cao 38 +
-  //   Số bộ 34 + KL 50 + ĐV 34 + Đơn giá 70 + Thành tiền 82 = 510 fixed
-  //   → Mô tả flex ~178px ✓
   const ITEMS_TABLE_HEAD = `
     <thead>
       <tr>
-        <th style="width:22px" class="center">STT</th>
-        <th style="width:42px">Mã SP</th>
-        <th style="width:100px">Tên SP</th>
-        <th>Mô tả / quy cách</th>
-        <th style="width:38px" class="center">Rộng</th>
-        <th style="width:38px" class="center">Cao</th>
-        <th style="width:34px" class="center">Số bộ</th>
-        <th style="width:50px" class="center">Khối lượng</th>
-        <th style="width:34px" class="center">Đơn vị</th>
-        <th style="width:70px" class="num">Đơn giá</th>
-        <th style="width:82px" class="num">Thành tiền</th>
+        <th style="width:28px" class="center">STT</th>
+        <th style="width:100px">Nhóm SP</th>
+        <th style="width:70px">Mã SP</th>
+        <th>Mô tả sản phẩm / cấu hình</th>
+        <th style="width:52px" class="center">Rộng (mm)</th>
+        <th style="width:52px" class="center">Dài (mm)</th>
+        <th style="width:30px" class="center">SL</th>
+        <th style="width:34px" class="center">ĐVT</th>
+        <th style="width:74px" class="num">Đơn giá (VND)</th>
+        <th style="width:82px" class="num">Thành tiền (VND)</th>
       </tr>
     </thead>`;
 
-  // Render 1 BS row (Bổ sung — vận chuyển, lắp đặt…) trong bảng items.
-  // 11 cột: STT+MaSP merge cho "BS1" (rộng ~64px, không wrap) | Tên+Mô tả (colspan 2) | _ | _ | Số bộ | _ | Đơn vị | Đơn giá | Thành tiền
   function renderBsRow(a, bsIdx, tamTinh, plusSum) {
     const eff = adjAmount(a, tamTinh, plusSum);
     const sb = Number(a.so_bo) || 0;
     const dg = Number(a.don_gia) || 0;
     return `
       <tr class="q-bs-row">
-        <td class="center" colspan="2" style="font-weight:700;color:#0a6fd6;white-space:nowrap">BS${bsIdx}</td>
+        <td class="center" colspan="2" style="font-weight:700;color:var(--primary);white-space:nowrap">BS${bsIdx}</td>
         <td class="ten-sp" colspan="2">${esc(a.label || '—')}</td>
         <td></td>
         <td></td>
         <td class="center">${sb > 0 ? numQty(sb) : ''}</td>
-        <td></td>
         <td class="center">${esc(a.don_vi || '')}</td>
         <td class="num">${dg > 0 ? money(dg) : ''}</td>
         <td class="num total">${money(eff)}</td>
       </tr>`;
   }
 
-  // Render bảng items + BS rows (BS đặt cuối bảng, sau tất cả nhóm).
-  // Trong bảng: A/B/C/... → Tổng các nhóm → BS1, BS2, ... → Tổng các BS.
-  // Dưới bảng (q-totals): Tổng cộng / Chiết khấu / Giá sau ck / VAT / Thành tiền.
   function renderItemsTable(sections, fallbackItems, adjustments, quotation) {
     const tt = Number(quotation && quotation.tam_tinh) || 0;
     const plusList = Array.isArray(adjustments) ? adjustments.filter(a => a.kind === 'plus') : [];
     const plusSum = plusList.reduce((s, a) => s + adjAmount(a, tt, 0), 0);
     const bsRowsHtml = plusList.map((a, i) => renderBsRow(a, i + 1, tt, plusSum)).join('');
 
-    // 2 row tổng đặt trong bảng (theo cấu trúc Excel)
     const tongNhomRow = `
       <tr class="q-grand-sub">
-        <td colspan="10" style="font-weight:800;color:#0f172a;text-align:right;padding-right:8px">Tổng các nhóm</td>
-        <td class="num" style="font-weight:800;color:#0f172a">${money(tt)}</td>
+        <td colspan="9" style="font-weight:800;text-align:right;padding-right:8px">Tổng các nhóm</td>
+        <td class="num" style="font-weight:800">${money(tt)}</td>
       </tr>`;
     const tongBsRow = plusList.length > 0 ? `
       <tr class="q-grand-sub">
-        <td colspan="10" style="font-weight:800;color:#92400e;text-align:right;padding-right:8px">Tổng các BS</td>
+        <td colspan="9" style="font-weight:800;color:#92400e;text-align:right;padding-right:8px">Tổng các BS</td>
         <td class="num" style="font-weight:800;color:#92400e">${money(plusSum)}</td>
       </tr>` : '';
 
@@ -129,7 +149,7 @@
         const items = sections.flatMap(s => s.items || []);
         if (!items.length && !bsRowsHtml) {
           return `<table class="q-items">${ITEMS_TABLE_HEAD}
-            <tbody><tr><td colspan="11" style="text-align:center;padding:20px;color:#94a3b8;font-style:italic">Chưa có sản phẩm</td></tr></tbody>
+            <tbody><tr><td colspan="10" style="text-align:center;padding:20px;color:#94a3b8;font-style:italic">Chưa có sản phẩm</td></tr></tbody>
           </table>`;
         }
         return `<table class="q-items">${ITEMS_TABLE_HEAD}
@@ -154,9 +174,9 @@
         const letter = esc(sec.letter || '');
         const ten = esc(sec.ten);
         const sectionHeader = `
-          <tr class="q-sec-hdr">
-            <td class="center" style="font-weight:800;color:#0a6fd6">${letter}</td>
-            <td colspan="10" style="font-weight:700">${ten}</td>
+          <tr class="q-sec-hdr-row">
+            <td class="center" style="font-weight:800;color:var(--primary)">${letter}</td>
+            <td colspan="9" style="font-weight:700">${ten}</td>
           </tr>`;
         const subtotalSoBo = (sec.items || []).reduce((s, it) => s + (Number(it.sl) || 0), 0);
         const subtotalRow = `
@@ -165,7 +185,7 @@
               Tổng nhóm ${letter}${ten ? ' — ' + ten : ''}
             </td>
             <td class="center" style="font-weight:700;color:#9f1239">${subtotalSoBo > 0 ? numQty(subtotalSoBo) : ''}</td>
-            <td colspan="3"></td>
+            <td colspan="2"></td>
             <td class="num total" style="font-weight:800;color:#9f1239">${money(sec.subtotal || 0)}</td>
           </tr>`;
         return sectionHeader + itemRows + subtotalRow;
@@ -177,7 +197,7 @@
     const items = fallbackItems || [];
     if (!items.length && !bsRowsHtml) {
       return `<table class="q-items">${ITEMS_TABLE_HEAD}
-        <tbody><tr><td colspan="11" style="text-align:center;padding:20px;color:#94a3b8;font-style:italic">Chưa có sản phẩm</td></tr></tbody>
+        <tbody><tr><td colspan="10" style="text-align:center;padding:20px;color:#94a3b8;font-style:italic">Chưa có sản phẩm</td></tr></tbody>
       </table>`;
     }
     return `<table class="q-items">${ITEMS_TABLE_HEAD}
@@ -190,84 +210,34 @@
     </table>`;
   }
 
-  // Tính effective amount cho 1 adjustment (Excel-style):
-  //   fixed         → so_bo × don_gia (BS-style) hoặc fallback a.amount
-  //   plus percent  → tam_tinh × pct / 100
-  //   minus percent → (tam_tinh + Σplus) × pct / 100  — base passed in
-  function adjAmount(a, tamTinh, plusSum) {
-    if (!a) return 0;
-    if (a.mode === 'percent') {
-      const pct = Number(a.value_percent ?? a.amount) || 0;
-      const base = a.kind === 'minus'
-        ? (Number(tamTinh) || 0) + (Number(plusSum) || 0)
-        : (Number(tamTinh) || 0);
-      return Math.round(base * pct / 100);
-    }
-    const sb = Number(a.so_bo) || 0;
-    const dg = Number(a.don_gia) || 0;
-    if (dg > 0) return Math.round((sb || 1) * dg);
-    return Number(a.amount) || 0;
-  }
-
-  // Tổng phụ phí (plus) — dùng làm base cho chiết khấu %
-  function sumPlus(adjustments, tamTinh) {
-    if (!Array.isArray(adjustments)) return 0;
-    return adjustments.filter(a => a.kind === 'plus')
-      .reduce((s, a) => s + adjAmount(a, tamTinh, 0), 0);
-  }
-
-  // Render rows điều chỉnh footer.
-  //   - kind='plus' fixed (có so_bo + don_gia): "BS  Vận chuyển  1 gói × 1,000,000 = 1,000,000"
-  //   - kind='plus' percent: "+ Phụ phí (5%) = 14,824,725"
-  //   - kind='minus' fixed: "− Chiết khấu = 1,000,000"
-  //   - kind='minus' percent: "− Chiết khấu (10%) = 29,649,450"
-  function renderAdjRows(adjustments, tamTinh) {
-    if (!Array.isArray(adjustments) || !adjustments.length) return '';
-    const rowFor = (a, sign, klass) => {
-      const isPct = a.mode === 'percent';
-      const eff = adjAmount(a, tamTinh);
-      let label = esc(a.label || '');
-      if (isPct) {
-        const pct = Number(a.value_percent ?? a.amount) || 0;
-        label += ` (${num(pct, pct % 1 ? 1 : 0)}%)`;
-      } else if (Number(a.don_gia) > 0) {
-        const sb = Number(a.so_bo) || 1;
-        const dv = esc(a.don_vi || '');
-        label += ` <span style="color:#94a3b8;font-weight:500">· ${numQty(sb)}${dv ? ' ' + dv : ''} × ${money(a.don_gia)}</span>`;
-      }
-      const valTxt = sign === '−' ? `−${money(eff)}` : money(eff);
-      return `<div class="row ${klass}"><span class="k">${sign} ${label}</span><span class="v">${valTxt}</span></div>`;
-    };
-    const plus = adjustments.filter(a => a.kind === 'plus').map(a => rowFor(a, '+', '')).join('');
-    const minus = adjustments.filter(a => a.kind === 'minus').map(a => rowFor(a, '−', 'minus')).join('');
-    return plus + minus;
-  }
-
-  // Render gallery 1..5 ảnh — luôn hiện caption dưới (fallback "Ảnh N" nếu chưa nhập)
+  // ── Render gallery ảnh ────────────────────────────────────────────────
   function renderQuotationImages(qImages) {
     if (!qImages || !qImages.length) return '';
     const count = qImages.length;
     return `
-      <section>
-        <h3 class="q-section-title">Hình ảnh sản phẩm / công trình</h3>
-        <div class="q-images count-${count}">
-          ${qImages.map(img => `
-            <div class="q-img-card">
-              <div class="q-img-frame"><img src="${esc(img.url)}" alt="Ảnh ${img.slot}"></div>
-              <div class="cap">${esc(has(img.caption) ? img.caption : 'Ảnh ' + img.slot)}</div>
-            </div>
-          `).join('')}
-        </div>
-      </section>`;
+      ${sectionHdr(IC.camera, 'HÌNH ẢNH NĂNG LỰC & HỆ SẢN PHẨM')}
+      <div class="q-images count-${count}">
+        ${qImages.map(img => `
+          <div class="q-img-card">
+            <div class="q-img-frame"><img src="${esc(img.url)}" alt="Ảnh ${img.slot}"></div>
+            <div class="cap">${esc(has(img.caption) ? img.caption : img.slot + '. Ảnh sản phẩm')}</div>
+          </div>
+        `).join('')}
+      </div>`;
   }
 
+  // ── Main render ───────────────────────────────────────────────────────
   function render({
     dealer = {}, profile = {}, images = {},
     customer, quotation = {},
     sections = null, adjustments = [],
     items = [], quotationImages = [],
   }) {
-    // Header — info đại lý (mig 014): override > dealer profile
+    // Brand colors — từ profile, fallback cam đất + đen
+    const brandPrimary   = profile.brand_primary   || '#D35400';
+    const brandSecondary = profile.brand_secondary  || '#1A1A1A';
+
+    // Header — info đại lý (override > dealer profile)
     const dealerName = has(quotation.dealer_name_override)
       ? quotation.dealer_name_override
       : (dealer.ten_dai_ly || 'Tên đại lý');
@@ -276,122 +246,147 @@
       : [dealer.address, dealer.district, dealer.province].filter(has).join(', ');
     const dealerPhone = has(quotation.dealer_phone_override) ? quotation.dealer_phone_override : (dealer.phone || '');
     const dealerEmail = has(quotation.dealer_email_override) ? quotation.dealer_email_override : (dealer.email || '');
-    const dealerInfo = [
-      has(dealerAddrFull) && dealerAddrFull,
-      has(dealerPhone) && `📞 ${dealerPhone}`,
-      has(dealerEmail) && `✉️ ${dealerEmail}`,
-    ].filter(Boolean);
     const quoteTitle = has(quotation.quote_title) ? quotation.quote_title : 'PHIẾU BÁO GIÁ';
+    const tagline = has(profile.tagline) ? profile.tagline : '';
 
     return `
-      <section class="q-page">
+      <section class="q-page" style="--primary:${brandPrimary};--secondary:${brandSecondary}">
+
+        <!-- ════════ HEADER ════════ -->
         <header class="q-hdr">
-          <div class="q-hdr-grid">
-            <div class="q-logo">
-              ${has(images.logo_dai_ly)
-                ? `<img src="${esc(images.logo_dai_ly)}" alt="Logo">`
-                : `<div class="no-img">LOGO<br>ĐẠI LÝ</div>`}
-            </div>
-            <div class="q-dealer">
-              <h1>${esc(dealerName)}</h1>
-              <div class="info">
-                ${dealerInfo.map(l => `<div>${esc(l)}</div>`).join('')}
+          <div class="q-hdr-left">
+            <div class="q-hdr-row">
+              <div class="q-logo">
+                ${has(images.logo_dai_ly)
+                  ? `<img src="${esc(images.logo_dai_ly)}" alt="Logo">`
+                  : `<div class="no-img">LOGO<br>ĐẠI LÝ</div>`}
+              </div>
+              <div class="q-dealer-info">
+                <h1 class="q-dealer-name">${esc(dealerName)}</h1>
+                ${tagline ? `<div class="q-tagline">${esc(tagline)}</div>` : ''}
+                <div class="q-dealer-contact">
+                  ${has(dealerPhone) ? `<div class="q-hdr-line"><span class="q-ic-badge">${IC.phone}</span><span>HOTLINE: <strong>${esc(dealerPhone)}</strong></span></div>` : ''}
+                  ${has(dealerAddrFull) ? `<div class="q-hdr-line"><span class="q-ic-badge">${IC.pin}</span><span>${esc(dealerAddrFull)}</span></div>` : ''}
+                </div>
               </div>
             </div>
-            <div class="q-meta">
-              <div class="title">Báo giá</div>
-              <div class="row"><span class="k">Số báo giá</span><span class="v">${esc(quotation.so_bao_gia || '—')}</span></div>
-              <div class="row"><span class="k">Ngày</span><span class="v">${esc(fmtDate(quotation.ngay_bao_gia) || '—')}</span></div>
+          </div>
+          <div class="q-hdr-right">
+            <div class="q-hdr-title">${esc(quoteTitle)}</div>
+            <div class="q-meta-table">
+              <div class="q-meta-row"><span class="k">Số báo giá</span><span class="v">${esc(quotation.so_bao_gia || '—')}</span></div>
+              <div class="q-meta-row"><span class="k">Ngày</span><span class="v">${esc(fmtDate(quotation.ngay_bao_gia) || '—')}</span></div>
             </div>
           </div>
         </header>
 
         <div class="q-body">
-          <div class="q-title-banner">
-            <h2>${esc(quoteTitle)}</h2>
-            <p>Số ${esc(quotation.so_bao_gia || '—')} · Ngày ${esc(fmtDate(quotation.ngay_bao_gia) || '—')}</p>
+
+          <!-- ════════ KHÁCH HÀNG & CÔNG TRÌNH ════════ -->
+          ${sectionHdr(IC.user, 'KHÁCH HÀNG & CÔNG TRÌNH')}
+          <div class="q-customer">
+            <div class="q-info-col">
+              <div class="q-info-row"><span class="k">Khách hàng</span><span class="sep">:</span><span class="v">${esc(customer && customer.ten_kh || '—')}</span></div>
+              <div class="q-info-row"><span class="k">Mã KH</span><span class="sep">:</span><span class="v">${esc(customer && customer.ma_kh || '—')}</span></div>
+              <div class="q-info-row"><span class="k">Người phụ trách</span><span class="sep">:</span><span class="v">${esc(customer && customer.nguoi_lien_he || '—')}</span></div>
+              <div class="q-info-row"><span class="k">Điện thoại</span><span class="sep">:</span><span class="v">${esc(customer && customer.phone || '—')}</span></div>
+              <div class="q-info-row"><span class="k">Email</span><span class="sep">:</span><span class="v">${esc(customer && customer.email || '—')}</span></div>
+            </div>
+            <div class="q-info-col">
+              <div class="q-info-row"><span class="k">Địa chỉ KH</span><span class="sep">:</span><span class="v">${esc(customer && customer.dia_chi || '—')}</span></div>
+              <div class="q-info-row"><span class="k">Địa chỉ công trình</span><span class="sep">:</span><span class="v">${has(quotation.dia_chi_cong_trinh) ? multiLine(quotation.dia_chi_cong_trinh) : '—'}</span></div>
+              <div class="q-info-row"><span class="k">Ghi chú hồ sơ</span><span class="sep">:</span><span class="v">${has(quotation.ghi_chu_ho_so) ? multiLine(quotation.ghi_chu_ho_so) : '—'}</span></div>
+            </div>
           </div>
 
-          <section class="q-card">
-            <h3 class="q-section-title">Khách hàng & công trình</h3>
-            <div class="q-customer">
-              <div class="q-info-rows">
-                ${infoLine('Khách hàng', customer && customer.ten_kh)}
-                ${infoLine('Mã KH', customer && customer.ma_kh)}
-                ${infoLine('Người phụ trách', customer && customer.nguoi_lien_he)}
-                ${infoLine('Điện thoại', customer && customer.phone)}
-              </div>
-              <div class="q-info-rows">
-                ${infoLine('Email', customer && customer.email)}
-                ${infoLine('Địa chỉ KH', customer && customer.dia_chi)}
-                ${infoLine('Địa chỉ công trình', quotation.dia_chi_cong_trinh)}
-                ${infoLine('Ghi chú hồ sơ', quotation.ghi_chu_ho_so)}
-              </div>
-            </div>
-          </section>
-
-          <section>
-            <h3 class="q-section-title">Danh mục sản phẩm</h3>
-            ${renderItemsTable(sections, items, adjustments, quotation)}
-          </section>
-
-          <section class="q-summary">
-            <div class="q-card">
-              <h3 class="q-section-title">Ghi chú thương mại</h3>
-              <div style="font-size:10.5px;color:#475569;line-height:1.5">
-                ${has(quotation.ghi_chu_thuong_mai)
-                  ? multiLine(quotation.ghi_chu_thuong_mai)
-                  : 'Giá đã bao gồm tư vấn kỹ thuật. Vận chuyển và lắp đặt có thể tách riêng theo phạm vi công trình.'}
-              </div>
-            </div>
-            ${(() => {
-              const tt = Number(quotation.tam_tinh) || 0;
-              const plusSum = sumPlus(adjustments, tt);
-              const tongCong = tt + plusSum;
-              const ckPct = Number(quotation.chiet_khau_percent) || 0;
-              const ckAmount = Math.round(tongCong * ckPct / 100);
-              const giaSauCk = quotation.pre_tax != null ? quotation.pre_tax : (quotation.tong_cong - quotation.vat_amount);
-              return `<div class="q-totals">
-                <div class="row pre-tax"><span class="k">Tổng cộng</span><span class="v">${money(tongCong)}</span></div>
-                ${ckAmount > 0 ? `<div class="row minus"><span class="k">− Chiết khấu (${num(ckPct, ckPct % 1 ? 1 : 0)}%)</span><span class="v">−${money(ckAmount)}</span></div>
-                <div class="row pre-tax"><span class="k">Giá sau chiết khấu</span><span class="v">${money(giaSauCk)}</span></div>` : ''}
-                <div class="row"><span class="k">VAT (${num(quotation.vat_percent)}%)</span><span class="v">${money(quotation.vat_amount)}</span></div>
-                <div class="row grand"><span class="k">Thành tiền</span><span class="v">${money(quotation.tong_cong)}</span></div>
-              </div>`;
-            })()}
-          </section>
-
+          <!-- ════════ HÌNH ẢNH ════════ -->
           ${renderQuotationImages(quotationImages)}
 
-          <section>
-            <h3 class="q-section-title">Điều khoản đề xuất</h3>
-            <div class="q-terms">
-              <div class="term">
-                <div class="k">Thanh toán</div>
-                <div class="v ${has(quotation.thanh_toan) ? '' : 'empty'}">${has(quotation.thanh_toan) ? multiLine(quotation.thanh_toan) : '— chưa quy định —'}</div>
-              </div>
-              <div class="term">
-                <div class="k">Tiến độ</div>
-                <div class="v ${has(quotation.tien_do) ? '' : 'empty'}">${has(quotation.tien_do) ? multiLine(quotation.tien_do) : '— chưa quy định —'}</div>
-              </div>
-              <div class="term">
-                <div class="k">Bảo hành</div>
-                <div class="v ${has(quotation.bao_hanh) ? '' : 'empty'}">${has(quotation.bao_hanh) ? multiLine(quotation.bao_hanh) : '— chưa quy định —'}</div>
+          <!-- ════════ DANH MỤC SẢN PHẨM ════════ -->
+          ${sectionHdr(IC.grid, 'DANH MỤC SẢN PHẨM')}
+          ${renderItemsTable(sections, items, adjustments, quotation)}
+          <div class="q-footnote">* Đơn giá chưa bao gồm VAT. Báo giá có hiệu lực trong 15 ngày kể từ ngày báo giá.</div>
+
+          <!-- ════════ GHI CHÚ + TỔNG HỢP ════════ -->
+          <div class="q-bottom-grid">
+            <div class="q-note-card">
+              ${sectionHdr(IC.fileText, 'GHI CHÚ THƯƠNG MẠI')}
+              <div class="q-note-body">
+                ${has(quotation.ghi_chu_thuong_mai)
+                  ? multiLine(quotation.ghi_chu_thuong_mai)
+                  : '<span style="color:#94a3b8;font-style:italic">Chưa nhập ghi chú thương mại</span>'}
               </div>
             </div>
-          </section>
+            <div class="q-total-card">
+              <div class="q-total-hdr">TỔNG HỢP GIÁ TRỊ</div>
+              ${(() => {
+                const tt = Number(quotation.tam_tinh) || 0;
+                const plusSum_val = sumPlus(adjustments, tt);
+                const tongCong = tt + plusSum_val;
+                const ckPct = Number(quotation.chiet_khau_percent) || 0;
+                const ckAmount = Math.round(tongCong * ckPct / 100);
+                const preTax = tongCong - ckAmount;
+                const vatAmt = Number(quotation.vat_amount) || 0;
+                const total = Number(quotation.tong_cong) || 0;
 
-          <section class="q-signatures">
-            <div class="q-sig"><div class="role">Khách hàng xác nhận</div><div class="hint">Ký và ghi rõ họ tên</div></div>
-            <div class="q-sig"><div class="role">Kinh doanh / tư vấn</div><div class="hint">Đại diện phát hành báo giá</div></div>
-            <div class="q-sig"><div class="role">Đại diện đại lý</div><div class="hint">Ký tên, đóng dấu</div></div>
-          </section>
+                // Render BS rows in total card
+                const plusList = Array.isArray(adjustments) ? adjustments.filter(a => a.kind === 'plus') : [];
+                const bsRows = plusList.map(a => {
+                  const eff = adjAmount(a, tt, plusSum_val);
+                  return `<div class="q-total-row"><span class="k">${esc(a.label || 'Bổ sung')}</span><span class="v">${money(eff)}</span></div>`;
+                }).join('');
+
+                return `<div class="q-total-body">
+                  <div class="q-total-row"><span class="k">Tạm tính</span><span class="v">${money(tt)}</span></div>
+                  ${bsRows}
+                  ${ckAmount > 0 ? `<div class="q-total-row minus"><span class="k">Chiết khấu (${num(ckPct, ckPct % 1 ? 1 : 0)}%)</span><span class="v">−${money(ckAmount)}</span></div>` : ''}
+                  <div class="q-total-row"><span class="k">VAT (${num(quotation.vat_percent)}%)</span><span class="v">${money(vatAmt)}</span></div>
+                  <div class="q-total-row grand"><span class="k">TỔNG CỘNG</span><span class="v">${money(total)}</span></div>
+                </div>`;
+              })()}
+            </div>
+          </div>
+
+          <!-- ════════ ĐIỀU KHOẢN ĐỀ XUẤT ════════ -->
+          ${sectionHdr(IC.list, 'ĐIỀU KHOẢN ĐỀ XUẤT')}
+          <div class="q-terms">
+            <div class="q-term">
+              <div class="q-term-hdr">${IC.banknote}<span>THANH TOÁN</span></div>
+              <div class="q-term-body">${has(quotation.thanh_toan) ? multiLine(quotation.thanh_toan) : '— chưa quy định —'}</div>
+            </div>
+            <div class="q-term">
+              <div class="q-term-hdr">${IC.clock}<span>TIẾN ĐỘ</span></div>
+              <div class="q-term-body">${has(quotation.tien_do) ? multiLine(quotation.tien_do) : '— chưa quy định —'}</div>
+            </div>
+            <div class="q-term">
+              <div class="q-term-hdr">${IC.shield}<span>BẢO HÀNH</span></div>
+              <div class="q-term-body">${has(quotation.bao_hanh) ? multiLine(quotation.bao_hanh) : '— chưa quy định —'}</div>
+            </div>
+          </div>
+
+          <!-- ════════ CHỮ KÝ ════════ -->
+          <div class="q-signatures">
+            <div class="q-sig">
+              <div class="role">KHÁCH HÀNG XÁC NHẬN</div>
+              <div class="hint">(Ký, ghi rõ họ tên)</div>
+              <div class="sig-space"></div>
+              <div class="sig-date">Ngày ......../........./..........</div>
+            </div>
+            <div class="q-sig">
+              <div class="role">KINH DOANH / TƯ VẤN</div>
+              <div class="hint">(Ký, ghi rõ họ tên)</div>
+              <div class="sig-space"></div>
+              <div class="sig-date">Ngày ......../........./..........</div>
+            </div>
+            <div class="q-sig">
+              <div class="role">ĐẠI DIỆN ĐẠI LÝ</div>
+              <div class="hint">(Ký, ghi rõ họ tên, đóng dấu)</div>
+              <div class="sig-space"></div>
+              <div class="sig-date">Ngày ......../........./..........</div>
+            </div>
+          </div>
+
         </div>
-
-        <footer class="q-ftr">
-          <span>${esc(dealer.ten_dai_ly || 'Đại lý')}</span>
-          <span>${esc(quotation.so_bao_gia || '')} · ${esc(fmtDate(quotation.ngay_bao_gia))}</span>
-        </footer>
       </section>
     `;
   }

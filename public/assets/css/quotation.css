@@ -1,318 +1,559 @@
-/* ============================================================================
-   Quotation template — render trang A4 báo giá (1 trang)
-   Cùng tone với profile.css: navy + gold accent
-   ============================================================================ */
+/* ================================================================
+   Quotation Template CSS — Whitelabel
+   Layout khớp template_bao_gia_mau.jfif từ UI/UX.
+   --primary / --secondary inject qua style attribute trên .q-page.
+   ================================================================ */
 
+/* ── Reset & Base ─────────────────────────────────────────────── */
 .q-page {
+  --primary: #D35400;
+  --secondary: #1A1A1A;
+  --tertiary: #F7F5F0;
+  --primary-light: color-mix(in srgb, var(--primary) 8%, #fff);
+  --primary-mid: color-mix(in srgb, var(--primary) 15%, #fff);
+
+  --neutral-text: #2C2C2A;
+  --neutral-muted: #5F5E5A;
+  --neutral-line: #E5E3DB;
+  --paper: #FFFFFF;
+
   width: 210mm;
   min-height: 297mm;
-  background: #fff;
-  color: #0f172a;
-  font-family: 'Be Vietnam Pro', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  font-size: 11px;
-  line-height: 1.5;
-  padding: 0 0 60px;
-  position: relative;
-  overflow: hidden;
+  margin: 0 auto;
+  padding: 0;
+  background: var(--paper);
+  font-family: 'Be Vietnam Pro', 'Inter', system-ui, sans-serif;
+  font-size: 10pt;
+  line-height: 1.45;
+  color: var(--neutral-text);
   box-sizing: border-box;
 }
-.q-page * { box-sizing: border-box; }
-.q-page h1, .q-page h2, .q-page h3, .q-page p, .q-page table { margin: 0; }
+.q-page *, .q-page *::before, .q-page *::after { box-sizing: border-box; }
+.q-page img { max-width: 100%; display: block; border-style: none; }
 
-/* ─── Header navy + gold ─── */
+/* Override Tailwind preflight */
+.q-page h1, .q-page h2, .q-page h3, .q-page h4 {
+  font-size: inherit; font-weight: inherit; margin: 0;
+}
+.q-page table { border-collapse: collapse; border-color: inherit; text-indent: 0; }
+.q-page th, .q-page td { padding: 0; }
+.q-page ul, .q-page ol { list-style: disc; margin: 0; padding: 0; }
+.q-page a { color: inherit; text-decoration: inherit; }
+.q-page svg { display: inline-block; vertical-align: middle; }
+.q-page, .q-page * { border: none; }
+
+/* ── SVG icon ─────────────────────────────────────────────────── */
+.q-ic { width: 16px; height: 16px; vertical-align: middle; flex-shrink: 0; }
+
+/* ══════════════════════════════════════════════════════════════════
+   HEADER — premium, mềm mại, có brand identity
+   ══════════════════════════════════════════════════════════════════ */
 .q-hdr {
-  background: linear-gradient(135deg, #0a1f3d, #163c70);
-  color: #fff;
-  padding: 16px 14mm;
-  position: relative;
-  overflow: hidden;
+  display: flex;
+  align-items: stretch;
+  padding: 16px 18px 14px;
+  background: #fff;
+  gap: 14px;
 }
-.q-hdr-grid {
-  display: grid; grid-template-columns: 110px 1fr 200px;
-  gap: 14px; align-items: center;
+
+/* ── Left: Brand block ─── */
+.q-hdr-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
 }
-.q-hdr .q-logo {
-  border: 1.5px solid #d4a55b; border-radius: 12px;
-  background: rgba(255,255,255,0.04);
-  padding: 6px;
-  width: 110px; height: 70px;          /* container cố định → tránh méo khi html2canvas */
-  display: flex; align-items: center; justify-content: center;
+.q-hdr-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  width: 100%;
+}
+
+/* Logo: rounded frame, subtle bg, padding, shadow */
+.q-logo {
+  width: 120px;
+  min-width: 120px;
   flex-shrink: 0;
-}
-.q-hdr .q-logo img {
-  max-width: 100%; max-height: 100%;
-  width: auto; height: auto;            /* để intrinsic size + object-fit giữ aspect ratio */
-  object-fit: contain; display: block;
-}
-.q-hdr .q-logo .no-img { font-size: 10px; font-weight: 800; letter-spacing: 0.04em; color: #d4a55b; text-align: center; }
-
-.q-hdr .q-dealer h1 {
-  font-size: 18px; font-weight: 800; color: #f4e4c1;
-  line-height: 1.15; margin-bottom: 4px;
-}
-.q-hdr .q-dealer .info { font-size: 10px; color: rgba(255,255,255,0.9); line-height: 1.45; }
-.q-hdr .q-dealer .info > div { display: flex; gap: 6px; align-items: center; min-height: 14px; }
-.q-hdr .q-dealer .info span.k { color: #d4a55b; font-weight: 700; }
-
-.q-hdr .q-meta {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(212,165,91,0.4);
   border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 10.5px;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.q-hdr .q-meta .title {
-  font-size: 11px; font-weight: 800;
-  color: #d4a55b;
-  text-transform: uppercase; letter-spacing: 0.06em;
-  margin-bottom: 6px;
+.q-logo img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  border-radius: 6px;
 }
-.q-hdr .q-meta .row { display: flex; justify-content: space-between; gap: 6px; }
-.q-hdr .q-meta .row + .row { margin-top: 4px; }
-.q-hdr .q-meta .k { color: rgba(255,255,255,0.7); }
-.q-hdr .q-meta .v { color: #fff; font-weight: 700; }
-
-/* ─── Body ─── */
-.q-body { padding: 14px 14mm; display: grid; gap: 12px; }
-
-/* Gallery ảnh đính kèm — adaptive 1..5 */
-.q-images { display: grid; gap: 8px; }
-.q-images.count-1 { grid-template-columns: 1fr; }
-.q-images.count-2 { grid-template-columns: 1fr 1fr; }
-.q-images.count-3 { grid-template-columns: repeat(3, 1fr); }
-.q-images.count-4 { grid-template-columns: repeat(2, 1fr); grid-template-rows: 1fr 1fr; }
-.q-images.count-5 { grid-template-columns: repeat(6, 1fr); }
-.q-images.count-5 > :nth-child(1) { grid-column: span 3; }
-.q-images.count-5 > :nth-child(2) { grid-column: span 3; }
-.q-images.count-5 > :nth-child(3),
-.q-images.count-5 > :nth-child(4),
-.q-images.count-5 > :nth-child(5) { grid-column: span 2; }
-
-.q-img-card {
-  background: #fff; border: 1px solid #dbe7f3; border-radius: 10px;
-  padding: 4px; overflow: hidden;
-  display: flex; flex-direction: column;
-}
-.q-img-card .q-img-frame {
-  position: relative; padding-bottom: 75%; height: 0; /* 4:3 */
-  border-radius: 8px; overflow: hidden;
-}
-.q-img-card .q-img-frame img {
-  position: absolute; inset: 0; width: 100%; height: 100%;
-  object-fit: cover; display: block;
-}
-.q-images.count-1 .q-img-card .q-img-frame { padding-bottom: 56.25%; /* 16:9 */ }
-.q-img-card .cap {
-  font-size: 10px; color: #1e293b;
-  padding: 6px 4px 2px;
+.q-logo .no-img {
+  width: 86px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  font-size: 10px;
+  color: #94a3b8;
   text-align: center;
-  font-weight: 600;
+  font-weight: 700;
+}
+
+/* Brand text block */
+.q-dealer-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+}
+.q-page .q-dealer-name {
+  margin: 0;
+  font-size: 28pt;
+  font-weight: 900;
+  color: var(--primary);
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.q-page .q-dealer-name .q-brand-accent { color: var(--primary); }
+
+.q-tagline {
+  font-size: 14pt;
+  color: #000;
+  font-weight: 700;
+  font-style: normal;
+  margin: 3px 0 7px;
   line-height: 1.3;
 }
 
-/* Banner "PHIẾU BÁO GIÁ" */
-.q-title-banner {
-  background: linear-gradient(135deg, #d4a55b, #c08838);
-  color: #0a1f3d;
-  padding: 8px 16px;
-  border-radius: 10px;
-  text-align: center;
+/* Contact lines with icon badges */
+.q-dealer-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 2px;
 }
-.q-title-banner h2 {
-  font-size: 17px; font-weight: 900; letter-spacing: 0.08em;
-  margin: 0; line-height: 1.2;
+.q-hdr-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 9pt;
+  color: var(--neutral-text);
+  line-height: 1.3;
 }
-.q-title-banner p {
-  font-size: 10px; font-weight: 700; opacity: 0.85; margin: 2px 0 0;
-  letter-spacing: 0.04em;
+.q-hdr-line .q-ic-badge {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  border-radius: 50%;
+  background: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
-
-.q-section-title {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 11px; font-weight: 800;
-  color: #053b7a; text-transform: uppercase; letter-spacing: 0.04em;
-  margin-bottom: 8px;
-}
-.q-section-title::before {
-  content: ''; width: 4px; height: 14px;
-  background: linear-gradient(180deg, #0a6fd6, #053b7a);
-  border-radius: 2px;
-}
-
-.q-card {
-  background: #fff; border: 1px solid #dbe7f3; border-radius: 12px;
-  padding: 12px 14px;
-}
-
-.q-customer { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.q-info-rows { display: grid; gap: 5px; font-size: 10.5px; }
-.q-info-rows > div { display: grid; grid-template-columns: 110px 1fr; gap: 8px; align-items: center; line-height: 1.3; }
-.q-info-rows .k { color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.04em; align-self: center; }
-.q-info-rows .v { color: #1e293b; font-weight: 700; align-self: center; }
-.q-info-rows .v.empty { color: #94a3b8; font-weight: 500; font-style: italic; }
-
-/* ─── Items table ─── */
-.q-items {
-  width: 100%; border-collapse: collapse;
-  font-size: 9px;
-  table-layout: fixed;       /* tuân width đã đặt, không co kéo */
-}
-.q-items thead th {
-  background: #0a1f3d; color: #fff;
-  padding: 5px 3px; text-align: left; font-weight: 700;
-  font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.02em;
-  white-space: normal;       /* cho phép header xuống dòng nếu chật */
-  vertical-align: middle;
-}
-.q-items thead th:first-child { border-radius: 8px 0 0 0; }
-.q-items thead th:last-child  { border-radius: 0 8px 0 0; }
-.q-items tbody td {
-  padding: 4px 3px;
-  border-bottom: 1px solid #e2e8f0;
-  vertical-align: top;
-  word-wrap: break-word;
-  overflow-wrap: anywhere;   /* string không space dài (mã SP) vẫn xuống dòng */
-}
-.q-items tbody tr:nth-child(even) td { background: #f8fafc; }
-.q-items .num   { text-align: right; tabular-nums: 1; font-family: ui-monospace, monospace; font-size: 8.5px; white-space: nowrap; }
-.q-items .center{ text-align: center; }
-.q-items .ma     { font-family: ui-monospace, monospace; font-weight: 700; color: #334155; font-size: 9px; }
-.q-items .ten-sp { font-weight: 700; color: #0f172a; font-size: 9.5px; line-height: 1.25; }
-.q-items .desc   { font-size: 8.5px; color: #475569; line-height: 1.35; white-space: pre-line; }
-.q-items .total { font-weight: 800; color: #053b7a; }
-
-/* Section header row trong bảng items: nền hồng nhạt + chữ in đậm */
-.q-items tr.q-sec-hdr td {
-  background: #fef2f2 !important;   /* hồng nhạt */
-  padding: 4px 4px;
-  border-top: 1.5px solid #f43f5e;
-  border-bottom: 1px solid #fecdd3;
-  font-size: 9.5px; color: #881337;
-  letter-spacing: 0.2px;
-}
-.q-items tr.q-sec-sub td {
-  background: #fff1f2 !important;
-  border-top: 1px solid #fda4af;
-  font-size: 9.5px;
-  padding: 3px 4px;
-  color: #881337;
-}
-/* BS rows (Bổ sung: vận chuyển, lắp đặt, phụ phí…) — nền vàng nhạt, font to hơn 1 chút */
-.q-items tr.q-bs-row td {
-  background: #fffbeb !important;
-  border-top: 1px solid #fde68a;
-  font-size: 10px;
-  padding: 5px 4px;
-}
-.q-items tr.q-bs-row td:first-child { font-size: 10.5px; }
-/* Tổng các nhóm / Tổng các BS — row tổng trong bảng items */
-.q-items tr.q-grand-sub td {
-  background: #f1f5f9 !important;
-  border-top: 1.5px solid #475569;
-  font-size: 10.5px;
-  padding: 5px 4px;
-}
-
-/* Chấm tròn tự động cho field user gõ xuống dòng (multiLine helper) */
-.bullet-list {
-  list-style: disc;
-  margin: 0;
-  padding-left: 16px;
-}
-.bullet-list li { margin: 0; padding: 0; line-height: 1.4; }
-/* Bên trong table item (chật) → bullet nhỏ hơn */
-.q-items .desc .bullet-list { padding-left: 12px; }
-.q-items .desc .bullet-list li { font-size: inherit; }
-
-/* ─── Tổng kết ─── */
-.q-summary {
-  display: grid; grid-template-columns: 1fr 280px;
-  gap: 14px;
-}
-.q-totals { font-size: 11px; }
-.q-totals .row {
-  display: flex; justify-content: space-between; gap: 8px;
-  padding: 6px 8px;
-  border-bottom: 1px solid #e2e8f0;
-}
-.q-totals .row .k { color: #64748b; font-weight: 600; }
-.q-totals .row .v { font-weight: 700; color: #1e293b; tabular-nums: 1; }
-.q-totals .row.grand {
-  background: linear-gradient(135deg, #0a1f3d, #163c70);
+.q-hdr-line .q-ic-badge .q-ic {
+  width: 12px;
+  height: 12px;
   color: #fff;
-  border-radius: 10px;
-  padding: 10px 12px;
-  margin-top: 6px;
-  border: none;
 }
-.q-totals .row.grand .k { color: #d4a55b; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
-.q-totals .row.grand .v { color: #fff; font-size: 16px; font-weight: 900; }
-.q-totals .row.minus .v { color: #b91c1c; }
-.q-totals .row.pre-tax {
+.q-hdr-line strong {
+  font-weight: 800;
+  font-size: 10pt;
+  color: var(--neutral-text);
+}
+
+/* ── Right: Quote meta card (rounded, shadowed, not table-like) ─── */
+.q-hdr-right {
+  width: 240px;
+  min-width: 240px;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--neutral-line);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+.q-hdr-title {
+  background: var(--secondary);
+  color: #fff;
+  font-size: 13pt;
+  font-weight: 900;
+  text-align: center;
+  padding: 10px 10px 8px;
+  letter-spacing: 0.06em;
+}
+.q-meta-table {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+.q-meta-row {
+  display: flex;
+  align-items: center;
+  padding: 8px 14px;
+  flex: 1;
+}
+.q-meta-row + .q-meta-row {
+  border-top: 1px solid #eee;
+}
+.q-meta-row .k {
+  font-size: 8.5pt;
+  color: var(--neutral-muted);
+  width: 72px;
+  flex-shrink: 0;
+}
+.q-meta-row .v {
+  font-size: 12pt;
+  font-weight: 900;
+  color: var(--primary);
+}
+.q-meta-row:last-child .v {
+  color: var(--secondary);
+}
+
+/* ── BODY ─────────────────────────────────────────────────────── */
+.q-body {
+  padding: 0 16px 12px;
+}
+
+/* ── Section header bar ───────────────────────────────────────── */
+.q-sec-hdr {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 0 0;
+  padding: 0 0 6px 8px;
+  border-left: 3px solid var(--primary);
+  border-bottom: 2px solid var(--primary);
+}
+.q-sec-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+}
+.q-sec-icon .q-ic { width: 18px; height: 18px; }
+.q-sec-title {
+  font-size: 10.5pt;
+  font-weight: 800;
+  color: var(--secondary);
+  letter-spacing: 0.02em;
+}
+
+/* ── Customer grid ────────────────────────────────────────────── */
+.q-customer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 24px;
+  padding: 6px 0 8px;
+}
+.q-info-col { display: flex; flex-direction: column; gap: 2px; }
+.q-info-row {
+  display: flex;
+  align-items: baseline;
+  font-size: 9.5pt;
+  line-height: 1.5;
+}
+.q-info-row .k {
+  width: 105px;
+  min-width: 105px;
+  font-weight: 500;
+  color: var(--neutral-muted);
+  flex-shrink: 0;
+}
+.q-info-row .sep {
+  margin: 0 6px 0 0;
+  color: var(--neutral-muted);
+}
+.q-info-row .v {
+  flex: 1;
+  font-weight: 500;
+  color: var(--neutral-text);
+}
+
+/* ── Quotation images gallery ─────────────────────────────────── */
+.q-images {
+  display: grid;
+  gap: 6px;
+  margin: 6px 0 8px;
+}
+.q-images.count-1 { grid-template-columns: 1fr; }
+.q-images.count-2 { grid-template-columns: 1fr 1fr; }
+.q-images.count-3 { grid-template-columns: 1fr 1fr 1fr; }
+.q-images.count-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.q-images.count-5 { grid-template-columns: 1fr 1fr 1fr 1fr 1fr; }
+.q-img-card { text-align: center; position: relative; }
+.q-img-frame {
+  aspect-ratio: 4/3;
+  overflow: hidden;
+  border-radius: 3px;
+  background: #f1f5f9;
+  border: 1px solid var(--neutral-line);
+  position: relative;
+}
+.q-img-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* Caption: dark banner at bottom of image (matches mockup) */
+.q-img-card .cap {
+  font-size: 7.5pt;
+  color: #fff;
+  background: var(--secondary);
+  padding: 3px 4px;
+  margin-top: 0;
+  font-style: normal;
+  font-weight: 500;
+}
+
+/* ── Items table ──────────────────────────────────────────────── */
+.q-items {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9pt;
+  margin: 4px 0 2px;
+}
+/* Table header: neutral dark (NOT brand color) */
+.q-items thead th {
+  background: #3a3a3a;
+  color: #fff;
+  font-weight: 700;
+  font-size: 8pt;
+  padding: 6px 4px;
+  text-align: center;
+  border: 1px solid #3a3a3a;
+  white-space: nowrap;
+}
+.q-items tbody td {
+  padding: 4px 4px;
+  border: 1px solid var(--neutral-line);
+  vertical-align: top;
+  font-size: 9pt;
+}
+/* No zebra striping — matches mockup (plain white rows) */
+.q-items .center { text-align: center; }
+.q-items .num { text-align: right; font-variant-numeric: tabular-nums; }
+.q-items .total { font-weight: 600; }
+.q-items .ten-sp { font-weight: 600; min-width: 80px; }
+.q-items .ma { font-family: monospace; font-size: 8.5pt; }
+.q-items .desc { min-width: 120px; font-size: 8.5pt; color: var(--neutral-muted); }
+.q-items .qty-cell { font-weight: 600; }
+
+/* Bullet list from multiLine() helper */
+.q-page .bullet-list { margin: 0; padding-left: 14px; list-style: disc; }
+.q-page .bullet-list li { margin-bottom: 1px; }
+
+/* Section header row in table */
+.q-items .q-sec-hdr-row td {
+  background: #f8fafc !important;
+  font-weight: 700;
+  border-color: var(--neutral-line);
+}
+.q-items .q-sec-sub td {
+  background: #fff8f0;
+  border-color: var(--neutral-line);
+}
+.q-items .q-grand-sub td {
+  background: #fafafa;
+  border-top: 2px solid var(--neutral-line);
+}
+.q-items .q-bs-row td {
+  background: #fffbeb;
+}
+
+/* ── Footnote ─────────────────────────────────────────────────── */
+.q-footnote {
+  font-size: 7.5pt;
+  color: var(--neutral-muted);
+  font-style: italic;
+  margin: 3px 0 8px;
+}
+
+/* ── Bottom grid (Ghi chú + Tổng hợp) ────────────────────────── */
+.q-bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: 10px;
+  margin: 0 0 8px;
+}
+
+/* Ghi chú thương mại */
+.q-note-card {
+  border: 1px solid var(--neutral-line);
+  border-radius: 3px;
+  padding: 0 0 6px;
+}
+.q-note-card .q-sec-hdr {
+  margin: 0;
+  padding: 6px 8px;
+  border-left: 3px solid var(--primary);
   background: #f8fafc;
-  border-top: 1.5px solid #1e293b;
-  border-bottom: 1.5px solid #1e293b;
-  margin-top: 4px;
+  border-radius: 0;
 }
-.q-totals .row.pre-tax .k,
-.q-totals .row.pre-tax .v { color: #0f172a; font-weight: 800; }
+.q-note-body {
+  padding: 6px 10px;
+  font-size: 8.5pt;
+  color: var(--neutral-text);
+  line-height: 1.6;
+}
+.q-note-body ul {
+  margin: 0;
+  padding-left: 14px;
+}
+.q-note-body li {
+  margin-bottom: 2px;
+}
 
-/* ─── Điều khoản ─── */
+/* Tổng hợp giá trị */
+.q-total-card {
+  border: 1px solid var(--neutral-line);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.q-total-hdr {
+  background: var(--secondary);
+  color: #fff;
+  font-size: 9.5pt;
+  font-weight: 800;
+  padding: 6px 10px;
+  text-align: center;
+  letter-spacing: 0.03em;
+}
+.q-total-body { padding: 0; }
+.q-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 10px;
+  font-size: 9pt;
+  border-bottom: 1px solid #f1f5f9;
+}
+.q-total-row:last-child { border-bottom: none; }
+.q-total-row .k { color: var(--neutral-muted); }
+.q-total-row .v {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--primary);
+}
+.q-total-row.minus .v { color: #dc2626; }
+.q-total-row.grand {
+  background: var(--primary);
+  color: #fff;
+  font-size: 11pt;
+  font-weight: 800;
+  padding: 8px 10px;
+  border-bottom: none;
+}
+.q-total-row.grand .k { color: #fff; font-weight: 800; }
+.q-total-row.grand .v { color: #fff; font-weight: 800; }
+
+/* ── Điều khoản ───────────────────────────────────────────────── */
 .q-terms {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin: 6px 0 10px;
 }
-.q-terms .term {
-  background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;
-  padding: 10px 12px;
+.q-term {
+  border: 1px solid var(--neutral-line);
+  border-radius: 3px;
+  overflow: hidden;
 }
-.q-terms .term .k {
-  font-size: 9.5px; font-weight: 800; color: #d4a55b;
-  text-transform: uppercase; letter-spacing: 0.06em;
-  margin-bottom: 4px;
+.q-term-hdr {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--secondary);
+  color: #fff;
+  font-size: 8.5pt;
+  font-weight: 700;
+  padding: 5px 8px;
 }
-.q-terms .term .v { font-size: 10.5px; color: #1e293b; line-height: 1.4; }
-.q-terms .term .v.empty { color: #94a3b8; font-style: italic; }
+.q-term-hdr .q-ic { width: 14px; height: 14px; color: #fff; }
+.q-term-body {
+  padding: 6px 8px;
+  font-size: 8.5pt;
+  color: var(--neutral-text);
+  line-height: 1.55;
+}
 
-/* ─── Chữ ký ─── */
+/* ── Chữ ký ───────────────────────────────────────────────────── */
 .q-signatures {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
-  margin-top: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+  border-top: 2px solid var(--secondary);
+  margin-top: 6px;
 }
 .q-sig {
-  border-top: 1px solid #cbd5e1;
-  padding-top: 8px;
   text-align: center;
+  padding: 10px 8px 6px;
+  border-right: 1px solid var(--neutral-line);
 }
+.q-sig:last-child { border-right: none; }
 .q-sig .role {
-  font-size: 10.5px; font-weight: 800; color: #053b7a;
-  text-transform: uppercase; letter-spacing: 0.04em;
+  font-size: 9pt;
+  font-weight: 800;
+  color: var(--secondary);
+  margin-bottom: 1px;
 }
-.q-sig .hint { font-size: 9.5px; color: #94a3b8; font-style: italic; margin-top: 2px; }
-
-/* ─── Footer ─── */
-.q-ftr {
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  background: #0a1f3d; color: #cbd5e1;
-  padding: 10px 14mm;
-  font-size: 10px;
-  display: flex; justify-content: space-between; gap: 10px;
+.q-sig .hint {
+  font-size: 7.5pt;
+  color: var(--neutral-muted);
+  font-style: italic;
+}
+.q-sig .sig-space { height: 50px; }
+.q-sig .sig-date {
+  font-size: 8pt;
+  color: var(--neutral-muted);
 }
 
-/* Preview shell + Print */
-.q-preview-shell {
-  background: linear-gradient(180deg, #eef5ff, #d8e7f5);
-  padding: 14px; border-radius: 18px;
-}
-.q-preview-stage { display: flex; justify-content: center; transform-origin: top center; }
-.q-preview-stage .q-page { box-shadow: 0 16px 38px rgba(15,23,42,0.18); }
-
+/* ── Print ────────────────────────────────────────────────────── */
 @media print {
   @page { margin: 0 !important; size: auto; }
   @page :first { margin: 0 !important; }
   html, body { background: #fff !important; margin: 0; padding: 0; }
   body > *:not(.q-print-root) { display: none !important; }
   .q-print-root { display: block !important; }
-  .q-page { box-shadow: none !important; transform: none !important; min-height: auto !important; height: auto !important; margin: 0 auto; }
-  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .q-page {
+    width: 100%;
+    min-height: auto !important;
+    height: auto !important;
+    margin: 0 auto;
+    padding: 0;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+  .q-hdr {
+    background: #fff !important;
+  }
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+/* ── Preview shell (in-page preview scaling) ──────────────────── */
+.q-preview-shell {
+  overflow: hidden;
+  background: #e2e8f0;
+  border-radius: 6px;
+  padding: 4px;
+}
+.q-preview-stage {
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+.q-preview-stage .q-page {
+  transform: scale(var(--pv-scale, 1));
+  transform-origin: top center;
+  margin-bottom: calc(-297mm * (1 - var(--pv-scale, 1)));
 }

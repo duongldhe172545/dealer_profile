@@ -12,6 +12,8 @@ const PROFILE_FIELDS = [
   'team_caption_doi_ngu_1', 'team_caption_kho_xuong', 'team_caption_doi_ngu_2',
   'partners_title',
   'selected_template',
+  'brand_primary',
+  'brand_secondary',
 ];
 
 function getProfile(dealerId) {

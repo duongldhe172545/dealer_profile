@@ -79,12 +79,13 @@
     return `
       <tr>
         <td class="center">${stt}</td>
-        <td class="ten-sp">${esc(it.ten_sp || '—')}</td>
         <td class="ma">${esc(it.ma_sp || '—')}</td>
+        <td class="ten-sp">${esc(it.ten_sp || '—')}</td>
         <td class="desc">${multiLine(it.mo_ta)}</td>
         <td class="center">${numInt(it.rong)}</td>
         <td class="center">${numInt(it.cao)}</td>
         <td class="center qty-cell">${numQty(it.sl)}</td>
+        <td class="center area-cell">${numArea(it.dien_tich)}</td>
         <td class="center">${esc(it.dvt || '')}</td>
         <td class="num">${money(it.don_gia)}</td>
         <td class="num total">${money(it.thanh_tien)}</td>
@@ -95,15 +96,16 @@
     <thead>
       <tr>
         <th style="width:28px" class="center">STT</th>
-        <th style="width:100px">Nhóm SP</th>
-        <th style="width:70px">Mã SP</th>
+        <th style="width:60px">Mã SP</th>
+        <th style="width:92px">Tên SP</th>
         <th>Mô tả sản phẩm / cấu hình</th>
-        <th style="width:52px" class="center">Rộng (mm)</th>
-        <th style="width:52px" class="center">Dài (mm)</th>
+        <th style="width:46px" class="center">Rộng</th>
+        <th style="width:46px" class="center">Cao</th>
         <th style="width:30px" class="center">SL</th>
+        <th style="width:52px" class="center">Khối lượng</th>
         <th style="width:34px" class="center">ĐVT</th>
-        <th style="width:74px" class="num">Đơn giá (VND)</th>
-        <th style="width:82px" class="num">Thành tiền (VND)</th>
+        <th style="width:70px" class="num">Đơn giá</th>
+        <th style="width:78px" class="num">Thành tiền</th>
       </tr>
     </thead>`;
 
@@ -118,6 +120,7 @@
         <td></td>
         <td></td>
         <td class="center">${sb > 0 ? numQty(sb) : ''}</td>
+        <td></td>
         <td class="center">${esc(a.don_vi || '')}</td>
         <td class="num">${dg > 0 ? money(dg) : ''}</td>
         <td class="num total">${money(eff)}</td>
@@ -132,12 +135,12 @@
 
     const tongNhomRow = `
       <tr class="q-grand-sub">
-        <td colspan="9" style="font-weight:800;text-align:right;padding-right:8px">Tổng các nhóm</td>
+        <td colspan="10" style="font-weight:800;text-align:right;padding-right:8px">Tổng các nhóm</td>
         <td class="num" style="font-weight:800">${money(tt)}</td>
       </tr>`;
     const tongBsRow = plusList.length > 0 ? `
       <tr class="q-grand-sub">
-        <td colspan="9" style="font-weight:800;color:#92400e;text-align:right;padding-right:8px">Tổng các BS</td>
+        <td colspan="10" style="font-weight:800;color:#92400e;text-align:right;padding-right:8px">Tổng các BS</td>
         <td class="num" style="font-weight:800;color:#92400e">${money(plusSum)}</td>
       </tr>` : '';
 
@@ -149,7 +152,7 @@
         const items = sections.flatMap(s => s.items || []);
         if (!items.length && !bsRowsHtml) {
           return `<table class="q-items">${ITEMS_TABLE_HEAD}
-            <tbody><tr><td colspan="10" style="text-align:center;padding:20px;color:#94a3b8;font-style:italic">Chưa có sản phẩm</td></tr></tbody>
+            <tbody><tr><td colspan="11" style="text-align:center;padding:20px;color:#94a3b8;font-style:italic">Chưa có sản phẩm</td></tr></tbody>
           </table>`;
         }
         return `<table class="q-items">${ITEMS_TABLE_HEAD}
@@ -176,7 +179,7 @@
         const sectionHeader = `
           <tr class="q-sec-hdr-row">
             <td class="center" style="font-weight:800;color:var(--primary)">${letter}</td>
-            <td colspan="9" style="font-weight:700">${ten}</td>
+            <td colspan="10" style="font-weight:700">${ten}</td>
           </tr>`;
         const subtotalSoBo = (sec.items || []).reduce((s, it) => s + (Number(it.sl) || 0), 0);
         const subtotalRow = `
@@ -185,7 +188,7 @@
               Tổng nhóm ${letter}${ten ? ' — ' + ten : ''}
             </td>
             <td class="center" style="font-weight:700;color:#9f1239">${subtotalSoBo > 0 ? numQty(subtotalSoBo) : ''}</td>
-            <td colspan="2"></td>
+            <td colspan="3"></td>
             <td class="num total" style="font-weight:800;color:#9f1239">${money(sec.subtotal || 0)}</td>
           </tr>`;
         return sectionHeader + itemRows + subtotalRow;
@@ -197,7 +200,7 @@
     const items = fallbackItems || [];
     if (!items.length && !bsRowsHtml) {
       return `<table class="q-items">${ITEMS_TABLE_HEAD}
-        <tbody><tr><td colspan="10" style="text-align:center;padding:20px;color:#94a3b8;font-style:italic">Chưa có sản phẩm</td></tr></tbody>
+        <tbody><tr><td colspan="11" style="text-align:center;padding:20px;color:#94a3b8;font-style:italic">Chưa có sản phẩm</td></tr></tbody>
       </table>`;
     }
     return `<table class="q-items">${ITEMS_TABLE_HEAD}

@@ -339,7 +339,7 @@
 }
 /* No zebra striping — matches mockup (plain white rows) */
 .q-items .center { text-align: center; }
-.q-items .num { text-align: right; font-variant-numeric: tabular-nums; }
+.q-items .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .q-items .total { font-weight: 600; }
 .q-items .ten-sp { font-weight: 600; min-width: 80px; }
 .q-items .ma { font-family: monospace; font-size: 8.5pt; }
@@ -441,6 +441,7 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   text-align: right;
+  white-space: nowrap;
   color: var(--primary);
 }
 .q-total-row.minus .v { color: #dc2626; }

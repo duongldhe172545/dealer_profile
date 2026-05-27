@@ -9,7 +9,7 @@
     throw new Error('quotation-template.js cần _helpers.js load trước (window.AppHelpers).');
   }
   const { esc, has, multiLine } = global.AppHelpers;
-  const money = v => (Number(v) || 0).toLocaleString('vi-VN') + ' đ';
+  const money = v => (Number(v) || 0).toLocaleString('vi-VN') + '&nbsp;đ';
   const num = (v, d = 0) => (Number(v) || 0).toLocaleString('vi-VN', { minimumFractionDigits: d, maximumFractionDigits: d });
   const numQty = v => {
     const n = Number(v) || 0;

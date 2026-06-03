@@ -322,7 +322,9 @@ function statsQuotations(dealerId, filter) {
 function statsCustomers(dealerId, filter) {
   // KH mới trong period (theo customers.created_at)
   let newRow;
-  if (filter && filter.period) {
+  if (filter && filter.mode === 'all') {
+    newRow = db.prepare(`SELECT COUNT(*) AS n FROM customers WHERE dealer_id = ?`).get(dealerId);
+  } else if (filter && filter.period) {
     const len = filter.mode === 'year' ? 4 : 7;
     newRow = db.prepare(`
       SELECT COUNT(*) AS n FROM customers

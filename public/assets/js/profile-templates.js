@@ -226,10 +226,299 @@
   }
 
   // ============================================================
-  // MẪU 1 — Layout 2 cột (theo template1.png của UI designer)
-  // Bỏ logo Austdoor (chỉ logo đại lý). Card-based, navy header + soft blue body.
+  // MẪU 1 — Premium poster / brochure profile theo template tham chiếu.
+  // Dùng dữ liệu hồ sơ hiện có, chỉ thay đổi composition và token màu whitelabel.
   // ============================================================
+  function safeHex(value, fallback) {
+    const raw = String(value || '').trim();
+    return /^#[0-9a-f]{6}$/i.test(raw) ? raw : fallback;
+  }
+
+  function hexLum(hex) {
+    const h = safeHex(hex, '#0F172A');
+    const r = parseInt(h.slice(1, 3), 16) / 255;
+    const g = parseInt(h.slice(3, 5), 16) / 255;
+    const b = parseInt(h.slice(5, 7), 16) / 255;
+    const toL = c => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    return 0.2126 * toL(r) + 0.7152 * toL(g) + 0.0722 * toL(b);
+  }
+
+  function profileThemeStyle(p = {}) {
+    const primary = safeHex(p.brand_primary, '#0A6FD6');
+    const secondary = safeHex(p.brand_secondary, '#0F172A');
+    const onPrimary = hexLum(primary) > 0.58 ? 'var(--secondary)' : '#FFFFFF';
+    return [
+      `--primary:${primary}`,
+      `--secondary:${secondary}`,
+      '--tertiary:color-mix(in srgb, var(--primary) 9%, var(--paper))',
+      '--neutral-text:#2C2C2A',
+      '--neutral-muted:#5F5E5A',
+      '--neutral-line:#E5E3DB',
+      '--paper:#FFFFFF',
+      '--surface:#F8FAFC',
+      `--on-primary:${onPrimary}`,
+    ].join(';');
+  }
+
+  function splitBrandTitle(name) {
+    const raw = String(name || '').trim();
+    if (!raw) return { main: 'Tên đại lý', accent: '', hasAccent: false };
+    const parts = raw.split(/\s[-–—|]\s/).map(x => x.trim()).filter(Boolean);
+    if (parts.length >= 2) return { main: parts[0], accent: parts.slice(1).join(' - '), hasAccent: true };
+    return { main: raw, accent: '', hasAccent: false };
+  }
+
   function template1({ dealer, profile, images }) {
+    const d = dealer || {};
+    const p = profile || {};
+    const imgs = images || {};
+
+    const pinIcon = `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7 8-13a8 8 0 0 0-16 0c0 6 8 13 8 13z"/><circle cx="12" cy="9" r="3"/></svg>`;
+    const title = splitBrandTitle(d.ten_dai_ly);
+    const tagline = has(p.tagline) ? p.tagline : 'Thông điệp định vị của đại lý sẽ hiển thị tại đây.';
+    const addrFull = has(d.address) ? d.address : [d.district, d.province].filter(has).join(', ');
+    const coverage = has(d.coverage) ? d.coverage : '';
+    const addressText = addrFull || coverage || 'Chưa cập nhật địa chỉ';
+    const ownerName = has(d.chu_dai_ly) ? d.chu_dai_ly : 'Chưa cập nhật';
+    const phone = has(d.phone) ? d.phone : 'Chưa cập nhật hotline';
+    const email = has(d.email) ? d.email : '';
+    const uspLines = lines(p.usp_text);
+    const serviceLines = lines(p.services_text);
+    const highlightItems = [
+      { text: p.usp_highlight1, icon: SVG.clipboard },
+      { text: p.usp_highlight2, icon: SVG.docCheck },
+      { text: p.usp_highlight3, icon: SVG.shieldChk },
+    ].filter(x => has(x.text));
+    const metaItems = [
+      { label: 'Mã đại lý', value: d.dealer_code },
+      { label: 'Email', value: d.email },
+      { label: 'Khu vực', value: d.coverage },
+      { label: 'Kinh nghiệm', value: d.years_experience },
+      { label: 'Dự án / tháng', value: d.projects_monthly },
+    ].filter(x => has(x.value));
+
+    const projectItems = [
+      { url: imgs.cong_trinh_1, cap: p.project_caption1, label: 'Công trình 1' },
+      { url: imgs.cong_trinh_2, cap: p.project_caption2, label: 'Công trình 2' },
+      { url: imgs.cong_trinh_3, cap: p.project_caption3, label: 'Công trình 3' },
+      { url: imgs.doi_ngu_1, cap: p.team_caption_doi_ngu_1, label: 'Đội ngũ kỹ thuật' },
+      { url: imgs.doi_ngu_2, cap: p.team_caption_doi_ngu_2, label: 'Hoạt động đội ngũ' },
+    ];
+
+    const partnerSlots = ['partner_logo_1','partner_logo_2','partner_logo_3'];
+    const partnerItems = partnerSlots.map((k, i) => ({ url: imgs[k], label: `Logo đối tác ${i + 1}` }));
+    const visiblePartnerItems = partnerItems.filter(item => has(item.url));
+
+    const projectCard = (item, i) => {
+      const cap = has(item.cap) ? item.cap : item.label;
+      return `<article class="t1p-project ${i === 0 ? 'featured' : ''}">
+        <div class="t1p-project-media">
+          ${has(item.url)
+            ? `<img src="${esc(item.url)}" alt="${esc(cap)}">`
+            : `<div class="t1p-img-empty">${SVG.image}<span>${esc(item.label)}</span></div>`}
+        </div>
+        <div class="t1p-project-caption">
+          <span class="t1p-project-no">${String(i + 1).padStart(2, '0')}</span>
+          <span>${escMulti(cap)}</span>
+        </div>
+      </article>`;
+    };
+
+    const bulletList = (items, fallback) => {
+      const arr = items.filter(has).slice(0, 4);
+      if (!arr.length) return `<p class="t1p-empty">${esc(fallback)}</p>`;
+      return `<ul class="t1p-list">${arr.map(x => `<li>${escMulti(x)}</li>`).join('')}</ul>`;
+    };
+
+    const capabilityCard = ({ icon, title: cardTitle, image, caption, lines: cardLines, fallback }) => `
+      <article class="t1p-cap-card t1p-cap-feature">
+        <div class="t1p-cap-head">
+          <span class="t1p-cap-icon">${icon}</span>
+          <h3>${esc(cardTitle)}</h3>
+        </div>
+        ${has(image) ? `
+        <div class="t1p-cap-media">
+          <img src="${esc(image)}" alt="${esc(caption || cardTitle)}">
+        </div>` : ''}
+        ${bulletList(cardLines, fallback)}
+      </article>`;
+
+    const productCapabilityCard = () => `
+      <article class="t1p-cap-card t1p-cap-products">
+        <div class="t1p-cap-head">
+          <span class="t1p-cap-icon">${SVG.box}</span>
+          <h3>Sản phẩm & dịch vụ</h3>
+        </div>
+        ${serviceLines.length
+          ? `<div class="t1p-product-grid">
+              ${serviceLines.slice(0, 4).map((label, i) => `
+                <div class="t1p-product-service">
+                  <span class="t1p-product-no">${String(i + 1).padStart(2, '0')}</span>
+                  <span class="t1p-product-icon">${SVG.box}</span>
+                  <strong>${escMulti(label)}</strong>
+                </div>`).join('')}
+            </div>
+            ${serviceLines.length > 4 ? `<ul class="t1p-list t1p-product-extra">
+              ${serviceLines.slice(4, 7).map(x => `<li>${escMulti(x)}</li>`).join('')}
+            </ul>` : ''}`
+          : `<p class="t1p-empty">Chưa cập nhật sản phẩm & dịch vụ.</p>`}
+      </article>`;
+
+    const teamBullets = [
+      has(p.team_caption_doi_ngu_1) ? p.team_caption_doi_ngu_1 : '',
+      has(p.team_caption_doi_ngu_2) ? p.team_caption_doi_ngu_2 : '',
+      has(d.team_size) ? `Quy mô đội ngũ: ${d.team_size}` : '',
+    ];
+
+    const statItems = [
+      {
+        icon: SVG.shield,
+        value: has(p.metric1_value) ? p.metric1_value : (has(d.years_experience) ? d.years_experience : '—'),
+        label: has(p.metric1_label) ? p.metric1_label : 'Năm kinh nghiệm',
+      },
+      {
+        icon: SVG.building,
+        value: has(p.metric2_value) ? p.metric2_value : (has(d.projects_monthly) ? d.projects_monthly : '—'),
+        label: has(p.metric2_label) ? p.metric2_label : 'Công trình / tháng',
+      },
+      {
+        icon: SVG.team,
+        value: has(p.metric3_value) ? p.metric3_value : (has(d.team_size) ? d.team_size : '—'),
+        label: has(p.metric3_label) ? p.metric3_label : 'Quy mô đội ngũ',
+      },
+    ];
+
+    const feedbackHtml = `
+      <section class="t1p-feedback">
+        <div class="t1p-section-head">
+          <h2>Khách hàng nói về chúng tôi</h2>
+          <span>Feedback</span>
+        </div>
+        <article class="t1p-quote-card">
+          <div class="t1p-quote-mark">“</div>
+          <p>${escMulti(has(p.customer_quote) ? p.customer_quote : 'Chưa cập nhật phản hồi khách hàng.')}</p>
+          <div class="t1p-quote-author">
+            <span>${SVG.user}</span>
+            <strong>${esc(ownerName)}</strong>
+          </div>
+        </article>
+      </section>`;
+
+    const partnersHtml = visiblePartnerItems.length ? `
+      <section class="t1p-partners">
+        <div class="t1p-section-head">
+          <h2>Đối tác tin cậy</h2>
+          <span>Partners</span>
+        </div>
+        <div class="t1p-partner-grid">
+          ${visiblePartnerItems.map(item => `<div class="t1p-partner">
+            <img src="${esc(item.url)}" alt="${esc(item.label)}">
+          </div>`).join('')}
+        </div>
+      </section>` : '';
+
+    return `
+      <section class="profile-page tpl-1 tpl-1-premium" style="${profileThemeStyle(p)}">
+        <header class="t1p-hero">
+          <div class="t1p-logo ${has(imgs.logo_dai_ly) ? 'has-img' : ''}">
+            ${has(imgs.logo_dai_ly)
+              ? `<img src="${esc(imgs.logo_dai_ly)}" alt="Logo đại lý">`
+              : `<div class="t1p-logo-text">LOGO<br>ĐẠI LÝ</div>`}
+          </div>
+
+          <div class="t1p-hero-main">
+            ${title.hasAccent ? `<div class="t1p-industry">${esc(title.accent)}</div>` : ''}
+            <h1>${esc(title.main)}${title.hasAccent ? ` <span>${esc(title.accent)}</span>` : ''}</h1>
+            <p>${escMulti(tagline)}</p>
+          </div>
+
+          <aside class="t1p-qr-panel">
+            ${has(imgs.qr_code)
+              ? `<div class="t1p-qr"><img src="${esc(imgs.qr_code)}" alt="QR liên hệ"></div>`
+              : `<div class="t1p-contact-mini">
+                  ${SVG.phone}
+                  <strong>${esc(phone)}</strong>
+                  ${email ? `<span>${esc(email)}</span>` : ''}
+                </div>`}
+          </aside>
+        </header>
+
+        <div class="t1p-contact-bar">
+          <div>${SVG.phone}<strong>${esc(phone)}</strong></div>
+          <div>${pinIcon}<strong>${esc(addressText)}</strong></div>
+        </div>
+
+        ${metaItems.length ? `<div class="t1p-meta-strip">
+          ${metaItems.map(x => `<div><span>${esc(x.label)}</span><strong>${escMulti(x.value)}</strong></div>`).join('')}
+        </div>` : ''}
+
+        ${highlightItems.length ? `<section class="t1p-highlight-row">
+          ${highlightItems.map((x, i) => `<article>
+            <span class="t1p-highlight-no">${String(i + 1).padStart(2, '0')}</span>
+            <span class="t1p-highlight-icon">${x.icon}</span>
+            <strong>${escMulti(x.text)}</strong>
+          </article>`).join('')}
+        </section>` : ''}
+
+        <section class="t1p-section">
+          <div class="t1p-section-head">
+            <h2>Công trình thực tế</h2>
+            <span>Dự án tiêu biểu</span>
+          </div>
+          <div class="t1p-project-grid">
+            <div class="t1p-project-row t1p-project-major">
+              ${projectItems.slice(0, 3).map(projectCard).join('')}
+            </div>
+            <div class="t1p-project-row t1p-project-minor">
+              ${projectItems.slice(3, 7).map(projectCard).join('')}
+            </div>
+          </div>
+        </section>
+
+        <section class="t1p-section">
+          <div class="t1p-section-head">
+            <h2>Năng lực cốt lõi</h2>
+            <span>Nền tảng tạo nên chất lượng</span>
+          </div>
+          <div class="t1p-cap-grid">
+            ${capabilityCard({
+              icon: SVG.warehouse,
+              title: 'Xưởng sản xuất',
+              image: imgs.kho_xuong,
+              caption: has(p.team_caption_kho_xuong) ? p.team_caption_kho_xuong : 'Kho / xưởng',
+              lines: uspLines,
+              fallback: 'Chưa cập nhật năng lực xưởng sản xuất.',
+            })}
+            ${capabilityCard({
+              icon: SVG.team,
+              title: 'Đội ngũ kỹ thuật',
+              image: imgs.doi_ngu_1 || imgs.doi_ngu_2,
+              caption: has(p.team_caption_doi_ngu_1) ? p.team_caption_doi_ngu_1 : 'Đội ngũ kỹ thuật',
+              lines: teamBullets,
+              fallback: 'Chưa cập nhật thông tin đội ngũ kỹ thuật.',
+            })}
+            ${productCapabilityCard()}
+          </div>
+        </section>
+
+        <div class="t1p-social-row">${feedbackHtml}${partnersHtml}</div>
+
+        <section class="t1p-stat-bar">
+          ${statItems.map(s => `<div class="t1p-stat">
+            <span class="t1p-stat-icon">${s.icon}</span>
+            <strong>${esc(s.value)}</strong>
+            <small>${esc(s.label)}</small>
+          </div>`).join('')}
+        </section>
+
+        <footer class="t1p-cta">
+          <strong>${esc(d.ten_dai_ly || 'Đại lý')}</strong>
+          <span>${esc(phone)}${email ? ' · ' + esc(email) : ''}</span>
+        </footer>
+      </section>`;
+  }
+
+  function template1Legacy({ dealer, profile, images }) {
     const d = dealer || {};
     const p = profile || {};
     const imgs = images || {};
@@ -251,8 +540,8 @@
 
     const projects   = has(d.projects_monthly) ? d.projects_monthly : '— chưa cập nhật —';
 
-    // Partners (5 logo + tagline auto fallback)
-    const partnerSlots = ['partner_logo_1','partner_logo_2','partner_logo_3','partner_logo_4','partner_logo_5'];
+    // Partners (3 logo + tagline auto fallback)
+    const partnerSlots = ['partner_logo_1','partner_logo_2','partner_logo_3'];
     const partnerLogos = partnerSlots.map(k => imgs[k]).filter(has);
     const partnersTitle = has(p.partners_title)
       ? p.partners_title
@@ -319,11 +608,10 @@
             </div>
 
             <!-- Hero ảnh banner -->
+            ${has(imgs.hero) ? `
             <div class="t1-hero">
-              ${has(imgs.hero)
-                ? `<img src="${esc(imgs.hero)}" alt="Ảnh bìa">`
-                : `<div class="t1-hero-empty">${SVG.image}<span class="t1-hero-label">ẢNH BÌA / HERO COVER</span></div>`}
-            </div>
+              <img src="${esc(imgs.hero)}" alt="Ảnh bìa">
+            </div>` : ''}
 
             <div class="t1-card t1-kpi-card">
               <div class="t1-card-hd">
@@ -434,10 +722,11 @@
                   <div class="t1-base-line"><span class="t1-base-ic">🏘</span><span>Khu vực ${esc(coverage)}</span></div>
                   <div class="t1-base-line"><span class="t1-base-ic">⏰</span><span>Giờ mở cửa: ${esc(hours)}</span></div>
                 </div>
+                ${has(imgs.kho_xuong) ? `
                 <div class="t1-base-img-wrap">
-                  <div class="t1-base-img">${has(imgs.kho_xuong) ? `<img src="${esc(imgs.kho_xuong)}" alt="">` : `${SVG.image}`}</div>
+                  <div class="t1-base-img"><img src="${esc(imgs.kho_xuong)}" alt=""></div>
                   <div class="t1-base-img-cap">${escMulti(tcKhoXuong)}</div>
-                </div>
+                </div>` : ''}
               </div>
             </div>
 
@@ -476,32 +765,23 @@
     const imgs = images || {};
     const fallback = '— chưa cập nhật —';
     const titleRaw = d.ten_dai_ly || 'Tên đại lý';
-    // Partners: 5 slot logo + 1 tagline (auto fallback nếu trống)
-    const partnerSlots = ['partner_logo_1','partner_logo_2','partner_logo_3','partner_logo_4','partner_logo_5'];
+    const partnerSlots = ['partner_logo_1','partner_logo_2','partner_logo_3'];
     const partnerLogos = partnerSlots.map(k => imgs[k]).filter(has);
-    const partnersTitle = has(p.partners_title)
-      ? p.partners_title
-      : `${titleRaw} là đối tác chiến lược uy tín của nhiều thương hiệu lớn`;
     return {
       d, p, imgs,
       title: titleRaw.toUpperCase(),
       titleRaw,
       tagline: has(p.tagline) ? p.tagline : '— Thông điệp định vị —',
       dealerCode: d.dealer_code || '',
-      addrFull: [d.address, d.district, d.province].filter(has).join(', ') || fallback,
+      addrFull: has(d.address) ? d.address : ([d.district, d.province].filter(has).join(', ') || fallback),
       coverage: has(d.coverage) ? d.coverage : fallback,
-      hours: has(d.open_hours) ? d.open_hours : fallback,
       projects: has(d.projects_monthly) ? d.projects_monthly : '—',
       partnerLogos,
-      partnersTitle,
       ownerName: has(d.chu_dai_ly) ? d.chu_dai_ly : '—',
       ownerPhone: has(d.phone) ? d.phone : '—',
       ownerEmail: has(d.email) ? d.email : '—',
       exp: has(d.years_experience) ? d.years_experience : '—',
       team: has(d.team_size) ? d.team_size + ' người' : '—',
-      b1: has(p.badge1) ? p.badge1 : 'Đại lý đã xác thực',
-      b2: has(p.badge2) ? p.badge2 : 'Khảo sát 24/7',
-      b3: has(p.badge3) ? p.badge3 : 'Có kho/xưởng thực tế',
       m1v: has(p.metric1_value) ? p.metric1_value : '—',
       m1l: has(p.metric1_label) ? p.metric1_label : 'Dự án / tháng',
       m2v: has(p.metric2_value) ? p.metric2_value : '—',
@@ -513,9 +793,7 @@
       hl3: has(p.usp_highlight3) ? p.usp_highlight3 : 'Ưu điểm 3 — nhập ở tab Điểm nhấn',
       uspLines:     lines(p.usp_text).length        ? lines(p.usp_text)        : ['Năng lực 1 — nhập ở tab Mô tả', 'Năng lực 2', 'Năng lực 3'],
       serviceLines: lines(p.services_text).length    ? lines(p.services_text)    : ['Sản phẩm/dịch vụ 1 — nhập ở tab Mô tả'],
-      commitLines:  lines(p.commitments_text).length ? lines(p.commitments_text) : ['Cam kết 1 — nhập ở tab Mô tả'],
       quote: has(p.customer_quote) ? p.customer_quote : 'Phản hồi tích cực của khách hàng sẽ hiện ở đây.',
-      cta: has(p.cta_text) ? p.cta_text : 'Quét mã QR để xem thêm công trình thực tế và thông tin liên hệ.',
       pc1: has(p.project_caption1) ? p.project_caption1 : 'Công trình 1',
       pc2: has(p.project_caption2) ? p.project_caption2 : 'Công trình 2',
       pc3: has(p.project_caption3) ? p.project_caption3 : 'Công trình 3',
@@ -592,11 +870,6 @@
               <span class="t2-slash">//</span>
               <span>${esc(x.tagline)}</span>
             </div>
-            <div class="t2-badges">
-              <div class="t2-badge"><span class="t2-bi">${ic.shield}</span>${esc(x.b1)}</div>
-              <div class="t2-badge"><span class="t2-bi">${ic.warehouse}</span>${esc(x.b2)}</div>
-              <div class="t2-badge"><span class="t2-bi">${ic.clock}</span>${esc(x.b3)}</div>
-            </div>
           </div>
 
           <div class="t2-hdr-logo ${has(x.imgs.logo_dai_ly) ? 'has-img' : ''}">
@@ -624,7 +897,7 @@
 
           <!-- LEFT: Hero + Info table -->
           <div>
-            <div class="t2-hero">${imgOr(x.imgs.hero, 'ẢNH HERO', '( BÌA ĐẠI LÝ )')}</div>
+            ${has(x.imgs.hero) ? `<div class="t2-hero"><img src="${esc(x.imgs.hero)}" alt="Bìa">${cb}</div>` : ''}
 
             ${secH('THÔNG TIN ĐẠI LÝ', 'PROFILE DATA')}
             <div class="t2-info-wrap">
@@ -635,7 +908,6 @@
                 <tr><td class="lb"><span class="dot"></span>Email</td><td>${esc(x.ownerEmail)}</td></tr>
                 <tr><td class="lb"><span class="dot"></span>Địa chỉ</td><td>${esc(x.addrFull)}</td></tr>
                 <tr><td class="lb"><span class="dot"></span>Khu vực phủ</td><td>${esc(x.coverage)}</td></tr>
-                <tr><td class="lb"><span class="dot"></span>Giờ mở cửa</td><td>${esc(x.hours)}</td></tr>
                 <tr><td class="lb"><span class="dot"></span>Kinh nghiệm</td><td>${esc(x.exp)} năm</td></tr>
                 <tr><td class="lb"><span class="dot"></span>Quy mô đội</td><td>${esc(x.team)}</td></tr>
                 <tr><td class="lb"><span class="dot"></span>Dự án / tháng</td><td>${esc(x.projects)}</td></tr>
@@ -651,11 +923,6 @@
                 <span class="cy">// OWNER</span>
               </div>
               <div class="t2-owner-row">
-                <div class="t2-owner-ava">
-                  ${has(x.imgs.avatar_chu)
-                    ? `<img src="${esc(x.imgs.avatar_chu)}" alt="">`
-                    : `<span class="t2-ava-ic">${ic.user}</span>`}
-                </div>
                 <div class="t2-owner-n">${esc(x.ownerName)}</div>
               </div>
               <div class="t2-owner-pill">CHỦ ĐẠI LÝ / OWNER DEALER</div>
@@ -716,7 +983,6 @@
                   ? `<img src="${esc(x.imgs.qr_code)}" alt="QR">`
                   : `<div class="t2-qr-i">${ic.qr}<span>QR CODE</span></div>`}
               </div>
-              <div class="t2-qr-d"><span class="t2-arr">»»»</span>${esc(x.cta)}</div>
             </div>
           </div>
         </div>
@@ -730,10 +996,6 @@
           <div class="t2-col">
             <div class="t2-col-h"><span>SẢN PHẨM &amp; DỊCH VỤ</span><span class="en">// PRODUCTS</span></div>
             ${x.serviceLines.slice(0, 6).map(s => `<div class="t2-chk-it"><span class="t2-cic">${ic.box}</span>${esc(s)}</div>`).join('')}
-          </div>
-          <div class="t2-col">
-            <div class="t2-col-h"><span>CAM KẾT CHĂM SÓC KH</span><span class="en">// CUSTOMER CARE</span></div>
-            ${x.commitLines.slice(0, 5).map(s => `<div class="t2-chk-it"><span class="t2-cic">${ic.heart}</span>${esc(s)}</div>`).join('')}
           </div>
         </div>
 
@@ -750,15 +1012,11 @@
 
           <!-- LEFT: Đội ngũ & cơ sở -->
           <div>
-            ${secH('ĐỘI NGŨ & CƠ SỞ', 'TEAM & FACILITIES')}
-            <div class="t2-img-grid">
+            ${secH('ĐỘI NGŨ', 'OUR TEAM')}
+            <div class="t2-img-grid" style="grid-template-columns: repeat(2, 1fr)">
               <div class="t2-team-cell">
                 <div class="t2-team-it">${imgOr(x.imgs.doi_ngu_1, 'ẢNH ĐỘI NGŨ 1', '( TEAM )')}</div>
                 <div class="t2-team-cap">${escMulti(x.tcDoiNgu1)}</div>
-              </div>
-              <div class="t2-team-cell">
-                <div class="t2-team-it">${imgOr(x.imgs.kho_xuong, 'KHO / XƯỞNG', '( WORKSHOP )')}</div>
-                <div class="t2-team-cap">${escMulti(x.tcKhoXuong)}</div>
               </div>
               <div class="t2-team-cell">
                 <div class="t2-team-it">${imgOr(x.imgs.doi_ngu_2, 'ẢNH ĐỘI NGŨ 2', '( TEAM )')}</div>
@@ -788,15 +1046,12 @@
         </div>
 
         <!-- ============ ĐỐI TÁC CHIẾN LƯỢC (cuối trang) ============ -->
-        <div class="t2-partners">
-          <div class="t2-partners-title">${esc(x.partnersTitle)}</div>
+        ${x.partnerLogos.length ? `<div class="t2-partners">
+          <div class="t2-partners-title">ĐỐI TÁC</div>
           <div class="t2-partners-grid">
-            ${x.partnerLogos.length
-              ? x.partnerLogos.map(u => `<div class="t2-partner"><img src="${esc(u)}" alt="Logo đối tác"></div>`).join('')
-              : Array.from({length: 5}).map(() => `<div class="t2-partner empty"><span>LOGO ĐỐI TÁC</span></div>`).join('')
-            }
+            ${x.partnerLogos.map(u => `<div class="t2-partner"><img src="${esc(u)}" alt="Logo đối tác"></div>`).join('')}
           </div>
-        </div>
+        </div>` : ''}
       </section>`;
   }
 
@@ -831,10 +1086,6 @@
       ? `<img src="${esc(x.imgs.hero)}" alt="Ảnh bìa đại lý">`
       : `<div class="t3-hero-ph"><span class="t3-ph-ic">${ic.photo}</span></div>`;
 
-    const avatarBox = has(x.imgs.avatar_chu)
-      ? `<img src="${esc(x.imgs.avatar_chu)}" alt="Ảnh chủ đại lý">`
-      : `<span class="t3-ava-ic">${ic.user}</span>`;
-
     const logoBox = has(x.imgs.logo_dai_ly)
       ? `<img src="${esc(x.imgs.logo_dai_ly)}" alt="Logo đại lý">`
       : `<span class="t3-logo-txt">LOGO<br>ĐẠI LÝ<small>(1:1)</small></span>`;
@@ -863,14 +1114,11 @@
         <!-- ============ MASTHEAD: left stack (title + hero) | side-rail (logo + 3 ribbon) ============ -->
         <div class="t3-masthead">
           <div class="t3-mast-left">
-            <h1 class="t3-nameplate">${esc(x.titleRaw)}</h1>
-            <div class="t3-hero-img">${heroBox}</div>
+            <h1 class="t3-nameplate" style="${has(x.imgs.hero) ? '' : 'margin-bottom: 20px;'}">${esc(x.titleRaw)}</h1>
+            ${has(x.imgs.hero) ? `<div class="t3-hero-img">${heroBox}</div>` : ''}
           </div>
           <aside class="t3-side-rail">
             <div class="t3-rail-logo ${has(x.imgs.logo_dai_ly) ? 'has-img' : ''}">${logoBox}</div>
-            <div class="t3-ribbon">${ic.check}<span>${esc(x.b1)}</span></div>
-            <div class="t3-ribbon">${ic.clock}<span>${esc(x.b2)}</span></div>
-            <div class="t3-ribbon">${ic.home}<span>${esc(x.b3)}</span></div>
           </aside>
         </div>
 
@@ -890,7 +1138,6 @@
               <tr><td class="t3-lbl">Email:</td><td class="t3-val">${esc(x.ownerEmail)}</td></tr>
               <tr><td class="t3-lbl">Địa chỉ:</td><td class="t3-val">${esc(x.addrFull)}</td></tr>
               <tr><td class="t3-lbl">Khu vực:</td><td class="t3-val">${esc(x.coverage)}</td></tr>
-              <tr><td class="t3-lbl">Giờ làm việc:</td><td class="t3-val">${escMulti(x.hours)}</td></tr>
               <tr><td class="t3-lbl">Kinh nghiệm:</td><td class="t3-val">${esc(x.exp)} năm</td></tr>
               <tr><td class="t3-lbl">Quy mô:</td><td class="t3-val">${esc(x.team)}</td></tr>
               <tr><td class="t3-lbl">Dự án/tháng:</td><td class="t3-val">${esc(x.projects)} công trình</td></tr>
@@ -900,7 +1147,6 @@
           <!-- COL 2: NGƯỜI ĐẠI DIỆN -->
           <div class="t3-col t3-col-rep">
             <div class="t3-col-title">NGƯỜI ĐẠI DIỆN</div>
-            <div class="t3-rep-photo">${avatarBox}</div>
             <div class="t3-rep-name">${esc(x.ownerName)}</div>
             <div class="t3-rep-role">Chủ đại lý</div>
             <div class="t3-rep-phone">${ic.phone}<span>${esc(x.ownerPhone)}</span></div>
@@ -955,10 +1201,6 @@
             <div class="t3-mc-title">SẢN PHẨM &amp; DỊCH VỤ</div>
             <ul>${x.serviceLines.map(li => `<li>${escMulti(li)}</li>`).join('')}</ul>
           </div>
-          <div class="t3-mini-col">
-            <div class="t3-mc-title">CAM KẾT</div>
-            <ul>${x.commitLines.map(li => `<li>${escMulti(li)}</li>`).join('')}</ul>
-          </div>
           <div class="t3-quote-box">
             <div class="t3-qmark">"</div>
             <div class="t3-qtext">${escMulti(x.quote)}</div>
@@ -969,19 +1211,17 @@
         <!-- ============ PHÓNG SỰ HÌNH ẢNH + ĐỐI TÁC SIDEBAR ============ -->
         <div class="t3-section-title">PHÓNG SỰ HÌNH ẢNH</div>
         <div class="t3-photo-wrap">
-          <div class="t3-photo-grid">
+          <div class="t3-photo-grid" style="grid-template-columns: repeat(5, 1fr)">
             ${photoCell(x.imgs.doi_ngu_1, x.tcDoiNgu1)}
-            ${photoCell(x.imgs.kho_xuong, x.tcKhoXuong)}
             ${photoCell(x.imgs.doi_ngu_2, x.tcDoiNgu2)}
             ${photoCell(x.imgs.cong_trinh_1, x.pc1)}
             ${photoCell(x.imgs.cong_trinh_2, x.pc2)}
             ${photoCell(x.imgs.cong_trinh_3, x.pc3)}
           </div>
-          <aside class="t3-partners-card">
+          ${x.partnerLogos.length ? `<aside class="t3-partners-card">
             <div class="t3-pt-title">ĐỐI TÁC</div>
-            <div class="t3-pt-desc">${escMulti(x.partnersTitle)}</div>
             ${partnerGridHtml}
-          </aside>
+          </aside>` : ''}
         </div>
 
         <!-- ============ FOOTER: QR (box + cta italic) | CONTACT (phone/email/addr) ============ -->
@@ -991,7 +1231,6 @@
               ? `<img src="${esc(x.imgs.qr_code)}" alt="QR">`
               : `<div class="t3-fqr-ph"></div>`}
           </div>
-          <div class="t3-fqr-text">${escMulti(x.cta)} <span class="t3-arrow">►</span></div>
           <div class="t3-fcontact">
             <div class="t3-fc-row">
               <span class="t3-fc-it">${ic.phone}${esc(x.ownerPhone)}</span>
@@ -1001,7 +1240,6 @@
             <div class="t3-fc-row t3-fc-row-addr">
               <span class="t3-fc-it">${ic.pin}${esc(x.addrFull)}</span>
             </div>
-            <div class="t3-fc-work">Làm việc: ${escMulti(x.hours)}</div>
           </div>
         </footer>
       </section>`;
@@ -1020,10 +1258,6 @@
             <div class="t4-hdr-eyebrow">SỐ ĐL CODE · TEMPLATE 4</div>
             <h1>${esc(x.titleRaw)}</h1>
             <p>${esc(x.tagline)}</p>
-            <div class="t4-banner-buttons">
-              <span>KHẢO SÁT 24/7</span>
-              <span>BÁO GIÁ CHÍNH XÁC TRONG 24H</span>
-            </div>
           </div>
           <div class="t4-hdr-right">
             <div class="t4-code">${esc(x.dealerCode || '—')}</div>
@@ -1058,10 +1292,6 @@
         </div>
 
         <div class="t4-row2">
-          <div class="t4-card t4-commit">
-            <div class="t4-sec-h-red">CAM KẾT RÕ RÀNG</div>
-            <ul>${x.commitLines.slice(0, 5).map(s => `<li>${esc(s)}</li>`).join('')}</ul>
-          </div>
           <div class="t4-card t4-nangluc">
             <div class="t4-sec-h-red">NĂNG LỰC VƯỢT TRỘI</div>
             <ul>${x.uspLines.slice(0, 5).map(s => `<li>${esc(s)}</li>`).join('')}</ul>
@@ -1071,13 +1301,12 @@
         <div class="t4-row3">
           <div class="t4-block">
             <div class="t4-sec-h">VỀ CƠ SỞ</div>
-            <div class="t4-co-info">
+            <div class="t4-co-info" style="margin-bottom:0">
               <div>📍 ${esc(x.addrFull)}</div>
               <div>🏘 Khu vực ${esc(x.coverage)}</div>
-              <div>🕐 Mở cửa ${esc(x.hours)}</div>
               <div>📅 ${esc(x.exp)} năm kinh nghiệm</div>
             </div>
-            <div class="t4-co-img">${pImg(x.imgs.kho_xuong, 'Kho/xưởng')}</div>
+            ${has(x.imgs.kho_xuong) ? `<div class="t4-co-img">${pImg(x.imgs.kho_xuong, 'Kho/xưởng')}</div>` : ''}
           </div>
           <div class="t4-block">
             <div class="t4-sec-h">VỀ ĐỘI NGŨ</div>
@@ -1090,7 +1319,6 @@
 
         <div class="t4-row-bottom">
           <div class="t4-owner-card">
-            <div class="t4-owner-avatar">${has(x.imgs.avatar_chu) ? `<img src="${esc(x.imgs.avatar_chu)}">` : SVG.user}</div>
             <div class="t4-owner-info">
               <div class="t4-owner-n">${esc(x.ownerName)}</div>
               <div>📞 ${esc(x.ownerPhone)}</div>
@@ -1099,20 +1327,16 @@
           </div>
           <div class="t4-qr-card">
             <div class="t4-qr">${has(x.imgs.qr_code) ? `<img src="${esc(x.imgs.qr_code)}">` : `<span>QR</span>`}</div>
-            <div class="t4-qr-text">QUÉT QR ĐỂ XEM THÊM<br>${esc(x.cta)}</div>
           </div>
         </div>
 
         <!-- Đối tác chiến lược -->
-        <div class="t4-partners">
-          <div class="t4-partners-title">${esc(x.partnersTitle)}</div>
+        ${x.partnerLogos.length ? `<div class="t4-partners">
+          <div class="t4-partners-title">ĐỐI TÁC</div>
           <div class="t4-partners-grid">
-            ${x.partnerLogos.length
-              ? x.partnerLogos.map(u => `<div class="t4-partner"><img src="${esc(u)}" alt="Logo đối tác"></div>`).join('')
-              : Array.from({length: 5}).map(() => `<div class="t4-partner empty"><span>LOGO ĐỐI TÁC</span></div>`).join('')
-            }
+            ${x.partnerLogos.map(u => `<div class="t4-partner"><img src="${esc(u)}" alt="Logo đối tác"></div>`).join('')}
           </div>
-        </div>
+        </div>` : ''}
       </section>`;
   }
 
@@ -1122,7 +1346,7 @@
   global.ProfileTemplates = {
     renderers: { t1: template1, t2: template2, t3: template3, t4: template4, t5: template5 },
     labels: {
-      t1: 'Cổ điển (navy + xanh)',
+      t1: 'Premium profile',
       t2: 'Tech Modern (cyan + lime)',
       t3: 'Bản tin (cream + wine)',
       t4: 'Compact (white + red)',

@@ -7,11 +7,10 @@ const { cleanString } = require('../utils/sanitize');
 
 const TEMPLATES = ['t1', 't2', 't3', 't4', 't5'];
 const IMAGE_SLOTS = [
-  'logo_dai_ly', 'avatar_chu', 'hero', 'kho_xuong',
+  'logo_dai_ly',
   'doi_ngu_1', 'doi_ngu_2', 'qr_code',
   'cong_trinh_1', 'cong_trinh_2', 'cong_trinh_3',
   'partner_logo_1', 'partner_logo_2', 'partner_logo_3',
-  'partner_logo_4', 'partner_logo_5',
 ];
 
 // Trường đại lý tự sửa được (KHÔNG cho sửa dealer_code, status)

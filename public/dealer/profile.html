@@ -163,11 +163,8 @@
               <div class="col-span-2"><label class="field-label">Email</label>
                 <input class="field-input" type="email" x-model="dealer.email"></div>
               <div class="col-span-2"><label class="field-label">Địa chỉ</label>
-                <textarea class="field-textarea" rows="2" x-model="dealer.address"></textarea></div>
-              <div><label class="field-label">Quận / Huyện</label>
-                <input class="field-input" x-model="dealer.district"></div>
-              <div><label class="field-label">Tỉnh / TP</label>
-                <input class="field-input" x-model="dealer.province"></div>
+                <textarea class="field-textarea" rows="2" x-model="dealer.address" placeholder="Nhập địa chỉ đầy đủ, ví dụ: 123 Nguyễn Văn Linh, Quận 7, TP Hồ Chí Minh"></textarea>
+              </div>
               <div class="col-span-2"><label class="field-label">Khu vực phụ trách</label>
                 <textarea class="field-textarea" rows="2" x-model="dealer.coverage"></textarea></div>
               <div><label class="field-label">Số năm kinh nghiệm</label>
@@ -176,8 +173,6 @@
                 <input class="field-input" x-model="dealer.team_size"></div>
               <div><label class="field-label">Dự án / tháng</label>
                 <input class="field-input" x-model="dealer.projects_monthly"></div>
-              <div><label class="field-label">Giờ mở cửa</label>
-                <input class="field-input" x-model="dealer.open_hours"></div>
             </div>
 
             <!-- Brand colors -->
@@ -238,31 +233,13 @@
               <textarea class="field-textarea" rows="5" x-model="profile.usp_text"></textarea></div>
             <div><label class="field-label">Sản phẩm & dịch vụ (mỗi dòng 1 ý)</label>
               <textarea class="field-textarea" rows="5" x-model="profile.services_text"></textarea></div>
-            <div><label class="field-label">Cam kết chăm sóc khách hàng (mỗi dòng 1 ý)</label>
-              <textarea class="field-textarea" rows="4" x-model="profile.commitments_text"></textarea></div>
             <div><label class="field-label">Nhận xét / phản hồi khách hàng</label>
               <textarea class="field-textarea" rows="2" x-model="profile.customer_quote"></textarea></div>
-            <div><label class="field-label">Lời kêu gọi hành động (kèm QR)</label>
-              <textarea class="field-textarea" rows="2" x-model="profile.cta_text"></textarea></div>
-            <div>
-              <label class="field-label">Câu giới thiệu khối "Đối tác chiến lược"</label>
-              <textarea class="field-textarea" rows="2" x-model="profile.partners_title"></textarea>
-              <p class="text-[11px] text-slate-500 mt-1">Bỏ trống → tự động dùng câu mặc định: <em x-text="defaultPartnersTitle()"></em>. Logo đối tác (tối đa 5) tải ở tab "Hình ảnh".</p>
-            </div>
           </div>
         </div>
 
         <!-- TAB 3: Điểm nhấn & KPI -->
         <div x-show="activeTab === 'highlights'" class="space-y-3">
-          <div class="panel">
-            <div class="panel-hd"><h3>3 huy hiệu nhanh</h3></div>
-            <div class="panel-bd grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <textarea class="field-textarea" rows="2" x-model="profile.badge1"></textarea>
-              <textarea class="field-textarea" rows="2" x-model="profile.badge2"></textarea>
-              <textarea class="field-textarea" rows="2" x-model="profile.badge3"></textarea>
-            </div>
-          </div>
-
           <div class="panel">
             <div class="panel-hd"><h3>3 ưu điểm nổi bật</h3></div>
             <div class="panel-bd grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -410,9 +387,6 @@
         ],
         imageSlots: [
           { key: 'logo_dai_ly',  label: 'Logo đại lý',           size: 'Vuông 1:1 · ~500×500px' },
-          { key: 'avatar_chu',   label: 'Ảnh chủ đại lý',        size: 'Vuông 1:1 · ~600×600px' },
-          { key: 'hero',         label: 'Ảnh nổi bật đầu trang', size: 'Ngang 21:9 · ~1920×820px' },
-          { key: 'kho_xuong',    label: 'Ảnh kho / xưởng',       size: 'Ngang 4:3 · ~1600×1200px', captionField: 'team_caption_kho_xuong' },
           { key: 'doi_ngu_1',    label: 'Ảnh đội ngũ 1',         size: 'Ngang 4:3 · ~1200×900px',  captionField: 'team_caption_doi_ngu_1' },
           { key: 'doi_ngu_2',    label: 'Ảnh đội ngũ 2',         size: 'Ngang 4:3 · ~1200×900px',  captionField: 'team_caption_doi_ngu_2' },
           { key: 'qr_code',      label: 'Mã QR liên hệ',         size: 'Vuông 1:1 · ~500×500px' },
@@ -422,8 +396,6 @@
           { key: 'partner_logo_1', label: 'Logo đối tác 1',      size: 'Vuông 1:1 · nền trắng' },
           { key: 'partner_logo_2', label: 'Logo đối tác 2',      size: 'Vuông 1:1 · nền trắng' },
           { key: 'partner_logo_3', label: 'Logo đối tác 3',      size: 'Vuông 1:1 · nền trắng' },
-          { key: 'partner_logo_4', label: 'Logo đối tác 4',      size: 'Vuông 1:1 · nền trắng' },
-          { key: 'partner_logo_5', label: 'Logo đối tác 5',      size: 'Vuông 1:1 · nền trắng' },
         ],
         templateKeys: ['t1', 't2', 't3', 't4', 't5'],
         templateLabels: window.ProfileTemplates.labels,
@@ -436,6 +408,80 @@
           const b = parseInt(hex.slice(5,7), 16) / 255;
           const toL = c => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
           return 0.2126 * toL(r) + 0.7152 * toL(g) + 0.0722 * toL(b);
+        },
+
+        _plainText(value) {
+          return String(value || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/đ/g, 'd').replace(/Đ/g, 'D')
+            .toLowerCase()
+            .replace(/[.,;:()]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+        },
+
+        _provinceAliases() {
+          return [
+            ['Hà Nội', ['ha noi', 'hanoi']],
+            ['Huế', ['hue', 'thua thien hue']],
+            ['Lai Châu', ['lai chau']],
+            ['Điện Biên', ['dien bien']],
+            ['Sơn La', ['son la']],
+            ['Lạng Sơn', ['lang son']],
+            ['Quảng Ninh', ['quang ninh']],
+            ['Thanh Hóa', ['thanh hoa']],
+            ['Nghệ An', ['nghe an']],
+            ['Hà Tĩnh', ['ha tinh']],
+            ['Cao Bằng', ['cao bang']],
+            ['Tuyên Quang', ['tuyen quang', 'ha giang']],
+            ['Lào Cai', ['lao cai', 'yen bai']],
+            ['Thái Nguyên', ['thai nguyen', 'bac kan', 'backan']],
+            ['Phú Thọ', ['phu tho', 'vinh phuc', 'hoa binh']],
+            ['Bắc Ninh', ['bac ninh', 'bac giang']],
+            ['Hưng Yên', ['hung yen', 'thai binh']],
+            ['Hải Phòng', ['hai phong', 'haiphong', 'hai duong']],
+            ['Ninh Bình', ['ninh binh', 'ha nam', 'nam dinh']],
+            ['Quảng Trị', ['quang tri', 'quang binh']],
+            ['Đà Nẵng', ['da nang', 'danang', 'quang nam']],
+            ['Quảng Ngãi', ['quang ngai', 'kon tum', 'kontum']],
+            ['Gia Lai', ['gia lai', 'binh dinh']],
+            ['Khánh Hòa', ['khanh hoa', 'ninh thuan']],
+            ['Lâm Đồng', ['lam dong', 'dak nong', 'dac nong', 'binh thuan']],
+            ['Đắk Lắk', ['dak lak', 'dac lac', 'daklak', 'phu yen']],
+            ['Hồ Chí Minh', ['ho chi minh', 'tp hcm', 'tphcm', 'hcm', 'sai gon', 'saigon', 'binh duong', 'ba ria vung tau', 'vung tau']],
+            ['Đồng Nai', ['dong nai', 'binh phuoc']],
+            ['Tây Ninh', ['tay ninh', 'long an']],
+            ['Cần Thơ', ['can tho', 'cantho', 'soc trang', 'hau giang']],
+            ['Vĩnh Long', ['vinh long', 'ben tre', 'tra vinh']],
+            ['Đồng Tháp', ['dong thap', 'tien giang']],
+            ['Cà Mau', ['ca mau', 'bac lieu']],
+            ['An Giang', ['an giang', 'kien giang']],
+          ];
+        },
+
+        detectProvinceFromAddress(address) {
+          const haystack = ' ' + this._plainText(address) + ' ';
+          if (!haystack.trim()) return '';
+          const aliases = this._provinceAliases()
+            .flatMap(([province, names]) => names.map(name => ({ province, name })))
+            .sort((a, b) => b.name.length - a.name.length);
+          const hit = aliases.find(({ name }) => haystack.includes(' ' + this._plainText(name) + ' '));
+          return hit ? hit.province : '';
+        },
+
+        detectedProvince() {
+          return this.detectProvinceFromAddress(this.dealer && this.dealer.address);
+        },
+
+        dealerForSave() {
+          const dealer = Object.assign({}, this.dealer);
+          const province = this.detectProvinceFromAddress(dealer.address);
+          if (province) {
+            dealer.province = province;
+            dealer.district = '';
+          }
+          return dealer;
         },
 
         get _draftKey() { return 'dls_profile_draft_' + (Auth.getUser()?.dealer_id || 'x'); },
@@ -509,7 +555,7 @@
           this.profile.selected_template = key;
           if (wasDirty) return;       // có thay đổi khác chưa lưu → defer
           try {
-            await API.put('/api/dealer/profile', { dealer: this.dealer, profile: this.profile });
+            await API.put('/api/dealer/profile', { dealer: this.dealerForSave(), profile: this.profile });
             this.lastSavedAt = new Date();
           } catch (e) {
             console.warn('Auto-save template fail:', e.message);
@@ -568,7 +614,7 @@
           this.saving = true;
           this._initializing = true; // Tránh watch trigger khi gán lại data từ server
           try {
-            const res = await API.put('/api/dealer/profile', { dealer: this.dealer, profile: this.profile });
+            const res = await API.put('/api/dealer/profile', { dealer: this.dealerForSave(), profile: this.profile });
             this.dealer = res.data.dealer;
             this.profile = Object.assign({ selected_template: 't1' }, res.data.profile);
             this.images = res.data.images || this.images;

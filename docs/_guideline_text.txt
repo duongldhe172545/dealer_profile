@@ -1,0 +1,1622 @@
+Tài liệu thiết kế hệ thống
+CHUẨN HOÁ HỆ THỐNG
+THIẾT KẾ CHO BỘ CÔNG CỤ  WHITELABEL BRANDKIT
+Kiến trúc 4 tầng: Atoms → Molecules → Organisms → Artifacts
+Áp dụng cho Digital + Print
+Phiên bản
+v0.3 — Bản hoàn chỉnh
+Ngày cập nhật
+22.05.2026
+Phụ trách
+Duy Ngô, MarTech ADG
+Dự án
+Dealer Upgrade
+Mục lục
+Danh mục nội dung và cấu trúc tham chiếu của tài liệu
+Lưu ý trước khi đọc
+3
+Mức độ chắc chắn
+3
+Mục tiêu của tài liệu
+3
+Chương 1. Vấn đề và mục tiêu hệ thống
+4
+1.1. Vấn đề đang gặp
+4
+1.2. Mục tiêu
+4
+1.3. Nguyên tắc cốt lõi
+4
+Chương 2. Kiến trúc 4 tầng
+5
+2.1. Quy luật kế thừa
+5
+Chương 3. Tầng Atoms — Định nghĩa chi tiết
+6
+3.1. Color tokens — 3 màu brand + neutral
+6
+3.2. Typography — Type scale 9 level
+8
+3.3. Spacing — Khoảng cách
+11
+3.4. Shape radius — Bo góc
+12
+3.5. Iconography
+13
+3.6. Mở rộng Color — CMYK + RGB cho cả in và digital
+14
+3.7. Logo system — Quy chuẩn hệ thống logo
+15
+3.8. File format + Image specs + Print bleed
+18
+3.9. Photography & Illustration style
+20
+3.10. Accessibility & Contrast ratio (WCAG)
+22
+3.11. Tone of voice — Quy ước viết
+24
+3.12. Grid & Breakpoint — Cho digital
+26
+3.13. Elevation/Shadow & Motion — Cho digital
+27
+3.14. Quy ước đơn vị — Digital vs Print
+29
+Chương 4. Tầng Molecules
+31
+Chương 5. Organisms và Artifacts
+32
+5.1. Organisms
+32
+5.2. Artifacts — Danh sách theo dự án Dealer Upgrade
+33
+5.2.1. Brandkit Persona (BK-01 → BK-05)
+34
+5.2.2. Online Tools (ONL-XX)
+36
+5.2.3. Offline Tools (OFF-01 → OFF-10)
+38
+5.2.4. Cross-reference — Atoms áp lên từng nhóm
+40
+Chương 6. Cơ chế Whitelabel
+42
+6.1. Brand DNA — File cấu hình của dealer
+42
+6.2. Demo whitelabel
+43
+6.3. Mức độ whitelabel
+44
+Chương 7. Ví dụ áp dụng — Báo giá đại lý
+45
+7.1. Cấu trúc 7 block
+45
+7.2. Ràng buộc đã áp dụng
+46
+7.3. Lỗ hổng phát hiện khi áp dụng
+46
+Chương 8. Roadmap và câu hỏi mở
+47
+8.1. Việc đã làm
+47
+8.2. Việc cần làm tiếp
+47
+8.3. Câu hỏi mở chờ quyết định
+48
+8.4. Lời cuối
+49
+Phụ lục A. Organisms cho từng Artifact
+50
+A.1. Brandkit Persona (BK-01 → BK-05)
+50
+A.2. Online Tools (ONL-XX)
+53
+A.3. Offline Tools (OFF-01 → OFF-10)
+56
+Phụ lục B. Bảng tổng hợp Bất biến vs Brand DNA
+60
+B.1. Bảng chi tiết theo 9 nhóm atoms
+60
+B.2. Tổng kết — Phân bổ Bất biến vs Brand DNA
+68
+B.3. Nguyên tắc khi mở rộng hệ atoms
+69
+Phụ lục C. Changelog v0.2
+70
+Bổ sung vào Chương 3 — Atoms
+70
+Viết lại Chương 5 — Artifacts
+70
+Lưu ý trước khi đọc
+Tài liệu này là bản nháp v0.2, tổng hợp các quyết định thiết kế cho giai đoạn xây dựng khung cho công cụ brandkit của dự án "Dealer Upgrade". Nội dung sẽ được cập nhật và chỉnh sửa trong quá trình triển khai. Tài liệu chia các chương từ tầng nền (atoms) lên tầng cao nhất (artifacts), kèm ví dụ thật để chứng minh hệ hoạt động.
+Mức độ chắc chắn
+Tầng kiến trúc 4 lớp: dựa trên phương pháp Atomic Design của Brad Frost (đã được kiểm chứng trong ngành).
+Khái niệm design tokens: dựa trên chuẩn được W3C Design Tokens Community Group đề xuất.
+Quy chuẩn DPI, bleed, accessibility contrast: theo chuẩn ngành in và web (WCAG 2.1).
+Các giá trị cụ thể (mã màu, font size, spacing, shadow…): ước lượng minh họa, cần stress-test với artifact thật trước khi chốt.
+Mức độ whitelabel: chưa chốt, đang đặt giả định ở mức bảo thủ (Mức 1).
+Mục tiêu của tài liệu
+Onboard người mới tham gia dự án (designer, developer, PM).
+Reference khi xây artifact mới (báo giá, hợp đồng, brochure, card visit, social post, landing page…).
+Cơ sở để rà soát: khi phát hiện artifact không khớp atoms, biết sửa atoms hay sửa artifact.
+⚠ Danh sách giá trị, tokens và quy ước trong tài liệu này là sơ bộ từ dữ liệu hiện có, chưa chắc đầy đủ. Cần iterate khi áp lên artifact thật.
+Chương 1. Vấn đề và mục tiêu hệ thống
+1.1. Vấn đề đang gặp
+Khi mỗi dealer hoặc mỗi dự án phát sinh, đội thiết kế lại làm template từ đầu. Hệ quả:
+Mất thời gian thiết kế lặp.
+Không nhất quán giữa các artifact của cùng 1 brand (báo giá khác phong cách với brochure).
+Khi brand cập nhật màu/logo, phải sửa thủ công từng file.
+Khó scale lên nhiều dealer.
+Không có quy chuẩn để đảm bảo cùng 1 thiết kế dùng cho cả digital và print đều đúng (màu in sai vs màu màn hình, kích thước font không đủ đọc khi in…).
+1.2. Mục tiêu
+Xây 1 design system whitelabel — tức là hệ thống có khung bất biến + vùng biến đổi theo brand. Khi dealer nhập brand DNA của họ (logo, màu, font), toàn bộ artifact tự kế thừa mà không phải design lại.
+Hệ thống phải đáp ứng cả 2 nhóm output:
+Sản phẩm số (Digital): website, app, email, social post, web banner, landing page...
+Ấn phẩm in (Print): brochure, profile, name card, báo giá, hợp đồng, standee, billboard...
+1.3. Nguyên tắc cốt lõi
+Tách rõ vùng bất biến và vùng biến đổi:
+Vùng
+Trạng thái
+Ai kiểm soát
+Cấu trúc — atoms scale, layout, organisms logic, artifact skeleton
+Bất biến
+Hệ thống quản lý
+Giá trị — mã màu cụ thể, font chữ, logo, text content
+Biến đổi
+Dealer nhập qua brand DNA
+Hai dealer cùng dùng 1 template báo giá nhưng nhìn khác nhau hoàn toàn về thẩm mỹ. Cùng cấu trúc, khác giá trị.
+Chương 2. Kiến trúc 4 tầng
+Toàn bộ hệ thống chia 4 tầng từ dưới lên trên. Tầng dưới làm nền cho tầng trên. Khi đổi tầng dưới → tầng trên tự cập nhật.
+Tầng
+Tên
+Vai trò
+Ví dụ
+4
+Artifacts
+Sản phẩm cuối dealer/khách nhìn thấy
+Báo giá, brochure, social post, landing page, standee
+3
+Organisms
+Cụm chức năng phức, có ý nghĩa kinh doanh
+Header báo giá, Bảng giá, Card thông tin, Footer ký
+2
+Molecules
+Cụm nhỏ kết hợp từ nhiều atoms
+Label+Value, Button, Pill, Table row, Block viền trái
+1
+Atoms
+Đơn vị nhỏ nhất, không chia tiếp được
+Color, Typography, Spacing, Shape, Icon, Shadow, Motion
+2.1. Quy luật kế thừa
+Artifact kế thừa từ Organisms (artifact là tổ hợp organisms theo thứ tự cố định).
+Organism kế thừa từ Molecules (organism là tổ hợp molecules có cấu trúc lặp lại).
+Molecule kế thừa từ Atoms (molecule là tổ hợp atoms có quy ước riêng).
+Atoms không kế thừa từ đâu — đây là tầng nền tảng.
+⚠ Khi sửa atoms (ví dụ đổi mã màu primary), mọi tầng trên đều tự đổi. Đây là điểm mạnh nhưng cũng là rủi ro: sửa nhầm 1 atom có thể vỡ nhiều artifact cùng lúc.
+Chương 3. Tầng Atoms — Định nghĩa chi tiết
+Các nhóm atoms cốt lõi. Mỗi nhóm có vùng bất biến và vùng whitelabel. Bản v0.2 mở rộng từ 5 nhóm ban đầu lên 14 nhóm để phục vụ cả digital và print.
+3.1. Color tokens — 3 màu brand + neutral
+Quy ước giới hạn brand color ở 3 màu để tránh phá vỡ tính nhất quán.
+Token
+Vai trò
+Whitelabel?
+Ví dụ Brand A
+--primary
+Màu chính, block neo thị giác (header, total)
+Có
+#0F4C75
+--secondary
+Màu hỗ trợ, block phụ
+Có
+#3282B8
+--tertiary
+Màu nhấn yếu, background subtle
+Có
+#BBE1FA
+--neutral-text
+Chữ chính
+Không
+#2C2C2A
+--neutral-muted
+Chữ phụ, label
+Không
+#5F5E5A
+--neutral-line
+Đường kẻ chia, viền nhẹ
+Không
+#D3D1C7
+--paper
+Nền giấy
+Không
+#FFFFFF
+Neutral không tính vào 3 màu brand vì đây là nền tảng đọc-viết. Đây là quy ước phổ biến trong design system.
+Quy tắc 60-30-10 phân bổ màu brand
+Khi thiết kế một ấn phẩm thương hiệu (ví dụ: trang quảng cáo, túi giấy, social post):
+60% (Màu chủ đạo/Nền): Các tông màu trung tính (trắng, đen, xám) cho nền và các thành phần cơ bản.
+30% (Màu hỗ trợ/Thứ cấp): Màu hỗ trợ dùng cho thành tố thiết kế phụ trong cấu trúc giao diện.
+10% (Màu tam cấp/màu nhấn): Dùng cho chi tiết nhỏ — hotline, slogan, nút kêu gọi, đường line trang trí để làm nổi bật quan trọng.
+3.2. Typography — Type scale 9 level
+Giới hạn 9 level cỡ chữ với tỷ lệ cân đối (Major Third — x1.25) — Khuyên dùng cho doanh nghiệp, tờ trình, đề xuất và công văn. Tạo ra sự trang nhã, chuyên nghiệp và rất dễ đọc. Tất cả font size không nên nhỏ hơn 10pt để đảm bảo đọc được trên giấy in.
+Token
+Size
+Weight
+Dùng cho
+--font-display
+30pt
+600
+Tiêu đề lớn đầu trang hoặc tài liệu
+--font-h1
+24pt
+600
+Tên artifact ("BÁO GIÁ", "HỢP ĐỒNG")
+--font-h2
+19pt
+600
+Section header ("B. ĐẠI LÝ", "D. BẢNG GIÁ")
+--font-h3
+15pt
+600
+Sub-section ("Tổng tiền sau VAT")
+--font-body-strong
+12pt
+500
+Value quan trọng (tên KH, mã BG)
+--font-body
+12pt
+400
+Văn bản chính
+--font-data
+10pt
+500
+Số liệu trong bảng (sans/mono cố định)
+--font-label
+10pt
+500
+Label trường thông tin (in hoa, tracking 0.5pt)
+--font-caption
+9pt
+400
+Chú thích phụ, footer
+Whitelabel typography
+Dealer chọn font family (Roboto / Inter / Be Vietnam Pro / Helvetica...) — chỉ chọn từ whitelist tương thích tiếng Việt.
+Font size và weight giữ nguyên — không cho đổi.
+Font-data luôn dùng sans-serif (hoặc monospace) — không phụ thuộc brand, để số đọc nhanh và canh chỉnh.
+⚠ Một số font có x-height khác nhau khiến cùng size nhìn to/nhỏ khác. Đây là lỗ hổng kỹ thuật cần xử lý: có thể cần thêm tầng compensation cho từng font.
+3.3. Spacing — Khoảng cách
+Hệ thống spacing theo bội số 4. Không cho phép đổi — đây là quy luật toán học của layout.
+Token
+Giá trị
+Dùng cho
+--space-xs
+2pt
+Khoảng giữa label-value, micro spacing
+--space-s
+4pt
+Padding nhỏ, khoảng giữa molecules cùng nhóm
+--space-m
+8pt
+Padding block thông thường
+--space-l
+12pt
+Margin giữa các organisms
+--space-xl
+16pt
+Khoảng giữa các section lớn
+--margin-page
+12pt
+Lề trang in (A4)
+3.4. Shape radius — Bo góc
+Token
+Whitelabel?
+Dùng cho
+--radius-block
+Có (0pt / 3pt / 8pt)
+Bo góc cho card, block thông tin
+--radius-table
+Không
+Bo góc bảng giá (2pt cố định)
+--stroke-thin
+Không
+Đường viền nhẹ (0.5pt)
+--border-accent-left
+Không
+Dải màu viền trái (2.5pt) phân vùng block
+Cho dealer chọn radius default là yếu tố thị giác nhận biết phong cách brand: sharp = trang trọng, rounded = thân thiện.
+3.5. Iconography
+Dùng 1 bộ icon duy nhất cho toàn hệ thống (gợi ý: Tabler, Lucide, hoặc Feather).
+Không cho dealer thay icon set — sẽ vỡ tính nhất quán.
+Chỉ dùng outline style (không trộn outline + solid).
+Quy chuẩn 3 kích cỡ icon cố định cho sản phẩm số: 16px / 24px / 32px
+Kích cỡ nhỏ (Small — 16x16 px)
+Mục đích: Dành cho thành phần cực kỳ nhỏ gọn, ít chi tiết hoặc hiển thị nội dung dày đặc.
+Vị trí: Trạng thái hệ thống (icon tắt tiếng, trạng thái mạng), menu thả xuống, thanh công cụ hẹp, biểu tượng cạnh văn bản.
+Kích cỡ tiêu chuẩn (Standard — 24x24 px)
+Mục đích: Kích thước phổ biến nhất trên web và mobile, đủ không gian để hiển thị chi tiết rõ ràng mà không chiếm diện tích.
+Vị trí: Thanh điều hướng (Navigation bar), thanh công cụ (Toolbar), các nút hành động.
+Kích cỡ lớn/Nổi bật (Large — 32x32 px)
+Mục đích: Khi icon đóng vai trò điểm nhấn, tăng mức độ dễ đọc hoặc cần vùng chạm tay (touch target) lớn trên thiết bị cảm ứng.
+Vị trí: Thanh công cụ desktop, menu ứng dụng chính, nút bấm thao tác nổi (FAB) trên di động, widget lớn.
+3.6. Mở rộng Color — CMYK + RGB cho cả in và digital
+✚ MỚI BỔ SUNG v0.2 — Bắt buộc bổ sung để tài liệu phục vụ được cả digital và print
+Mỗi color token cần 3 mã song song. Lý do: màu trên màn hình (RGB additive) và màu in (CMYK subtractive) cho ra kết quả khác nhau. Cùng 1 HEX in ra có thể khác xa khi không có CMYK định sẵn.
+Token
+HEX (web)
+RGB (digital)
+CMYK (print)
+Pantone (in cao cấp)
+--primary
+#0F4C75
+15, 76, 117
+100, 75, 35, 30
+[chờ đo Pantone]
+--secondary
+#3282B8
+50, 130, 184
+78, 42, 10, 0
+[chờ đo Pantone]
+--tertiary
+#BBE1FA
+187, 225, 250
+25, 5, 0, 0
+[chờ đo Pantone]
+Quy ước sử dụng theo môi trường
+Web/App/CSS: dùng HEX (ngắn gọn, được CSS hỗ trợ tốt nhất).
+Figma/Sketch/Adobe XD (digital design tool): dùng RGB hoặc HEX.
+Print Adobe Illustrator/InDesign/Photoshop (chuẩn bị file in): dùng CMYK.
+In offset chất lượng cao có yêu cầu màu đặc biệt: dùng Pantone (Spot color).
+⚠ Khi nhập màu brand DNA, dealer cần nhập đủ 3 mã (hoặc 4 nếu cần Pantone). Tool tạo brandkit cần có tính năng convert tự động giữa HEX ↔ RGB ↔ CMYK để giảm sai sót. Tuy nhiên, convert tự động chỉ là tương đối — màu CMYK chuẩn nhất là đo từ swatch in thật.
+3.7. Logo system — Quy chuẩn hệ thống logo
+✚ MỚI BỔ SUNG v0.2 — Bắt buộc bổ sung — logo là hệ thống, không phải 1 file đơn lẻ
+Logo trong brand DNA không phải là 1 file SVG/PNG đơn lẻ. Mỗi brand cần một hệ thống logo gồm nhiều biến thể cho các bối cảnh sử dụng khác nhau.
+Các biến thể logo bắt buộc
+Biến thể
+Mô tả
+Dùng cho
+Logo chính (Primary)
+Logo đầy đủ màu trên nền sáng
+Mặc định, dùng cho đa số trường hợp
+Logo ngược (Reverse)
+Logo cho nền tối (thường trắng hoặc sáng)
+Header tối, banner đêm, footer dark mode
+Logo mono đen (Mono Black)
+Logo 1 màu đen hoàn toàn
+Khi in trắng đen, dấu mộc, fax
+Logo mono trắng (Mono White)
+Logo 1 màu trắng hoàn toàn
+In khắc lên nền màu, decal trắng
+Symbol/Icon mark
+Chỉ phần biểu tượng (bỏ chữ), tỷ lệ vuông
+Favicon, icon app, avatar mạng xã hội
+Logo ngang (Horizontal)
+Symbol + Wordmark xếp ngang
+Header website, name card ngang
+Logo dọc (Stacked)
+Symbol trên + Wordmark dưới
+Vùng vuông, social avatar, dấu mộc
+Clear space — Khoảng trắng tối thiểu
+Khoảng trắng xung quanh logo phải ≥ chiều cao của chữ X trong wordmark (ký tự đại diện). Không có bất cứ element nào (text, hình, đường viền) được phép xâm phạm vùng này.
+Min size — Kích thước nhỏ nhất
+Môi trường
+Min size
+Áp dụng cho
+Web / Digital
+24px chiều cao
+Logo header, footer
+Print giấy A4/A5
+15mm chiều cao
+Báo giá, hợp đồng, brochure
+Name card
+10mm chiều cao
+Card visit 90x55mm
+Favicon
+16x16px
+Browser tab — chỉ Symbol
+App icon
+1024x1024px
+App store — chỉ Symbol
+Do/Don't — Cấm và cho phép
+Được phép (Do)
+Dùng biến thể logo đúng theo bối cảnh (mono cho fax, reverse cho nền tối...)
+Giữ tỷ lệ khi scale (kéo cùng lúc 2 chiều)
+Đặt logo trên nền có đủ contrast (ít nhất 4.5:1)
+Để clear space xung quanh logo theo quy định
+Cấm (Don't)
+Kéo méo logo (scale 1 chiều)
+Xoay logo (trừ trường hợp đặc biệt được duyệt)
+Đổi màu tùy ý (chỉ dùng các biến thể đã quy định)
+Thêm hiệu ứng (đổ bóng, viền, glow) lên logo
+Đặt logo trên nền có hình ảnh phức tạp làm khó đọc
+Đặt logo nhỏ hơn min size
+Cắt xén, che lấp một phần logo
+Dùng logo cũ/đã bị thay thế
+3.8. File format + Image specs + Print bleed
+✚ MỚI BỔ SUNG v0.2 — Bắt buộc bổ sung — quy ước file xuất cho từng môi trường
+Format file xuất theo loại artifact
+Loại artifact
+Format chính
+Format phụ
+Logo
+SVG (vector, scale vô hạn)
+AI (gốc) + PNG (raster có alpha)
+Báo giá / Hợp đồng
+PDF/A (lưu trữ pháp lý)
+PDF thường, DOCX (nếu cần sửa)
+Brochure / Profile in
+PDF/X-4 (chuẩn in offset)
+AI/INDD (gốc)
+Social post
+PNG/JPG
+MP4 nếu là video/reel
+Email template
+HTML inline (không link CSS ngoài)
+PNG fallback cho preview
+Web banner
+SVG hoặc WebP
+PNG/JPG cho fallback
+Image specs — DPI và tỷ lệ
+Mục đích
+DPI/PPI
+Tỷ lệ phổ biến
+In offset chất lượng cao
+300 DPI
+16:9, 4:3, 1:1
+In số (laser, inkjet)
+200-240 DPI
+Tương tự
+Web/mobile thường
+72 PPI
+16:9 (banner), 1:1 (avatar)
+Web retina (màn hình mật độ cao)
+150 PPI (2x)
+Tương tự, xuất @2x
+Story/Reel (dọc)
+72 PPI
+9:16
+Print billboard (xem xa)
+30-100 DPI
+Theo từng vị trí
+Print bleed — Lề tràn cho mọi ấn phẩm in
+Bleed area: Lề tràn 3-5mm ra ngoài kích thước cắt (vd: card visit 90x55mm thì file in 96x61mm).
+Safe area: Vùng an toàn vào trong 3-5mm từ mép cắt. Text và yếu tố quan trọng phải nằm trong vùng này.
+Crop marks: Dấu cắt ở 4 góc (file PDF in chuyên nghiệp tự thêm).
+⚠ Không có bleed = máy in cắt trúng nội dung. Đây là lỗi cơ bản mà dealer hay sai nhất khi gửi file đi in. Tool tạo brandkit cần tự thêm bleed khi xuất file PDF in.
+3.9. Photography & Illustration style
+✚ MỚI BỔ SUNG v0.2 — Bắt buộc bổ sung — quy chuẩn cách brand xuất hiện qua hình ảnh
+Photography style
+Cùng 1 brand mà 5 ảnh sản phẩm cùng tone khác nhau → brand vỡ ngay. Đây là điểm dealer hay sai nhất.
+Tone
+Lạnh: Tông xanh, trắng dominate, gợi cảm giác chuyên nghiệp, sạch (phù hợp brand corporate, B2B).
+Ấm: Tông cam, vàng, nâu, gợi cảm giác thân thiện, gần gũi (phù hợp brand F&B, lifestyle).
+Trung tính: Cân bằng, không nghiêng tone nào (phù hợp brand đa dạng khách).
+Mood
+Sản phẩm rõ trên nền sạch — kiểu catalogue, dùng cho báo giá, brochure.
+Ảnh sinh hoạt thực — sản phẩm trong bối cảnh sử dụng, dùng cho social, website.
+Cận cảnh chi tiết — focus vào texture, vật liệu, dùng cho premium product.
+Treatment
+Có overlay màu brand (vd: tone xanh nhẹ cho toàn bộ ảnh) — tạo sự nhất quán mạnh.
+Giữ nguyên màu thật — chân thực, ít can thiệp.
+Filter black & white — dùng khi muốn nhấn câu chuyện, không phải sản phẩm.
+Subject
+Có người trong ảnh hay chỉ vật — quyết định bằng tone brand.
+Tỷ lệ sản phẩm trong khung: chiếm 60-70% là chuẩn cho ảnh sản phẩm.
+Illustration style
+Nếu brand có sử dụng illustration (icon set, infographic, hero image), cần quy chuẩn:
+Phong cách
+Đặc điểm
+Phù hợp brand
+Flat
+Phẳng, không bóng, màu khối
+Tech, startup, fintech
+Outline
+Nét vẽ đơn, không tô màu
+Minimal, premium
+Geometric
+Hình học, đối xứng
+Modern, abstract brand
+Hand-drawn
+Vẽ tay, nét tự do
+Friendly, lifestyle, F&B
+3D / Isometric
+Có chiều sâu, render 3D
+Tech cao cấp, SaaS
+⚠ Brand chỉ nên chọn 1 phong cách illustration. Trộn 2 phong cách = brand vỡ. Trường hợp ngoại lệ: brand lớn có sub-brand riêng cho từng dòng sản phẩm.
+3.10. Accessibility & Contrast ratio (WCAG)
+✚ MỚI BỔ SUNG v0.2 — Bắt buộc bổ sung — đảm bảo người mắt yếu đọc được
+Theo chuẩn WCAG 2.1 (Web Content Accessibility Guidelines), độ tương phản giữa chữ và nền cần đạt:
+Loại text
+Contrast tối thiểu
+Cấp độ
+Text body thường (< 18pt)
+4.5 : 1
+AA (chuẩn pháp lý)
+Text lớn (≥ 18pt hoặc ≥ 14pt bold)
+3 : 1
+AA
+UI element (button, icon, border)
+3 : 1
+AA
+Text body — mức cao hơn
+7 : 1
+AAA (lý tưởng)
+Vì sao bắt buộc
+Đối tượng khách công trình thường > 40 tuổi, mắt yếu hơn.
+Một số quốc gia (EU, Mỹ) có quy định pháp lý về accessibility.
+Print có hệ quả nặng hơn web: chữ contrast thấp trên giấy in không thể "zoom" được.
+Công cụ check contrast
+WebAIM Contrast Checker (https://webaim.org/resources/contrastchecker)
+Figma plugin Stark hoặc A11y
+Adobe Color Accessibility Tools
+⚠ Tool tạo brandkit cần tích hợp check contrast tự động. Khi dealer nhập màu brand vào, hệ thống cảnh báo nếu cặp màu primary + paper không đạt AA.
+3.11. Tone of voice — Quy ước viết
+✚ MỚI BỔ SUNG v0.2 — Bắt buộc bổ sung — đảm bảo brand voice nhất quán
+Brand DNA có trường "tone" (professional/friendly/playful/serious) nhưng tài liệu v0.1 chưa quy ước cụ thể. Bản v0.2 bổ sung.
+Yếu tố
+Professional
+Friendly
+Playful
+Serious
+Câu dài/ngắn
+Ngắn, súc tích
+Trung bình
+Ngắn, linh hoạt
+Dài, đầy đủ
+Xưng hô
+Quý khách
+Anh chị / Bạn
+Bạn
+Quý vị
+Emoji
+Không
+Có (hạn chế)
+Có
+Không
+CTA mẫu
+Liên hệ tư vấn
+Gọi ngay
+Chat ngay đi!
+Yêu cầu báo giá
+Câu cấm chung cho mọi tone
+Slang, từ địa phương khó hiểu.
+Từ dễ gây hiểu sai (vd: "giá rẻ nhất" → có thể bị kiện).
+Khẳng định không có chứng cứ (vd: "số 1 Việt Nam").
+Phân biệt vùng miền, tôn giáo.
+3.12. Grid & Breakpoint — Cho digital
+✚ MỚI BỔ SUNG v0.2 — Bắt buộc bổ sung khi có sản phẩm web/app
+Nếu brandkit phục vụ sản phẩm web/app (landing page, web banner, email HTML), cần định nghĩa grid và breakpoint.
+Thiết bị
+Breakpoint
+Số cột
+Gutter
+Margin
+Mobile
+< 768px
+4
+16px
+16px
+Tablet
+768-1024px
+8
+16px
+24px
+Desktop
+>1024px
+12
+24px
+32px
+Container max-width
+—
+1280px desktop
+1024px tablet
+100%
+3.13. Elevation/Shadow & Motion — Cho digital
+✚ MỚI BỔ SUNG v0.2 — Cần khi có UI app/dashboard cho dealer
+Elevation/Shadow
+Dùng cho UI digital (button, card, modal). Không dùng cho print.
+Token
+Giá trị CSS
+Dùng cho
+--shadow-sm
+0 1px 3px rgba(0,0,0,0.08)
+Card subtle, input field
+--shadow-md
+0 4px 8px rgba(0,0,0,0.12)
+Button hover, dropdown
+--shadow-lg
+0 8px 16px rgba(0,0,0,0.16)
+Modal, popup, dialog
+--shadow-xl
+0 16px 32px rgba(0,0,0,0.20)
+Overlay, sidebar fixed
+Motion/Animation
+Token
+Duration
+Dùng cho
+--duration-fast
+150ms
+Hover, focus, micro-interaction
+--duration-normal
+250ms
+Modal open/close, page transition
+--duration-slow
+400ms
+Onboarding, big reveal, highlight
+--easing-default
+ease-in-out
+cubic-bezier(0.4, 0, 0.2, 1)
+3.14. Quy ước đơn vị — Digital vs Print
+✚ MỚI BỔ SUNG v0.2 — Bắt buộc bổ sung — giải quyết vấn đề cross-cutting
+Mỗi atom token cần có 2 giá trị tương ứng cho 2 môi trường khác nhau. Lý do: cùng 1 thiết kế dùng cho cả digital và print, nhưng đơn vị khác nhau.
+Bảng quy đổi đơn vị chính
+Token
+Print (pt)
+Digital (px)
+Digital (rem)
+--font-display
+30pt
+40px
+2.5rem
+--font-h1
+24pt
+32px
+2rem
+--font-h2
+19pt
+25px
+1.56rem
+--font-body
+12pt
+16px
+1rem (base)
+--font-caption
+9pt
+12px
+0.75rem
+--space-m
+8pt
+12px
+0.75rem
+--radius-block (moderate)
+3pt
+4px
+0.25rem
+Quy ước cơ bản: 1pt = 1.333px trên màn hình 96 DPI. Base font web là 16px = 1rem = 12pt. Tool tạo brandkit cần tự động convert khi xuất file.
+⚠ Bảng quy đổi trên là tương đối. Trong thực tế designer cần test với từng font + môi trường cụ thể vì x-height và rendering khác nhau.
+Chương 4. Tầng Molecules
+Molecule là quy ước kết hợp atoms thành đơn vị nhỏ dùng đi dùng lại. Dưới đây là 7 molecule cơ bản cho brandkit kinh doanh.
+Molecule
+Cấu trúc
+Atoms dùng
+Label + Value
+Cặp tên trường + giá trị (vd: "SĐT: 0901234567")
+font-label + font-body, space-xs
+Section header
+Tiêu đề mục với chữ in hoa + tracking
+font-h2 hoặc font-label, primary color
+Block viền trái
+Card có dải màu 2.5pt ở viền trái phân vùng
+border-accent-left + primary/secondary/neutral
+Button
+Primary (filled), secondary (outline), ghost
+padding s/m, radius brand, font-body 500, shadow-sm cho digital
+Pill/Badge
+Tag, status, label nhỏ
+radius-pill, padding xs/s, font-caption
+Table row
+Hàng dữ liệu bảng có zebra striping
+font-data, neutral-50 (zebra), padding s/m
+Signature slot
+Ô ký xác nhận với viền nét đứt
+stroke-thin dashed, secondary color
+Khi đổi atoms (vd: --primary), toàn bộ molecule và tầng trên tự đổi theo. Không phải design lại.
+Chương 5. Organisms và Artifacts
+5.1. Organisms
+Organism là cụm nhiều molecules có chức năng kinh doanh rõ ràng. Mỗi artifact gồm nhiều organisms ghép lại.
+Ví dụ: organisms cho artifact "Báo giá"
+Header báo giá — Logo + Title + Số BG + Ngày
+Card đại lý — Block viền trái + nhiều Label+Value
+Card khách hàng — Tương tự, đổi màu viền trái
+Bảng giá — Header row + Data rows + Total row
+Khối điều khoản — Block viền trái + Text block
+Khối ảnh — Grid 5 ô ảnh có chú thích
+Khối ký — 2 Signature slot song song
+5.2. Artifacts — Danh sách theo dự án Dealer Upgrade
+✚ MỚI BỔ SUNG v0.2 — Cập nhật theo file Excel master của dự án (3 sheets: 05_OFFLINE_TOOLS, 06_ONLINE_TOOLS, 07_BRANDKIT_PERSONA)
+Artifact là sản phẩm cuối — file dealer/khách sử dụng. Danh sách bên dưới được rút từ file Excel master dự án, chia theo 3 nhóm: Brandkit Persona, Online Tools, Offline Tools.
+5.2.1. Brandkit Persona — 5 lớp cá nhân hóa (BK-01 → BK-05)
+Brandkit phase 1 phải cá nhân hóa theo từng dealer/chủ xưởng/thợ. Không dừng ở logo và màu.
+ID
+Thành phần
+Áp dụng cho
+Nội dung bắt buộc
+Output
+BK-01
+Lớp 1: Nhận diện cơ bản
+Dealer; Chủ xưởng; Thợ/ADG Pro
+Tên hiển thị, avatar, cover, màu, khung ảnh
+Bộ file cơ bản
+BK-02
+Lớp 2: Hồ sơ niềm tin
+Dealer; Chủ xưởng
+USP, năng lực chính, đội ngũ, ảnh thật, lời hứa dịch vụ
+Profile 1 trang + PDF
+BK-03
+Lớp 3: Social content
+Dealer; Chủ xưởng; Thợ/ADG Pro
+Mẫu post, caption, clip ngắn, feedback, case
+Pack social 30 ngày
+BK-04
+Lớp 4: Bộ bán hàng
+Dealer; Chủ xưởng
+Báo giá, combo, câu hỏi nhanh, follow-up, FAQ
+Sales kit
+BK-05
+Lớp 5: Địa phương hóa
+Dealer; Chủ xưởng; Thợ/ADG Pro
+Tên xã/huyện, case địa phương, lời chứng thực địa phương
+Pack địa phương hóa
+Brandkit không dừng ở logo và màu — phải cá nhân hóa đến tận lời chứng thực địa phương để dealer cảm thấy đây là brand của riêng họ chứ không phải template chung.
+5.2.2. Online Tools — Các công cụ digital
+Online trong phase 1 phải dùng được ngay, ít ma sát. Không biến thành CRM lớn hay compliance đẩy xuống dealer.
+⚠ Danh sách ONL-01 đến ONL-05 chưa đọc được từ ảnh upload (ảnh bị cắt). Bảng dưới chỉ liệt kê ONL-06 đến ONL-12. Cần Vinh bổ sung phần đầu.
+ID
+Tool
+Minimum Scope
+Output
+Lưu ý
+ONL-01 → 05
+[chờ Vinh bổ sung]
+—
+—
+Ảnh upload bị cắt, không đọc được
+ONL-06
+Template Zalo
+10 mẫu bài + CTA
+Pack bài + ảnh
+Zalo ưu tiên số 1. Dùng cho OA/group/chat
+ONL-07
+Template Facebook
+10 mẫu post/reel
+Pack bài + ảnh
+Tái dùng từ case thật. Dùng cho page/profile
+ONL-08
+Template TikTok/Reel
+10 script 15-60s
+Script + shotlist
+Chỉ làm thứ quay được bằng điện thoại
+ONL-09
+Video library
+Profile + case + feedback
+Kho video
+Dùng lại đa kênh. Không để asset nằm rải rác
+ONL-10
+Asset hub
+Kho asset + quyền truy cập
+Link kho
+Một kho, một nguồn thật. Phòng ban dùng chung
+ONL-11
+Fast support group
+Nhóm + SLA + form
+Link nhóm + SLA
+Benefit phase 1 rất thực dụng. Dùng hằng ngày
+ONL-12
+Checklist ảnh và nhắc việc nhẹ
+Checklist 1 trang + nhắc việc
+Checklist + form
+Friction phải thấp. Dùng trên điện thoại
+5.2.3. Offline Tools — Các công cụ vật lý
+Offline không phải phần phụ. Đây là lớp vật lý của trust kit: showroom, xưởng, workshop, field kit, event kit.
+ID
+Tool
+User
+Vấn đề giải quyết
+Output
+OFF-01
+Showroom trust board
+Dealer
+Làm showroom thành nơi chạm trust thật
+Bảng treo thực tế
+OFF-02
+Case wall
+Dealer/chủ xưởng
+Cho khách thấy công trình thật, ảnh thật
+Bảng/tường case
+OFF-03
+Brochure / leaflet / flipbook
+Dealer/chủ xưởng
+Có cái cầm tay để tư vấn nhanh
+Bản in
+OFF-04
+Standee / poster activation
+Dealer/community
+Dùng cho showroom day / workshop day
+Bộ in event
+OFF-05
+Xưởng board
+Chủ xưởng
+Làm xưởng có quy củ và nhìn chuyên nghiệp
+Board treo xưởng
+OFF-06
+Product sample corner
+Dealer/chủ xưởng
+Góc mẫu vật liệu/màu/phụ kiện để tư vấn
+Góc mẫu
+OFF-07
+Workshop kit
+Community/dealer
+Bộ chạy workshop nhỏ tại địa phương
+Pack workshop
+OFF-08
+Roadshow/event kit
+Community
+Bộ kích hoạt địa phương chi phí thấp
+Pack event
+OFF-09
+Field kit giấy fallback
+Dealer/chủ xưởng/thợ
+Giữ vận hành khi online lỗi hoặc ngoài công trình
+Bộ form giấy
+OFF-10
+Hotline card / FAQ card
+Dealer/chủ xưởng/thợ
+Có số gọi nhanh và câu trả lời nhanh
+Card phát hành
+5.2.4. Cross-reference — Atoms áp lên từng nhóm artifact
+Nhóm artifact
+Atoms cần thiết
+Quy chuẩn đặc thù
+Brandkit Persona (BK-01→05)
+Color (cả 3 mã) + Typography + Logo system + Photography style
+Cần whitelist font tương thích tiếng Việt
+Online Tools (ONL-XX)
+Color HEX + Typography (digital units) + Grid/Breakpoint + Shadow/Motion
+Cần check accessibility AA cho text trên ảnh
+Offline Tools (OFF-XX)
+Color CMYK + Typography (print units) + Print bleed + Image specs 300 DPI
+Cần test in thật trước khi phát hành rộng
+Chương 6. Cơ chế Whitelabel
+6.1. Brand DNA — File cấu hình của dealer
+Mỗi dealer có 1 file brand.json (đặt tên giả thiết) chứa các giá trị họ đã chọn. Hệ thống đọc file này và áp vào toàn bộ atoms — mọi artifact tự đổi.
+Cấu trúc Brand DNA tối thiểu
+Primary color — Mã màu chính (HEX + RGB + CMYK)
+Secondary/Support color — Mã màu phụ (HEX + RGB + CMYK)
+Tertiary/Accent color — Mã màu nhấn (HEX + RGB + CMYK)
+Phông chữ tiêu đề — Font family heading (chọn từ whitelist tương thích tiếng Việt)
+Phông chữ văn bản — Font family body (chọn từ whitelist)
+Bo góc — Radius default (sharp / moderate / rounded)
+Logo system — Đủ các biến thể (primary, reverse, mono đen, mono trắng, symbol, ngang, dọc)
+Brand Tone — Giọng điệu thương hiệu (professional / friendly / playful / serious)
+Photography style — Tone + Mood + Treatment
+Đây là output của giai đoạn 7 trong luồng tạo brandkit — khi khách chốt logo final, hệ thống tự trích xuất các thuộc tính này và lưu thành brand.json.
+6.2. Demo whitelabel
+Cùng 1 template, áp 2 bộ brand DNA → 2 cảm xúc thị giác khác nhau hoàn toàn. Cấu trúc không đổi.
+Token
+Brand A — Tin cậy
+Brand B — Thân thiện
+Cảm xúc thay đổi
+primary
+#0F4C75 xanh đậm
+#D85A30 cam ấm
+Tin cậy → Thân thiện
+secondary
+#BBE1FA xanh nhạt
+#FAEEDA be ấm
+Lạnh → Ấm
+font-family
+Georgia (serif)
+Helvetica (sans)
+Cổ điển → Hiện đại
+radius
+4pt sharp
+8pt rounded
+Trang trọng → Thân thiện
+6.3. Mức độ whitelabel
+Mức 1 — chỉ brand DNA (màu, font, logo, radius): an toàn, hệ thống không vỡ. Khuyến nghị cho giai đoạn đầu phát triển bộ công cụ brandkit này.
+Mức 2 — đổi layout 1 cơ bản: linh hoạt hơn nhưng khó kiểm soát. Chỉ nên có sau khi hệ thống đã hoạt động hoàn toàn và khách hàng có nhu cầu thay đổi layout.
+Mức 3 — full control cho dealer: rủi ro vỡ thương hiệu cao, không khuyến nghị. Mức 3 chỉ nên được cân nhắc đến sau khi bộ công cụ này đã đạt mức 2.
+Chương 7. Ví dụ áp dụng — Báo giá đại lý
+Để chứng minh hệ atoms hoạt động, đã thực hiện stress-test với artifact báo giá có cấu trúc 7 block (A → G).
+7.1. Cấu trúc 7 block
+Block
+Nội dung
+Organism dùng
+Atoms chính áp
+A
+Tiêu đề
+Header báo giá
+font-h1, primary bg, tertiary text accent
+B
+Thông tin đại lý
+Card đại lý
+border-accent-left primary, font-label, font-body
+C
+Thông tin khách hàng
+Card khách
+border-accent-left secondary, label+value
+D
+Bảng tính giá
+Bảng giá
+font-data, primary header, tertiary zebra, font-display total
+E
+Điều kiện thanh toán
+Block viền trái neutral
+border-accent-left neutral-muted, font-body
+F
+Hình ảnh
+Khối ảnh
+border-accent-left secondary, radius-table, tertiary bg
+G
+Ký xác nhận
+Khối ký
+stroke-thin dashed secondary, font-label
+7.2. Ràng buộc đã áp dụng
+Font tối thiểu 9pt (không có gì dưới 9pt).
+Type scale 9 level (Major Third — x1.25).
+Màu giới hạn 3 màu brand (primary + secondary + tertiary), không thêm.
+Cấu trúc A-G đúng thứ tự brief gốc.
+Quy tắc 60-30-10 trong color theory.
+7.3. Lỗ hổng phát hiện khi áp dụng
+Font serif có x-height nhỏ khiến số tiền nhìn cổ → cần --font-data cố định sans/mono.
+Brand A dùng IN HOA, Brand B dùng chữ thường → cần thêm token text-case trong brand DNA.
+Vùng đóng dấu pháp lý không nên whitelabel radius → cần flag legal-area-style: fixed.
+Bảng giá 4 dòng có thể chật nếu công trình lớn → cần cơ chế tự xuống trang 2.
+Tỷ lệ ảnh chưa quy chuẩn → đã giải quyết trong Chương 3.8 và 3.9.
+Logo chỉ 1 biến thể → đã giải quyết trong Chương 3.7 (logo system đủ 7 biến thể).
+Chương 8. Roadmap và câu hỏi mở
+8.1. Việc đã làm
+Định nghĩa khung 4 tầng atoms → molecules → organisms → artifacts.
+Mở rộng từ 5 nhóm atoms ban đầu lên 14 nhóm (color đa mã, logo system, file format, photography, accessibility, tone, grid, shadow/motion, đơn vị).
+Cập nhật danh sách artifacts theo file Excel master của dự án Dealer Upgrade (3 nhóm: Brandkit Persona, Online Tools, Offline Tools).
+Stress-test với artifact báo giá — chứng minh hệ chạy được.
+Demo whitelabel với 2 brand DNA khác nhau.
+8.2. Việc cần làm tiếp
+Bổ sung dữ liệu ONL-01 → ONL-05 (chưa có trong ảnh upload).
+Stress-test với artifact thứ 2 (đề xuất: brochure, social post hoặc landing page) để tiếp tục phát hiện lỗ hổng atoms.
+Quyết định tool thực thi — Figma plugin? Code-based system? Notion template? InDesign master?
+Xây whitelist font tương thích tiếng Việt.
+Quyết định mức độ whitelabel (mức 1 / 2 / 3).
+Xử lý vấn đề font compensation (x-height khác nhau).
+Test in thật để kiểm chứng font size đọc được trên giấy.
+Đo Pantone cho các màu brand chính (nếu cần in offset cao cấp).
+Tích hợp công cụ check accessibility contrast vào tool tạo brandkit.
+8.3. Câu hỏi mở chờ quyết định
+#
+Câu hỏi
+Tác động nếu chưa quyết
+1
+Hệ atoms 14 nhóm đã đủ chưa, có phình tiếp không?
+Quá nhiều token sẽ khó duy trì
+2
+Có chấp nhận đầu tư tầng compensation cho font?
+Cảm giác thị giác không nhất quán giữa brand
+3
+Vùng pháp lý/đóng dấu định nghĩa ở đâu?
+Có thể bị whitelabel chạm vào vùng cần fixed
+4
+Tool thực thi là gì?
+Quyết định cách dealer nhập brand DNA và cách render artifact
+5
+Mức độ whitelabel cho phase 1 (1/2/3)?
+Quyết định scope tool và độ phức tạp
+6
+Bộ icon nào: Tabler / Lucide / Feather / tự design?
+Ảnh hưởng đến brand voice tổng thể
+7
+Có cần Pantone không, hay chỉ CMYK là đủ?
+In offset cao cấp khác in số thường
+8.4. Lời cuối
+Design system whitelabel không phải sản phẩm hoàn thành 1 lần. Đây là tài liệu sống — sẽ tiếp tục cập nhật khi:
+Áp dụng lên artifact mới và phát hiện lỗ hổng atoms.
+Dealer feedback về việc thiếu/thừa option.
+Brand mới có yêu cầu đặc biệt.
+Công nghệ thay đổi (font web/font Vietnamese mới).
+Mục tiêu cuối là: thay vì design lại từ đầu cho mỗi dealer, hệ thống tự ráp artifact từ atoms + brand DNA của họ. Người thiết kế chỉ can thiệp ở các điểm cần QC.
+Phụ lục A. Organisms cho từng Artifact
+Mỗi artifact trong dự án Dealer Upgrade được chia thành các organisms cấu thành. [Suy luận thiết kế] dựa trên tên + mục đích + output của artifact
+Mục đích danh sách này: trước khi mở Figma/InDesign thiết kế 1 artifact mới, designer biết ngay cần ráp những organism nào. Không cần phải tự nghĩ từ đầu mỗi lần.
+Nhóm 1 — Brandkit Persona (BK-01 → BK-05)
+BK-01  Lớp 1: Nhận diện cơ bản
+Output: Bộ file cơ bản (avatar, cover, khung ảnh)
+Header trang — Logo + Tên hiển thị
+Avatar block — Ảnh chân dung tròn/vuông + viền brand color
+Cover image — Banner ngang có overlay màu brand + slogan
+Khung ảnh chuẩn — Frame có border-accent-left, dùng cho mọi ảnh post sau
+BK-02  Lớp 2: Hồ sơ niềm tin
+Output: Profile 1 trang + PDF
+Cover profile — Logo + Tên dealer + Slogan + Ảnh đại diện
+USP block — 3-5 điểm USP dạng icon + headline (molecule: Icon+Title+Body)
+Năng lực chính — Bảng số liệu (số năm kinh nghiệm, số công trình, đội ngũ)
+Đội ngũ — Grid 3-6 ảnh thành viên + chức danh
+Ảnh thật về showroom/xưởng/công trình tiêu biểu
+Lời hứa dịch vụ — Block viền trái primary với 3-5 cam kết
+Footer liên hệ — SĐT + Email + Địa chỉ + QR code
+BK-03  Lớp 3: Social content
+Output: Pack social 30 ngày
+Post template chuẩn — Khung ảnh + Logo nhỏ góc + Caption area
+Quote post — Background color brand + Text quote lớn + Logo
+Case study post — Ảnh trước/sau + Caption + Thông số công trình
+Feedback post — Avatar khách + Quote + Sao đánh giá
+Carousel post (5-10 slide) — Slide bìa + Slide nội dung + Slide CTA
+Story template (dọc 9:16) — Tiêu đề + Ảnh + CTA + Logo nhỏ
+Clip ngắn template — Intro logo + Nội dung + Outro CTA + Logo
+BK-04  Lớp 4: Bộ bán hàng
+Output: Sales kit
+Báo giá template — A-G blocks (tham khảo Chương 7 tài liệu v0.2)
+Combo deal block — Sản phẩm chính + ưu đãi + giá gốc gạch + giá khuyến mãi
+Câu hỏi nhanh card — FAQ dạng Q&A với icon đầu mỗi câu hỏi
+Follow-up email template — Subject + Greeting + Recap + CTA + Signature
+FAQ wall — Grid 6-10 câu hỏi phổ biến với icon
+BK-05  Lớp 5: Địa phương hóa
+Output: Pack địa phương hóa
+Banner địa phương — Tên xã/huyện làm tiêu đề + Hình ảnh đặc trưng
+Case study địa phương — Công trình tại địa phương + thông tin chủ nhà địa phương
+Lời chứng thực địa phương — Avatar khách địa phương + Quote + Tên + Xã/Huyện
+Map block — Bản đồ vùng phục vụ + Showroom/đại lý
+Nhóm 2 — Online Tools (ONL-XX)
+ONL-01  Hồ sơ số đại lý Output: Pack bài + ảnh · Scope: 10 mẫu bài + CTA
+Header bài Zalo — Logo nhỏ + Tên đại lý (tối đa 60 ký tự)
+Ảnh đính kèm — Khung ảnh tỷ lệ 1:1 hoặc 4:3 (chuẩn Zalo)
+Caption block — Body text 200-300 ký tự + Hashtag
+CTA cuối — "Liên hệ ngay" + Hotline + Zalo OA link
+Sticker brand (tùy chọn) — Emoji/sticker phù hợp tone
+ONL-06  Template Zalo
+Output: Pack bài + ảnh · Scope: 10 mẫu bài + CTA
+Header bài Zalo — Logo nhỏ + Tên đại lý (tối đa 60 ký tự)
+Ảnh đính kèm — Khung ảnh tỷ lệ 1:1 hoặc 4:3 (chuẩn Zalo)
+Caption block — Body text 200-300 ký tự + Hashtag
+CTA cuối — "Liên hệ ngay" + Hotline + Zalo OA link
+Sticker brand (tùy chọn) — Emoji/sticker phù hợp tone
+ONL-07  Template Facebook
+Output: Pack bài + ảnh · Scope: 10 mẫu post/reel
+Cover image 1200x630 — Khung ảnh chuẩn Facebook + Logo + Headline
+Caption template — 3 dòng đầu hook + Nội dung + CTA + Hashtag
+Reel cover 1080x1920 — Frame dọc + Title đè + Logo nhỏ góc
+Carousel 1080x1080 — Slide bìa + 3-5 slide nội dung + Slide CTA
+Comment template — Câu trả lời mẫu cho FAQ trong comment
+ONL-08  Template TikTok/Reel
+Output: Script + shotlist · Scope: 10 script 15-60s
+Script template — Hook 3s đầu + Body + CTA cuối
+Shotlist — Danh sách shot cần quay (cận, trung, toàn cảnh) + thời lượng
+Caption template — Hook 1 dòng + Hashtag
+Cover thumbnail — Frame dọc 1080x1920 + Title nổi bật
+Overlay text template — Vị trí + Font size cho text đè trên video
+ONL-09  Video library
+Output: Kho video · Scope: Profile + case + feedback
+Cover thumbnail mỗi video — Tỷ lệ 16:9 hoặc 9:16 + Logo + Title
+Intro 3-5s — Logo animation + Slogan
+Outro 3-5s — Logo + CTA + Liên hệ
+Lower-third overlay — Tên người nói + Chức danh khi có
+Subtitle template — Style chữ phụ đề (font + outline + position)
+Metadata card — Mỗi video có: tiêu đề, tag, mô tả, ngày quay
+ONL-10  Asset hub
+Output: Link kho · Scope: Kho asset + quyền truy cập
+Folder structure — Cấu trúc cây thư mục chuẩn (Logo/Photo/Video/Doc)
+Naming convention — Quy ước đặt tên file (vd: dealer_brandcode_type_date.ext)
+Permission matrix — Bảng quyền theo role (admin/dealer/staff/guest)
+Index page — Trang chủ kho với link nhanh đến các folder chính
+Search/filter UI — Khu vực tìm asset theo tag/date/type
+ONL-11  Fast support group
+Output: Link nhóm + SLA · Scope: Nhóm + SLA + form
+Welcome message template — Khi user join, gửi tin chào + hướng dẫn
+Form yêu cầu hỗ trợ — Loại vấn đề + Mức độ + Mô tả + Ảnh
+SLA card — Bảng cam kết thời gian phản hồi theo mức độ
+FAQ pinned message — 5-10 câu hỏi phổ biến được ghim đầu nhóm
+Status template — Tin nhắn báo trạng thái xử lý (đã nhận / đang xử lý / đã giải quyết)
+ONL-12  Checklist ảnh và nhắc việc nhẹ
+Output: Checklist + form · Scope: Checklist 1 trang + nhắc việc
+Checklist card 1 trang — List 5-10 việc + checkbox + ảnh chứng minh
+Form upload ảnh — Khu vực chụp/upload ảnh trực tiếp từ điện thoại
+Reminder template — Tin nhắn nhắc việc (push notification hoặc tin nhắn)
+Status dashboard — Hiển thị tiến độ checklist (% hoàn thành)
+Confirmation block — Khi xong, hiển thị xác nhận + lưu lại evidence
+Nhóm 3 — Offline Tools (OFF-01 → OFF-10)
+OFF-01  Showroom trust board
+Output: Bảng treo thực tế · User: Dealer
+Header bảng — Logo lớn + Tên đại lý + Slogan
+USP block — 3-5 cam kết chính (in hoa, font lớn)
+Quy trình block — 4-6 bước phục vụ khách dạng infographic
+Cam kết block — Bảo hành + Chính sách đổi trả + Đường dây nóng
+QR code — Link đến website / Zalo OA
+Footer — Địa chỉ + Hotline + Giờ mở cửa
+OFF-02  Case wall
+Output: Bảng/tường case · User: Dealer/chủ xưởng
+Header tường — Title ("Công trình tiêu biểu") + Logo
+Case card (lặp lại 6-12 lần) — Ảnh trước/sau + Thông số + Địa điểm + Năm
+Feedback block — Quote khách + Avatar + Tên
+Filter strip — Phân loại case theo loại công trình (nếu cần)
+QR cuối tường — Xem thêm case online
+OFF-03  Brochure / leaflet / flipbook
+Output: Bản in · User: Dealer/chủ xưởng
+Trang bìa — Logo + Tagline + Ảnh chủ đạo
+Trang giới thiệu — Câu chuyện thương hiệu + USP + Năng lực
+Trang sản phẩm — Grid 4-6 dòng sản phẩm với ảnh + mô tả + giá tham khảo
+Trang quy trình — Infographic 4-6 bước phục vụ
+Trang cam kết — Bảo hành + Chính sách + Lời hứa
+Trang bìa sau — Liên hệ + Bản đồ + QR + Mạng xã hội
+OFF-04  Standee / poster activation
+Output: Bộ in event · User: Dealer/community
+Standee dọc 60x160cm hoặc 80x200cm — Logo lớn + Headline event + CTA + QR
+Poster A2/A3 — Cover image + Title + Thông tin event + Liên hệ
+Backdrop ngang (cho photo zone) — Logo lặp lại pattern + Slogan
+Sticker/banner nhỏ trang trí khu vực event
+Welcome board — Bảng chào tại lối vào
+OFF-05  Xưởng board
+Output: Board treo xưởng · User: Chủ xưởng
+Header board — Tên xưởng + Logo
+Quy trình sản xuất — Sơ đồ 5-8 bước từ đầu vào → đầu ra
+Tiêu chuẩn chất lượng — Bảng các tiêu chuẩn xưởng cam kết
+Đội thợ — Ảnh + tên + chuyên môn từng người
+Bảng nội quy an toàn lao động
+Bảng tiến độ công trình đang làm
+OFF-06  Product sample corner
+Output: Góc mẫu · User: Dealer/chủ xưởng
+Khung trưng bày — Kệ/bảng phân loại theo nhóm (nhôm/gỗ/kính/phụ kiện)
+Mẫu vật thật — Miếng mẫu đính kèm bảng tên
+Bảng tên mẫu — Mã + Tên + Vật liệu + Màu + Ứng dụng
+Bảng so sánh — Đặt cạnh các mẫu để khách dễ so sánh
+QR mỗi mẫu — Link đến thông tin chi tiết online
+OFF-07  Workshop kit
+Output: Pack workshop · User: Community/dealer
+Slide deck workshop — Bìa + Nội dung + Kết luận + CTA
+Thư mời — Card invite có info workshop + map + QR đăng ký
+Form check-in — Tên + SĐT + Quan tâm sản phẩm gì
+Tài liệu phát — Tóm tắt nội dung workshop dạng A5 gấp
+Form feedback sau workshop — Đánh giá + Đề xuất + Liên hệ tiếp
+Backdrop + standee event
+OFF-08  Roadshow/event kit
+Output: Pack event · User: Community
+Outline roadshow — Lịch trình + Điểm dừng + Phân công
+Bộ truyền thông trước event — Poster + Social post + Email mời
+Bộ vật phẩm tại event — Standee + Banner + Backdrop + Tờ rơi
+Welcome desk kit — Bảng tên + Form check-in + Quà tặng
+Bộ sau event — Email cảm ơn + Recap album + Form follow-up
+OFF-09  Field kit giấy fallback
+Output: Bộ form giấy · User: Dealer/chủ xưởng/thợ
+Phiếu khảo sát — Form A4 ghi tay tình trạng công trình + ảnh chụp
+Phiếu nghiệm thu — Form A4 list hạng mục + chữ ký xác nhận 2 bên
+Phiếu bảo hành — Form A5 ghi thông tin sản phẩm + thời hạn + chữ ký
+Phiếu giao hàng — Form A5 ghi sản phẩm + số lượng + chữ ký người nhận
+Footer mọi form — Logo + Hotline + Phiên bản form
+OFF-10  Hotline card / FAQ card
+Output: Card phát hành · User: Dealer/chủ xưởng/thợ
+Card mặt trước — Logo + Hotline lớn + Slogan
+Card mặt sau — 5-10 câu trả lời nhanh cho FAQ phổ biến
+Bố cục Q&A — Câu hỏi (in đậm) + Câu trả lời ngắn
+QR góc card — Link đến FAQ full online
+Kích thước card visit 90x55mm — Tiện cho khách bỏ ví
+Phụ lục B. Bảng tổng hợp Bất biến vs Brand DNA
+Đây là tổng hợp toàn bộ atoms trong hệ thống design system, phân loại rõ:
+Bất biến (Fixed) — Hệ thống quản lý, dealer không được đổi. Quy luật toán học của layout, đảm bảo nhất quán.
+Brand DNA (Variable) — Dealer nhập qua brand DNA file. Khi dealer đổi → toàn bộ artifact tự cập nhật.
+Hai dealer cùng dùng 1 template báo giá nhưng nhìn khác nhau hoàn toàn về thẩm mỹ. Cùng cấu trúc bất biến, khác giá trị brand DNA.
+Bảng tổng hợp đầy đủ
+1. Color (Màu sắc)
+Token / Yếu tố
+Phân loại
+Giá trị mặc định / cho phép đổi
+Ghi chú
+--primary
+Brand DNA
+Dealer nhập HEX+RGB+CMYK
+Màu chính, neo thị giác toàn brand
+--secondary
+Brand DNA
+Dealer nhập HEX+RGB+CMYK
+Màu hỗ trợ, block phụ
+--tertiary
+Brand DNA
+Dealer nhập HEX+RGB+CMYK
+Màu nhấn, background subtle
+--neutral-text
+Bất biến
+#2C2C2A
+Chữ chính trên mọi artifact
+--neutral-muted
+Bất biến
+#5F5E5A
+Chữ phụ, label, caption
+--neutral-line
+Bất biến
+#D3D1C7
+Đường kẻ chia, viền nhẹ
+--paper
+Bất biến
+#FFFFFF
+Nền giấy mặc định
+Semantic colors
+Bất biến
+Đỏ/Cam/Vàng/Xanh
+Success/Warning/Danger/Info — quy ước phổ quát
+2. Typography (Phông chữ)
+Token / Yếu tố
+Phân loại
+Giá trị mặc định / cho phép đổi
+Ghi chú
+Font family heading
+Brand DNA
+Chọn từ whitelist
+Từ danh sách tương thích tiếng Việt
+Font family body
+Brand DNA
+Chọn từ whitelist
+Từ danh sách tương thích tiếng Việt
+Font family data
+Bất biến
+Sans-serif / Monospace
+Số luôn dùng font cố định để đọc nhanh
+Text-case (tone)
+Brand DNA
+UPPER / Sentence / lower
+Tùy tone brand
+--font-display (30pt)
+Bất biến
+Size & weight cố định
+Tiêu đề lớn đầu tài liệu
+--font-h1 (24pt)
+Bất biến
+Size & weight cố định
+Tên artifact
+--font-h2 (19pt)
+Bất biến
+Size & weight cố định
+Section header
+--font-h3 (15pt)
+Bất biến
+Size & weight cố định
+Sub-section
+--font-body (12pt)
+Bất biến
+Size & weight cố định
+Văn bản chính
+--font-caption (9pt)
+Bất biến
+Size & weight cố định
+Min size cho mọi text
+Type scale ratio
+Bất biến
+Major Third 1.25x
+Quy luật toán học, không đổi
+3. Spacing (Khoảng cách)
+Token / Yếu tố
+Phân loại
+Giá trị mặc định / cho phép đổi
+Ghi chú
+--space-xs (2pt)
+Bất biến
+2pt / 3px
+Micro spacing
+--space-s (4pt)
+Bất biến
+4pt / 6px
+Padding nhỏ
+--space-m (8pt)
+Bất biến
+8pt / 12px
+Padding block
+--space-l (12pt)
+Bất biến
+12pt / 16px
+Margin organisms
+--space-xl (16pt)
+Bất biến
+16pt / 24px
+Khoảng section lớn
+--margin-page (12pt)
+Bất biến
+12pt cho A4
+Lề trang in
+Bội số tham chiếu
+Bất biến
+Bội số 4
+Quy luật toán học
+4. Shape (Hình dạng)
+Token / Yếu tố
+Phân loại
+Giá trị mặc định / cho phép đổi
+Ghi chú
+--radius-block
+Brand DNA
+Chọn 1 trong 3: 0/3/8pt
+Sharp / Moderate / Rounded
+--radius-table
+Bất biến
+2pt cố định
+Bảng giá luôn vuông góc
+--radius-pill
+Bất biến
+999pt (tròn hoàn toàn)
+Cho badge, tag
+--stroke-thin
+Bất biến
+0.5pt
+Đường viền nhẹ
+--stroke-normal
+Bất biến
+1pt
+Đường viền chuẩn
+--border-accent-left
+Bất biến
+2.5pt + brand color
+Dải viền trái phân vùng
+Grid hệ
+Bất biến
+Hệ 8 hoặc 12 cột (digital)
+Theo môi trường
+Aspect ratio ảnh
+Bất biến
+16:9 / 4:3 / 1:1 / 9:16
+Theo loại artifact
+5. Iconography (Icon)
+Token / Yếu tố
+Phân loại
+Giá trị mặc định / cho phép đổi
+Ghi chú
+Icon set
+Bất biến
+1 bộ duy nhất (Tabler/Lucide/Feather)
+Không cho dealer trộn
+Icon style
+Bất biến
+Outline only
+Không trộn outline + solid
+Icon size small
+Bất biến
+16x16 px
+Cho menu, trạng thái nhỏ
+Icon size standard
+Bất biến
+24x24 px
+Cho nav, toolbar
+Icon size large
+Bất biến
+32x32 px
+Cho điểm nhấn, FAB
+6. Logo system
+Token / Yếu tố
+Phân loại
+Giá trị mặc định / cho phép đổi
+Ghi chú
+Logo file
+Brand DNA
+SVG + PNG + AI (gốc)
+Dealer upload đủ biến thể
+Logo primary
+Brand DNA
+Đầy đủ màu, nền sáng
+Mặc định
+Logo reverse
+Brand DNA
+Cho nền tối
+Dealer phải có
+Logo mono đen
+Brand DNA
+1 màu đen
+Cho fax, dấu mộc
+Logo mono trắng
+Brand DNA
+1 màu trắng
+Khắc lên nền màu
+Symbol/Icon mark
+Brand DNA
+Chỉ phần biểu tượng
+Favicon, app icon
+Logo horizontal
+Brand DNA
+Symbol + Wordmark ngang
+Header web, card ngang
+Logo stacked
+Brand DNA
+Symbol trên + Wordmark dưới
+Vùng vuông
+Clear space
+Bất biến
+≥ chiều cao chữ X
+Quy luật bảo vệ logo
+Min size web
+Bất biến
+24px chiều cao
+Đảm bảo đọc được
+Min size print
+Bất biến
+15mm chiều cao
+Đảm bảo đọc trên giấy
+Do/Don't rules
+Bất biến
+9 quy tắc
+Cấm méo/xoay/đổi màu tùy ý
+7. File format + Image specs
+Token / Yếu tố
+Phân loại
+Giá trị mặc định / cho phép đổi
+Ghi chú
+Logo format
+Bất biến
+SVG (chính) + AI/PNG (phụ)
+Vector ưu tiên
+Báo giá/Hợp đồng
+Bất biến
+PDF/A (lưu trữ pháp lý)
+Chuẩn lưu trữ
+Brochure in
+Bất biến
+PDF/X-4 (in offset)
+Chuẩn in offset
+Social post
+Bất biến
+PNG/JPG
+Theo platform
+Email template
+Bất biến
+HTML inline
+Tương thích email client
+DPI in offset
+Bất biến
+300 DPI
+Chất lượng cao
+DPI web
+Bất biến
+72 PPI (thường) / 150 PPI (retina)
+Theo màn hình
+Print bleed
+Bất biến
+3-5mm tràn ra ngoài
+Tránh máy in cắt trúng nội dung
+Safe area
+Bất biến
+3-5mm từ mép cắt
+Vùng cho text quan trọng
+Photo style (tone/mood)
+Brand DNA
+Dealer chọn
+Lạnh/Ấm/Trung tính
+Illustration style
+Brand DNA
+Dealer chọn 1 style
+Flat/Outline/Geometric/Hand-drawn/3D
+8. Tone of voice & Accessibility
+Token / Yếu tố
+Phân loại
+Giá trị mặc định / cho phép đổi
+Ghi chú
+Brand tone
+Brand DNA
+Chọn 1 trong 4
+Professional/Friendly/Playful/Serious
+Xưng hô
+Brand DNA
+Theo tone đã chọn
+Quý khách/Anh chị/Bạn
+Câu CTA
+Brand DNA
+Theo tone
+Mỗi tone có CTA mẫu khác nhau
+Emoji usage
+Brand DNA
+Tùy tone
+Professional/Serious: không. Friendly/Playful: có
+Câu cấm chung
+Bất biến
+Slang/từ địa phương/khẳng định không có chứng cứ
+Áp cho mọi tone
+Contrast text body
+Bất biến
+≥ 4.5:1 (WCAG AA)
+Đảm bảo đọc được
+Contrast text large
+Bất biến
+≥ 3:1 (WCAG AA)
+Cho text ≥ 18pt
+Contrast UI element
+Bất biến
+≥ 3:1
+Button, icon, border
+9. Digital-only (Shadow/Motion/Grid)
+Token / Yếu tố
+Phân loại
+Giá trị mặc định / cho phép đổi
+Ghi chú
+--shadow-sm/md/lg/xl
+Bất biến
+4 level cố định
+Card, button, modal, overlay
+--duration-fast (150ms)
+Bất biến
+150ms
+Hover, micro-interaction
+--duration-normal (250ms)
+Bất biến
+250ms
+Modal open, transition
+--duration-slow (400ms)
+Bất biến
+400ms
+Onboarding, reveal
+--easing-default
+Bất biến
+ease-in-out (0.4, 0, 0.2, 1)
+Quy chuẩn animation
+Breakpoint mobile
+Bất biến
+< 768px
+4 cột, gutter 16px
+Breakpoint tablet
+Bất biến
+768-1024px
+8 cột, gutter 16px
+Breakpoint desktop
+Bất biến
+>1024px
+12 cột, gutter 24px
+Container max-width
+Bất biến
+1280px desktop
+Không cho dealer đổi
+Tổng kết — Phân bổ Bất biến vs Brand DNA
+Tóm tắt số lượng atoms theo phân loại:
+Nhóm atoms
+Bất biến
+Brand DNA
+Tỷ lệ Brand DNA
+Color
+5
+3
+38%
+Typography
+9 (size+weight cố định)
+3 (font family, text-case)
+25%
+Spacing
+7 (tất cả cố định)
+0
+0%
+Shape
+7
+1 (radius-block)
+13%
+Icon
+5 (tất cả cố định)
+0
+0%
+Logo system
+4 (rules)
+8 (file + variants)
+67%
+File & Image specs
+9 (chuẩn ngành)
+2 (photo+illustration style)
+18%
+Tone & Accessibility
+4 (contrast, câu cấm)
+4 (tone, xưng hô, CTA, emoji)
+50%
+Digital-only
+9 (tất cả cố định)
+0
+0%
+TỔNG
+59 atoms bất biến
+21 atoms brand DNA
+26% tổng
+Tỷ lệ Brand DNA chiếm khoảng 1/4 tổng atoms. Dealer cảm thấy có quyền tùy chỉnh thật sự, nhưng không đủ để phá vỡ hệ thống.
+⚠ Bảng tổng kết trên dùng số liệu đã liệt kê ở 9 bảng chi tiết. Khi hệ atoms phình thêm trong tương lai (vd: thêm dark mode, thêm motion presets), tỷ lệ này sẽ thay đổi.
+Nguyên tắc khi mở rộng hệ atoms
+Thêm 1 atom mới = phải đánh dấu rõ Bất biến hay Brand DNA.
+Mặc định ưu tiên Bất biến (an toàn hơn cho hệ thống).
+Chỉ chuyển sang Brand DNA khi có nhu cầu rõ ràng và dealer hiểu hậu quả.
+Mỗi atom Brand DNA phải có default value (giá trị mặc định) để dealer không nhập gì vẫn chạy được.
+Phụ lục C. Changelog v0.2
+So với bản v0.1, phiên bản v0.2 bổ sung các nội dung cần thiết để hệ thống phục vụ được cả 2 nhóm output: sản phẩm số (digital) và ấn phẩm in (print). Các chương mới được đánh dấu MỚI BỔ SUNG v0.2 để dễ rà soát.
+Bổ sung vào Chương 3 — Atoms
+3.6 — Mở rộng Color tokens với CMYK + RGB (chuẩn cho in)
+3.7 — Logo system (variants, clear space, min size, Do/Don't)
+3.8 — File format + Image specs + Print bleed
+3.9 — Photography & Illustration style
+3.10 — Accessibility & Contrast ratio (WCAG)
+3.11 — Tone of voice (copywriting rules)
+3.12 — Grid & Breakpoint (cho digital)
+3.13 — Elevation/Shadow & Motion (cho digital)
+3.14 — Quy ước đơn vị digital vs print (cross-cutting concern)
+Viết lại Chương 5 — Artifacts
+Thay danh sách giả lập trước đây bằng danh sách thật từ file Excel master dự án Dealer Upgrade:
+5.2.1 — Brandkit Persona (sheet 07_BRANDKIT_PERSONA, 5 lớp BK-01 → BK-05)
+5.2.2 — Online Tools (sheet 06_ONLINE_TOOLS, các ONL-XX đọc được)
+5.2.3 — Offline Tools (sheet 05_OFFLINE_TOOLS, 10 tools OFF-01 → OFF-10)
+⚠ Bản v0.2 vẫn là draft. Các phần mới có giá trị tham khảo, cần stress-test thực tế trước khi chốt số liệu cụ thể (DPI, contrast ratio, breakpoint…).
+— Hết tài liệu —

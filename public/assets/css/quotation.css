@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Roboto:wght@300;400;500;700;900&display=swap');
+
 /* ================================================================
    Quotation Template CSS — Whitelabel
    Layout khớp template_bao_gia_mau.jfif từ UI/UX.
@@ -28,22 +30,69 @@
   color: var(--neutral-text);
   box-sizing: border-box;
 }
-.q-page *, .q-page *::before, .q-page *::after { box-sizing: border-box; }
-.q-page img { max-width: 100%; display: block; border-style: none; }
+
+.q-page *,
+.q-page *::before,
+.q-page *::after {
+  box-sizing: border-box;
+}
+
+.q-page img {
+  max-width: 100%;
+  display: block;
+  border-style: none;
+}
 
 /* Override Tailwind preflight */
-.q-page h1, .q-page h2, .q-page h3, .q-page h4 {
-  font-size: inherit; font-weight: inherit; margin: 0;
+.q-page h1,
+.q-page h2,
+.q-page h3,
+.q-page h4 {
+  font-size: inherit;
+  font-weight: inherit;
+  margin: 0;
 }
-.q-page table { border-collapse: collapse; border-color: inherit; text-indent: 0; }
-.q-page th, .q-page td { padding: 0; }
-.q-page ul, .q-page ol { list-style: disc; margin: 0; padding: 0; }
-.q-page a { color: inherit; text-decoration: inherit; }
-.q-page svg { display: inline-block; vertical-align: middle; }
-.q-page, .q-page * { border: none; }
+
+.q-page table {
+  border-collapse: collapse;
+  border-color: inherit;
+  text-indent: 0;
+}
+
+.q-page th,
+.q-page td {
+  padding: 0;
+}
+
+.q-page ul,
+.q-page ol {
+  list-style: disc;
+  margin: 0;
+  padding: 0;
+}
+
+.q-page a {
+  color: inherit;
+  text-decoration: inherit;
+}
+
+.q-page svg {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.q-page,
+.q-page * {
+  border: none;
+}
 
 /* ── SVG icon ─────────────────────────────────────────────────── */
-.q-ic { width: 16px; height: 16px; vertical-align: middle; flex-shrink: 0; }
+.q-ic {
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
 
 /* ══════════════════════════════════════════════════════════════════
    HEADER — premium, mềm mại, có brand identity
@@ -62,6 +111,7 @@
   display: flex;
   align-items: center;
 }
+
 .q-hdr-row {
   display: flex;
   gap: 16px;
@@ -80,12 +130,14 @@
   align-items: center;
   justify-content: center;
 }
+
 .q-logo img {
   width: 100%;
   height: auto;
   object-fit: contain;
   border-radius: 6px;
 }
+
 .q-logo .no-img {
   width: 86px;
   height: 64px;
@@ -109,6 +161,7 @@
   justify-content: center;
   gap: 1px;
 }
+
 .q-page .q-dealer-name {
   margin: 0;
   font-size: 28pt;
@@ -118,7 +171,10 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
-.q-page .q-dealer-name .q-brand-accent { color: var(--primary); }
+
+.q-page .q-dealer-name .q-brand-accent {
+  color: var(--primary);
+}
 
 .q-tagline {
   font-size: 14pt;
@@ -136,6 +192,7 @@
   gap: 5px;
   margin-top: 2px;
 }
+
 .q-hdr-line {
   display: flex;
   align-items: center;
@@ -144,6 +201,7 @@
   color: var(--neutral-text);
   line-height: 1.3;
 }
+
 .q-hdr-line .q-ic-badge {
   width: 22px;
   height: 22px;
@@ -155,11 +213,13 @@
   justify-content: center;
   flex-shrink: 0;
 }
+
 .q-hdr-line .q-ic-badge .q-ic {
   width: 12px;
   height: 12px;
   color: #fff;
 }
+
 .q-hdr-line strong {
   font-weight: 800;
   font-size: 10pt;
@@ -176,8 +236,9 @@
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid var(--neutral-line);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
 }
+
 .q-hdr-title {
   background: var(--secondary);
   color: #fff;
@@ -187,32 +248,38 @@
   padding: 10px 10px 8px;
   letter-spacing: 0.06em;
 }
+
 .q-meta-table {
   flex: 1;
   display: flex;
   flex-direction: column;
   padding: 0;
 }
+
 .q-meta-row {
   display: flex;
   align-items: center;
   padding: 8px 14px;
   flex: 1;
 }
-.q-meta-row + .q-meta-row {
+
+.q-meta-row+.q-meta-row {
   border-top: 1px solid #eee;
 }
+
 .q-meta-row .k {
   font-size: 8.5pt;
   color: var(--neutral-muted);
   width: 72px;
   flex-shrink: 0;
 }
+
 .q-meta-row .v {
   font-size: 12pt;
   font-weight: 900;
   color: var(--primary);
 }
+
 .q-meta-row:last-child .v {
   color: var(--secondary);
 }
@@ -232,13 +299,19 @@
   border-left: 3px solid var(--primary);
   border-bottom: 2px solid var(--primary);
 }
+
 .q-sec-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: var(--primary);
 }
-.q-sec-icon .q-ic { width: 18px; height: 18px; }
+
+.q-sec-icon .q-ic {
+  width: 18px;
+  height: 18px;
+}
+
 .q-sec-title {
   font-size: 10.5pt;
   font-weight: 800;
@@ -253,13 +326,20 @@
   gap: 0 24px;
   padding: 6px 0 8px;
 }
-.q-info-col { display: flex; flex-direction: column; gap: 2px; }
+
+.q-info-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .q-info-row {
   display: flex;
   align-items: baseline;
   font-size: 9.5pt;
   line-height: 1.5;
 }
+
 .q-info-row .k {
   width: 105px;
   min-width: 105px;
@@ -267,10 +347,12 @@
   color: var(--neutral-muted);
   flex-shrink: 0;
 }
+
 .q-info-row .sep {
   margin: 0 6px 0 0;
   color: var(--neutral-muted);
 }
+
 .q-info-row .v {
   flex: 1;
   font-weight: 500;
@@ -283,12 +365,32 @@
   gap: 6px;
   margin: 6px 0 8px;
 }
-.q-images.count-1 { grid-template-columns: 1fr; }
-.q-images.count-2 { grid-template-columns: 1fr 1fr; }
-.q-images.count-3 { grid-template-columns: 1fr 1fr 1fr; }
-.q-images.count-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
-.q-images.count-5 { grid-template-columns: 1fr 1fr 1fr 1fr 1fr; }
-.q-img-card { text-align: center; position: relative; }
+
+.q-images.count-1 {
+  grid-template-columns: 1fr;
+}
+
+.q-images.count-2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.q-images.count-3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.q-images.count-4 {
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+
+.q-images.count-5 {
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+}
+
+.q-img-card {
+  text-align: center;
+  position: relative;
+}
+
 .q-img-frame {
   aspect-ratio: 4/3;
   overflow: hidden;
@@ -297,11 +399,13 @@
   border: 1px solid var(--neutral-line);
   position: relative;
 }
+
 .q-img-frame img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
+
 /* Caption: dark banner at bottom of image (matches mockup) */
 .q-img-card .cap {
   font-size: 7.5pt;
@@ -320,6 +424,7 @@
   font-size: 9pt;
   margin: 4px 0 2px;
 }
+
 /* Table header: neutral dark (NOT brand color) */
 .q-items thead th {
   background: #3a3a3a;
@@ -331,24 +436,59 @@
   border: 1px solid #3a3a3a;
   white-space: nowrap;
 }
+
 .q-items tbody td {
   padding: 4px 4px;
   border: 1px solid var(--neutral-line);
   vertical-align: top;
   font-size: 9pt;
 }
+
 /* No zebra striping — matches mockup (plain white rows) */
-.q-items .center { text-align: center; }
-.q-items .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.q-items .total { font-weight: 600; }
-.q-items .ten-sp { font-weight: 600; min-width: 80px; }
-.q-items .ma { font-family: monospace; font-size: 8.5pt; }
-.q-items .desc { min-width: 120px; font-size: 8.5pt; color: var(--neutral-muted); }
-.q-items .qty-cell { font-weight: 600; }
+.q-items .center {
+  text-align: center;
+}
+
+.q-items .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.q-items .total {
+  font-weight: 600;
+}
+
+.q-items .ten-sp {
+  font-weight: 600;
+  min-width: 80px;
+}
+
+.q-items .ma {
+  font-family: monospace;
+  font-size: 8.5pt;
+}
+
+.q-items .desc {
+  min-width: 120px;
+  font-size: 8.5pt;
+  color: var(--neutral-muted);
+}
+
+.q-items .qty-cell {
+  font-weight: 600;
+}
 
 /* Bullet list from multiLine() helper */
-.q-page .bullet-list { margin: 0; padding-left: 14px; list-style: disc; }
-.q-page .bullet-list li { margin-bottom: 1px; }
+.q-page .bullet-list {
+  margin: 0;
+  padding-left: 14px;
+  list-style: disc;
+}
+
+.q-page .bullet-list li {
+  margin-bottom: 1px;
+}
 
 /* Section header row in table */
 .q-items .q-sec-hdr-row td {
@@ -356,14 +496,17 @@
   font-weight: 700;
   border-color: var(--neutral-line);
 }
+
 .q-items .q-sec-sub td {
   background: #fff8f0;
   border-color: var(--neutral-line);
 }
+
 .q-items .q-grand-sub td {
   background: #fafafa;
   border-top: 2px solid var(--neutral-line);
 }
+
 .q-items .q-bs-row td {
   background: #fffbeb;
 }
@@ -390,6 +533,7 @@
   border-radius: 3px;
   padding: 0 0 6px;
 }
+
 .q-note-card .q-sec-hdr {
   margin: 0;
   padding: 6px 8px;
@@ -397,16 +541,19 @@
   background: #f8fafc;
   border-radius: 0;
 }
+
 .q-note-body {
   padding: 6px 10px;
   font-size: 8.5pt;
   color: var(--neutral-text);
   line-height: 1.6;
 }
+
 .q-note-body ul {
   margin: 0;
   padding-left: 14px;
 }
+
 .q-note-body li {
   margin-bottom: 2px;
 }
@@ -417,6 +564,7 @@
   border-radius: 3px;
   overflow: hidden;
 }
+
 .q-total-hdr {
   background: var(--secondary);
   color: #fff;
@@ -426,7 +574,11 @@
   text-align: center;
   letter-spacing: 0.03em;
 }
-.q-total-body { padding: 0; }
+
+.q-total-body {
+  padding: 0;
+}
+
 .q-total-row {
   display: flex;
   justify-content: space-between;
@@ -435,8 +587,15 @@
   font-size: 9pt;
   border-bottom: 1px solid #f1f5f9;
 }
-.q-total-row:last-child { border-bottom: none; }
-.q-total-row .k { color: var(--neutral-muted); }
+
+.q-total-row:last-child {
+  border-bottom: none;
+}
+
+.q-total-row .k {
+  color: var(--neutral-muted);
+}
+
 .q-total-row .v {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
@@ -444,7 +603,11 @@
   white-space: nowrap;
   color: var(--primary);
 }
-.q-total-row.minus .v { color: #dc2626; }
+
+.q-total-row.minus .v {
+  color: #dc2626;
+}
+
 .q-total-row.grand {
   background: var(--primary);
   color: #fff;
@@ -453,8 +616,16 @@
   padding: 8px 10px;
   border-bottom: none;
 }
-.q-total-row.grand .k { color: #fff; font-weight: 800; }
-.q-total-row.grand .v { color: #fff; font-weight: 800; }
+
+.q-total-row.grand .k {
+  color: #fff;
+  font-weight: 800;
+}
+
+.q-total-row.grand .v {
+  color: #fff;
+  font-weight: 800;
+}
 
 /* ── Điều khoản ───────────────────────────────────────────────── */
 .q-terms {
@@ -463,11 +634,13 @@
   gap: 8px;
   margin: 6px 0 10px;
 }
+
 .q-term {
   border: 1px solid var(--neutral-line);
   border-radius: 3px;
   overflow: hidden;
 }
+
 .q-term-hdr {
   display: flex;
   align-items: center;
@@ -478,7 +651,13 @@
   font-weight: 700;
   padding: 5px 8px;
 }
-.q-term-hdr .q-ic { width: 14px; height: 14px; color: #fff; }
+
+.q-term-hdr .q-ic {
+  width: 14px;
+  height: 14px;
+  color: #fff;
+}
+
 .q-term-body {
   padding: 6px 8px;
   font-size: 8.5pt;
@@ -494,24 +673,34 @@
   border-top: 2px solid var(--secondary);
   margin-top: 6px;
 }
+
 .q-sig {
   text-align: center;
   padding: 10px 8px 6px;
   border-right: 1px solid var(--neutral-line);
 }
-.q-sig:last-child { border-right: none; }
+
+.q-sig:last-child {
+  border-right: none;
+}
+
 .q-sig .role {
   font-size: 9pt;
   font-weight: 800;
   color: var(--secondary);
   margin-bottom: 1px;
 }
+
 .q-sig .hint {
   font-size: 7.5pt;
   color: var(--neutral-muted);
   font-style: italic;
 }
-.q-sig .sig-space { height: 50px; }
+
+.q-sig .sig-space {
+  height: 50px;
+}
+
 .q-sig .sig-date {
   font-size: 8pt;
   color: var(--neutral-muted);
@@ -519,11 +708,30 @@
 
 /* ── Print ────────────────────────────────────────────────────── */
 @media print {
-  @page { margin: 0 !important; size: auto; }
-  @page :first { margin: 0 !important; }
-  html, body { background: #fff !important; margin: 0; padding: 0; }
-  body > *:not(.q-print-root) { display: none !important; }
-  .q-print-root { display: block !important; }
+  @page {
+    margin: 0 !important;
+    size: auto;
+  }
+
+  @page :first {
+    margin: 0 !important;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    margin: 0;
+    padding: 0;
+  }
+
+  body>*:not(.q-print-root) {
+    display: none !important;
+  }
+
+  .q-print-root {
+    display: block !important;
+  }
+
   .q-page {
     width: 100%;
     min-height: auto !important;
@@ -533,9 +741,11 @@
     box-shadow: none !important;
     transform: none !important;
   }
+
   .q-hdr {
     background: #fff !important;
   }
+
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
@@ -549,12 +759,635 @@
   border-radius: 6px;
   padding: 4px;
 }
+
 .q-preview-stage {
   background: #fff;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
+
 .q-preview-stage .q-page {
   transform: scale(var(--pv-scale, 1));
   transform-origin: top center;
   margin-bottom: calc(-297mm * (1 - var(--pv-scale, 1)));
 }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   TEMPLATE 2 — Premium Tech Modern (TNT 579 Style)
+   Colors via CSS variables --primary / --secondary
+   Matches template2.jfif exactly
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── Page container ────────────────────────────────────────────── */
+.t2-page {
+  font-family: 'Roboto', sans-serif;
+  background: #fff;
+  color: #333;
+}
+
+/* ── Icons ──────────────────────────────────────────────────────── */
+.t2-ic {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* ── HEADER ────────────────────────────────────────────────────── */
+.t2-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0;
+  background: linear-gradient(to right, var(--primary), color-mix(in srgb, var(--primary) 50%, #ffb74d), var(--primary));
+  padding: 6mm 8mm;
+  position: relative;
+}
+
+.t2-hdr-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+}
+
+/* Logo box — large white square like image */
+.t2-logo-box {
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+  background: #fff;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.18);
+  padding: 6px;
+}
+
+.t2-logo-box img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.t2-logo-placeholder {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--primary);
+  text-align: center;
+  line-height: 1.1;
+}
+
+.t2-dealer-info {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Company name — very large, white, bold */
+.t2-dealer-name {
+  font-size: 28px;
+  font-weight: 900;
+  color: #fff;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+/* Tagline — uppercase, wide tracking */
+.t2-tagline {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.9);
+  margin: 2px 0 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+}
+
+.t2-contact-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.t2-contact-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10pt;
+  color: #fff;
+}
+
+/* Icon badge — white circle with primary-colored icon */
+.t2-contact-badge {
+  width: 22px;
+  height: 22px;
+  background: #fff;
+  color: var(--primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.t2-contact-badge .t2-ic {
+  width: 13px;
+  height: 13px;
+}
+
+.t2-phone-text {
+  font-weight: 700;
+  font-size: 12pt;
+  letter-spacing: 0.03em;
+}
+
+/* ── Quote box (right side) — DARK GRAY background ────────────── */
+.t2-quote-box {
+  background: var(--secondary, #5d5d5d);
+  border-radius: 4px;
+  padding: 16px 20px;
+  min-width: 180px;
+  color: #fff;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.2);
+}
+
+.t2-quote-title {
+  font-size: 16pt;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 10px;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255,255,255,0.3);
+  padding-bottom: 10px;
+}
+
+.t2-quote-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.t2-quote-meta > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.t2-meta-k {
+  font-size: 8pt;
+  color: rgba(255,255,255,0.6);
+  font-weight: 400;
+}
+
+.t2-meta-v {
+  font-size: 12pt;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* ── BODY — light gray bg like the image ──────────────────────── */
+.t2-body {
+  padding: 4mm 8mm 6mm;
+  background: #f8f9fb;
+}
+
+/* ── Section headers — icon badge + title with bottom line ─────── */
+.t2-section {
+  margin-bottom: 16px;
+}
+
+.t2-sec-hdr {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.t2-sec-badge {
+  width: 26px;
+  height: 26px;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.t2-sec-badge .t2-ic {
+  width: 16px;
+  height: 16px;
+}
+
+.t2-sec-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+/* ── 2-Column Customer/Project Cards ──────────────────────────── */
+/* Each card is a 2x2 internal grid, label on top, value below */
+.t2-info-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.t2-info-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 12px 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.t2-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.t2-info-k {
+  font-size: 8pt;
+  color: #9ca3af;
+  font-weight: 400;
+  width: auto;
+  flex-shrink: unset;
+}
+
+.t2-info-k::after {
+  content: none;
+}
+
+.t2-info-v {
+  font-size: 10pt;
+  color: #1f2937;
+  font-weight: 700;
+}
+
+/* ── Image gallery — tall images with dark caption overlay ────── */
+.t2-img-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.t2-img-card {
+  position: relative;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.t2-img-card img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Caption overlay at bottom of image */
+.t2-img-cap {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.70);
+  color: #fff;
+  font-size: 7pt;
+  font-weight: 500;
+  text-align: center;
+  padding: 5px 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* ── Table (sizing based on Template 1) ─────────────────────────── */
+.t2-table-wrap {
+  overflow-x: auto;
+  margin: 4px 0 2px;
+}
+
+.t2-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9pt;
+}
+
+/* Table header — same sizing as T1 */
+.t2-thead th {
+  background: var(--secondary, #3a3a3a);
+  color: #fff;
+  font-weight: 700;
+  font-size: 8pt;
+  padding: 6px 4px;
+  text-align: center;
+  border: 1px solid var(--secondary, #3a3a3a);
+  white-space: nowrap;
+}
+
+.t2-th-center { text-align: center !important; }
+.t2-th-right { text-align: right !important; }
+
+.t2-th-sub {
+  font-weight: 400;
+  font-size: 7pt;
+  text-transform: lowercase;
+  opacity: 0.65;
+}
+
+/* Group header row — light primary bg */
+.t2-group-row td {
+  background: var(--primary-light, #fff8f0) !important;
+  font-weight: 700;
+  padding: 4px 4px;
+  border: 1px solid var(--neutral-line, #e5e3db);
+  font-size: 9pt;
+}
+
+/* Accent amount in group row (primary colored) */
+.t2-group-row .t2-td-accent {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.t2-group-row .t2-td-right.t2-td-muted {
+  color: var(--neutral-muted, #6b7280);
+  font-weight: 400;
+  text-align: right;
+}
+
+/* Item rows — same sizing as T1 */
+.t2-item-row td {
+  padding: 4px 4px;
+  border: 1px solid var(--neutral-line, #e5e3db);
+  vertical-align: top;
+  font-size: 9pt;
+}
+
+.t2-td-center { text-align: center; }
+.t2-td-right { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.t2-td-bold { font-weight: 600; }
+.t2-td-muted { color: var(--neutral-muted, #6b7280); }
+.t2-td-accent { color: var(--primary); font-weight: 600; }
+
+.t2-td-desc {
+  min-width: 120px;
+  font-size: 8.5pt;
+  color: var(--neutral-muted, #555);
+  white-space: normal;
+}
+
+.t2-sp-name {
+  font-weight: 600;
+  min-width: 80px;
+}
+
+.t2-sp-code {
+  font-family: monospace;
+  font-size: 8.5pt;
+  color: var(--neutral-muted, #9ca3af);
+}
+
+.t2-empty {
+  text-align: center;
+  padding: 20px;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* ── Summary row (Notes + Totals side by side) ─────────────────── */
+.t2-summary-row {
+  display: flex;
+  gap: 16px;
+  margin: 16px 0;
+}
+
+.t2-notes-box {
+  flex: 1;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.t2-notes-title {
+  font-size: 12pt;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 10px;
+}
+
+.t2-notes-body {
+  font-size: 9pt;
+  color: #555;
+  line-height: 1.65;
+}
+
+.t2-notes-body ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.t2-notes-body li {
+  margin-bottom: 5px;
+}
+
+.t2-notes-asterisk {
+  font-size: 9pt;
+  color: var(--primary);
+  font-style: italic;
+  font-weight: 500;
+  margin: 12px 0 0;
+}
+
+/* Totals box */
+.t2-totals-box {
+  width: 280px;
+  flex-shrink: 0;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.t2-totals-body {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.t2-totals-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 10pt;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.t2-totals-row:last-child {
+  border-bottom: none;
+}
+
+.t2-totals-row span:first-child {
+  color: #6b7280;
+}
+
+.t2-totals-val {
+  font-weight: 700;
+  color: #1f2937;
+  font-size: 11pt;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Grand total bar — PRIMARY color bg */
+.t2-totals-grand {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 700;
+  padding: 12px 16px;
+}
+
+.t2-totals-grand span:first-child {
+  font-size: 11pt;
+  text-transform: uppercase;
+}
+
+.t2-totals-grand span:last-child {
+  font-size: 16pt;
+  font-weight: 900;
+}
+
+/* ── Terms row (3 white cards, inline icon+title) ──────────────── */
+.t2-terms-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.t2-term-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 14px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+/* Term header — inline icon + title, white bg */
+.t2-term-hdr {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
+
+.t2-term-hdr .t2-sec-badge {
+  width: 26px;
+  height: 26px;
+}
+
+.t2-term-hdr h3 {
+  font-size: 10pt;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+}
+
+.t2-term-body {
+  padding: 0;
+  font-size: 9pt;
+  color: #6b7280;
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ── Signature section — white bg, borders, ample space ────────── */
+.t2-sig-section {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  margin-top: 12px;
+}
+
+.t2-sig-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+}
+
+.t2-sig-col {
+  text-align: center;
+  padding: 20px 14px 12px;
+  border-right: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 100px;
+}
+
+.t2-sig-col:last-child {
+  border-right: none;
+}
+
+.t2-sig-role {
+  font-size: 10pt;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 2px;
+  text-transform: uppercase;
+}
+
+.t2-sig-hint {
+  font-size: 8pt;
+  color: #9ca3af;
+  font-style: italic;
+  margin: 0;
+}
+
+.t2-sig-date {
+  font-size: 9pt;
+  color: #9ca3af;
+  margin: 50px 0 0;
+}
+
+/* ── Print overrides for T2 ────────────────────────────────────── */
+@media print {
+  .t2-page {
+    background: #fff !important;
+  }
+  .t2-body {
+    background: #fff !important;
+  }
+  .t2-hdr,
+  .t2-thead tr,
+  .t2-group-row,
+  .t2-totals-grand,
+  .t2-sec-badge,
+  .t2-quote-box,
+  .t2-contact-badge,
+  .t2-img-cap {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+

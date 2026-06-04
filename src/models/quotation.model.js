@@ -20,7 +20,7 @@ const HEADER_FIELDS = [
   // mig 014
   'dealer_name_override', 'dealer_address_override',
   'dealer_phone_override', 'dealer_email_override',
-  'quote_title',
+  'quote_title', 'selected_template',
   // mig 015 — 2 trục state + tài chính nhập tay (cập nhật qua endpoint riêng)
   ...PARTIAL_FIELDS,
   'status', 'sent_at', 'sent_method', 'sent_note',

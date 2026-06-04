@@ -78,6 +78,7 @@ function emptyForm() {
     tien_do: '12 - 18 ngày làm việc tuỳ cấu hình',
     bao_hanh: 'Bảo hành 24 tháng theo chính sách của hãng và đại lý',
     status: 'draft',
+    selected_template: 't1',
     sections: [emptySection('')],
     adjustments: [],
   };
@@ -620,6 +621,7 @@ function quoteForm() {
         dealer_email_override:   ovr(q.dealer_email_override,   this.dealer.email),
         dealer_address_override: ovr(q.dealer_address_override, dealerAddrFb),
         status: q.status,
+        selected_template: q.selected_template || 't1',
         sections,
         adjustments: adjustmentsPlusOnly,
       };
@@ -707,6 +709,7 @@ function quoteForm() {
         dealer_email_override:   this.form.dealer_email_override,
         quote_title:             this.form.quote_title,
         status: this.form.status,
+        selected_template: this.form.selected_template || 't1',
         sections,
         adjustments,
       };

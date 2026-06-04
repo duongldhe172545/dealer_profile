@@ -215,6 +215,7 @@ function normalizeHeader(dealerId, body, autoGenNumber, defaultVat = 0) {
     dealer_phone_override:   clean(body.dealer_phone_override, 50) || null,
     dealer_email_override:   clean(body.dealer_email_override, 200) || null,
     quote_title:             clean(body.quote_title, 200) || null,
+    selected_template:       ['t1', 't2', 't3'].includes(body.selected_template) ? body.selected_template : 't1',
     status: body.status && VALID_STATUS.includes(body.status) ? body.status : 'draft',
   };
 }

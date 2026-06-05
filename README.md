@@ -9,9 +9,10 @@ Web app cho đại lý ngành cửa: làm hồ sơ giới thiệu năng lực + 
 - Image: Cloudinary
 - Deploy: Railway
 
-## Yêu cầu
-- Node.js 18+
-- Account Cloudinary (free tier)
+## Yêu cầu & Dependencies (Requirements)
+- **Node.js**: Phiên bản 20.x (khớp với cấu hình `engines` trong `package.json` và môi trường Nixpacks/Railway).
+- **Quản lý Package**: Dự án sử dụng `package.json` làm tệp tin cấu hình các thư viện phụ thuộc (tương đương với `requirements.txt` của Python hoặc `Gemfile` của Ruby).
+- **Account Cloudinary (free tier)**: Dùng cho việc upload và lưu trữ kho ảnh, ảnh profile của đại lý.
 
 ## Setup local
 

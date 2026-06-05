@@ -655,7 +655,6 @@
 
     const tpl = quotation.selected_template || 't1';
     if (tpl === 't2') return renderTpl2(ctx);
-    // t3 chưa implement — fallback t1
     return renderTpl1(ctx);
   }
 

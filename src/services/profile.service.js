@@ -5,7 +5,7 @@ const uploadService = require('./upload.service');
 const { badRequest, notFound } = require('../utils/http');
 const { cleanString } = require('../utils/sanitize');
 
-const TEMPLATES = ['t1', 't2', 't3', 't4', 't5'];
+const TEMPLATES = ['t1'];
 const IMAGE_SLOTS = [
   'logo_dai_ly',
   'doi_ngu_1', 'doi_ngu_2', 'qr_code',

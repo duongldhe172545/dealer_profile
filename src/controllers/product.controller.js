@@ -1,11 +1,4 @@
 const productService = require('../services/product.service');
-const { unauthorized } = require('../utils/http');
-
-function dealerId(req) {
-  const id = req.user && req.user.dealer_id;
-  if (!id) throw unauthorized('Tài khoản chưa gắn với đại lý');
-  return id;
-}
 
 function list(req, res, next) {
   try {
@@ -15,30 +8,30 @@ function list(req, res, next) {
       active:  req.query.active !== undefined ? Number(req.query.active) : undefined,
     };
     res.json({
-      data: productService.list(dealerId(req), filter),
-      groups: productService.groups(dealerId(req)),
+      data: productService.list(req.dealerId, filter),
+      groups: productService.groups(req.dealerId),
     });
   } catch (err) { next(err); }
 }
 
 function getOne(req, res, next) {
-  try { res.json({ data: productService.getById(dealerId(req), Number(req.params.id)) }); }
+  try { res.json({ data: productService.getById(req.dealerId, Number(req.params.id)) }); }
   catch (err) { next(err); }
 }
 
 function create(req, res, next) {
-  try { res.status(201).json({ data: productService.create(dealerId(req), req.body || {}) }); }
+  try { res.status(201).json({ data: productService.create(req.dealerId, req.body || {}) }); }
   catch (err) { next(err); }
 }
 
 function update(req, res, next) {
-  try { res.json({ data: productService.update(dealerId(req), Number(req.params.id), req.body || {}) }); }
+  try { res.json({ data: productService.update(req.dealerId, Number(req.params.id), req.body || {}) }); }
   catch (err) { next(err); }
 }
 
 function remove(req, res, next) {
   try {
-    productService.remove(dealerId(req), Number(req.params.id));
+    productService.remove(req.dealerId, Number(req.params.id));
     res.json({ ok: true });
   } catch (err) { next(err); }
 }

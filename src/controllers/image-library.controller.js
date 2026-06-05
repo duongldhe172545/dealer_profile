@@ -9,7 +9,7 @@ function adminList(req, res, next) {
 // Dealer: list admin's NULL + own
 function dealerList(req, res, next) {
   try {
-    res.json({ data: imageService.listForDealer(req.user.dealer_id, { category: req.query.category }) });
+    res.json({ data: imageService.listForDealer(req.dealerId, { category: req.query.category }) });
   } catch (e) { next(e); }
 }
 
@@ -24,10 +24,10 @@ async function adminUpload(req, res, next) {
   } catch (e) { next(e); }
 }
 
-// Dealer upload: dealer_id = req.user.dealer_id
+// Dealer upload: dealer_id = req.dealerId
 async function dealerUpload(req, res, next) {
   try {
-    const dealerId = req.user.dealer_id;
+    const dealerId = req.dealerId;
     const item = await imageService.createFromFile(req.file, req.body, {
       dealerId,
       folder: `daily-so/images/${dealerId}`,

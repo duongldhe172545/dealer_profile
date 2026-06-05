@@ -30,4 +30,13 @@ function requireRole(...allowedRoles) {
   };
 }
 
-module.exports = { requireAuth, requireRole };
+// Middleware: yêu cầu tài khoản đã gắn với đại lý. Gán req.dealerId = req.user.dealer_id
+function requireDealer(req, res, next) {
+  if (!req.user || !req.user.dealer_id) {
+    return next(unauthorized('Tài khoản chưa gắn với đại lý'));
+  }
+  req.dealerId = req.user.dealer_id;
+  next();
+}
+
+module.exports = { requireAuth, requireRole, requireDealer };

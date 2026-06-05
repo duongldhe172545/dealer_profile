@@ -1,5 +1,5 @@
 const express = require('express');
-const { requireAuth, requireRole } = require('../middleware/auth');
+const { requireAuth, requireRole, requireDealer } = require('../middleware/auth');
 const { upload } = require('../services/upload.service');
 const profileController = require('../controllers/profile.controller');
 const productController = require('../controllers/product.controller');
@@ -10,7 +10,7 @@ const dealerStatsController = require('../controllers/dealer-stats.controller');
 
 const router = express.Router();
 
-router.use(requireAuth, requireRole('dealer'));
+router.use(requireAuth, requireRole('dealer'), requireDealer);
 
 // Dashboard tổng quan của đại lý
 router.get('/dashboard/v4', dealerStatsController.dashboardV4);   // mig 015 — 5 sections + filter

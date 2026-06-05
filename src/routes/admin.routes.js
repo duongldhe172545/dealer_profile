@@ -19,7 +19,6 @@ router.patch('/dealers/:id/status', dealerController.setStatus);
 router.post('/dealers/:id/reset-password', dealerController.resetPassword);
 
 // Stats / Cross-dealer views
-router.get('/stats/overview', statsController.overview);
 router.get('/stats/dashboard', statsController.dashboard);
 router.get('/all/quotations', statsController.quotations);
 router.get('/all/customers', statsController.customers);

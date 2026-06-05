@@ -13,7 +13,6 @@ const router = express.Router();
 router.use(requireAuth, requireRole('dealer'));
 
 // Dashboard tổng quan của đại lý
-router.get('/dashboard', dealerStatsController.dashboard);
 router.get('/dashboard/v4', dealerStatsController.dashboardV4);   // mig 015 — 5 sections + filter
 
 // Hồ sơ

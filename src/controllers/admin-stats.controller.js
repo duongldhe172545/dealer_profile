@@ -1,10 +1,5 @@
 const service = require('../services/admin-stats.service');
 
-function overview(req, res, next) {
-  try { res.json({ data: service.overview() }); }
-  catch (err) { next(err); }
-}
-
 function quotations(req, res, next) {
   try {
     res.json({
@@ -85,4 +80,4 @@ function dealerDashboard(req, res, next) {
   } catch (err) { next(err); }
 }
 
-module.exports = { overview, quotations, customers, products, dealerDetail, exportCSV, dashboard, dealerDashboard };
+module.exports = { quotations, customers, products, dealerDetail, exportCSV, dashboard, dealerDashboard };

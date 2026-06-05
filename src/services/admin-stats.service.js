@@ -1,16 +1,6 @@
 const adminStatsModel = require('../models/admin-stats.model');
 const { notFound } = require('../utils/http');
 
-function overview() {
-  return {
-    kpi: adminStatsModel.overview(),
-    monthly: adminStatsModel.monthlyRevenue(),
-    top_dealers: adminStatsModel.topDealers({ limit: 5 }),
-    top_products: adminStatsModel.topProducts({ limit: 10 }),
-    price_groups: adminStatsModel.priceRangeByGroup(),
-  };
-}
-
 function quotationsAll(filter) {
   return adminStatsModel.quotationsAll(filter);
 }
@@ -84,4 +74,4 @@ function toCSV(headers, rows) {
   return '﻿' + lines.join('\n');
 }
 
-module.exports = { overview, quotationsAll, customersAll, productsAll, dealerFull, dashboardAdmin, exportCSV };
+module.exports = { quotationsAll, customersAll, productsAll, dealerFull, dashboardAdmin, exportCSV };

@@ -58,4 +58,31 @@ function exportCSV(req, res, next) {
   } catch (err) { next(err); }
 }
 
-module.exports = { overview, quotations, customers, products, dealerDetail, exportCSV };
+function dashboard(req, res, next) {
+  try {
+    const filter = {};
+    if (req.query.year) filter.year = req.query.year;
+    if (req.query.month) filter.month = req.query.month;
+    res.json({ data: service.dashboardAdmin(filter) });
+  } catch (err) { next(err); }
+}
+
+function dealerDashboard(req, res, next) {
+  try {
+    const dealerStatsModel = require('../models/dealer-stats.model');
+    const dealerId = Number(req.params.id);
+    const filter = {};
+    if (req.query.year && req.query.month) {
+      filter.mode = 'month';
+      filter.period = `${req.query.year}-${String(req.query.month).padStart(2, '0')}`;
+    } else if (req.query.year) {
+      filter.mode = 'year';
+      filter.period = req.query.year;
+    } else {
+      filter.mode = 'all';
+    }
+    res.json({ data: dealerStatsModel.dashboardV4(dealerId, filter) });
+  } catch (err) { next(err); }
+}
+
+module.exports = { overview, quotations, customers, products, dealerDetail, exportCSV, dashboard, dealerDashboard };

@@ -46,6 +46,7 @@
       <table class="w-full text-sm">
         <thead class="bg-slate-50 border-b border-slate-200 text-slate-600">
           <tr>
+            <th class="px-4 py-3 text-center font-semibold w-12">STT</th>
             <th class="px-4 py-3 text-left font-semibold">Mã ĐL</th>
             <th class="px-4 py-3 text-left font-semibold">Tên đại lý</th>
             <th class="px-4 py-3 text-left font-semibold">SĐT</th>
@@ -57,11 +58,12 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
-          <template x-for="d in dealers" :key="d.id">
+          <template x-for="(d, idx) in paginatedDealers" :key="d.id">
             <tr class="hover:bg-slate-50">
+              <td class="px-4 py-3 text-center text-xs text-slate-500 tabular-nums" x-text="(currentPage - 1) * perPage + idx + 1"></td>
               <td class="px-4 py-3 font-mono text-xs" x-text="d.dealer_code"></td>
               <td class="px-4 py-3">
-                <div class="font-semibold text-slate-800" x-text="d.ten_dai_ly"></div>
+                <a :href="'/admin/dealer-detail.html?id=' + d.id" class="font-semibold text-brand-700 hover:text-brand-600 hover:underline" x-text="d.ten_dai_ly"></a>
                 <div class="text-xs text-slate-500" x-text="d.chu_dai_ly || '—'"></div>
               </td>
               <td class="px-4 py-3" x-text="d.phone || '—'"></td>
@@ -73,6 +75,7 @@
                 <span x-show="d.status !== 'active'" class="inline-block px-2 py-0.5 bg-slate-200 text-slate-600 rounded text-xs font-semibold">Đã khoá</span>
               </td>
               <td class="px-4 py-3 text-right space-x-2">
+                <a :href="'/admin/dealer-detail.html?id=' + d.id" class="text-emerald-600 hover:text-emerald-700 text-sm font-semibold">Xem</a>
                 <button @click="openEdit(d)" class="text-brand-600 hover:text-brand-700 text-sm font-semibold">Sửa</button>
                 <button @click="openResetPwd(d)" class="text-slate-600 hover:text-slate-800 text-sm">Đổi MK</button>
                 <button @click="toggleStatus(d)" class="text-sm" :class="d.status === 'active' ? 'text-red-600 hover:text-red-700' : 'text-green-600 hover:text-green-700'"
@@ -81,13 +84,26 @@
             </tr>
           </template>
           <tr x-show="!loading && dealers.length === 0">
-            <td colspan="8" class="px-4 py-12 text-center text-slate-400">Chưa có đại lý nào. Bấm "Thêm đại lý" để bắt đầu.</td>
+            <td colspan="9" class="px-4 py-12 text-center text-slate-400">Chưa có đại lý nào. Bấm "Thêm đại lý" để bắt đầu.</td>
           </tr>
           <tr x-show="loading">
-            <td colspan="8" class="px-4 py-12 text-center text-slate-400">Đang tải...</td>
+            <td colspan="9" class="px-4 py-12 text-center text-slate-400">Đang tải...</td>
           </tr>
         </tbody>
       </table>
+    </div>
+    <!-- Pagination -->
+    <div x-show="!loading && dealers.length > 0" class="mt-4 flex items-center justify-between gap-4 flex-wrap bg-white border border-slate-200 rounded-xl px-4 py-3">
+      <div class="text-sm text-slate-600">
+        Trang <strong x-text="currentPage"></strong> / <strong x-text="totalPages"></strong>
+        <span class="text-slate-400 ml-2">(<span x-text="dealers.length"></span> đại lý)</span>
+      </div>
+      <div class="flex gap-2">
+        <button @click="currentPage = 1" :disabled="currentPage <= 1" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">⇤</button>
+        <button @click="currentPage--" :disabled="currentPage <= 1" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">← Trước</button>
+        <button @click="currentPage++" :disabled="currentPage >= totalPages" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">Sau →</button>
+        <button @click="currentPage = totalPages" :disabled="currentPage >= totalPages" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">⇥</button>
+      </div>
     </div>
 
     <!-- Modal: Create/Edit -->
@@ -212,6 +228,7 @@
       return {
         dealers: [], loading: false, error: '', saving: false,
         search: '', status: '',
+        currentPage: 1, perPage: 20,
 
         // Form state
         formOpen: false, editingId: null, form: {},
@@ -226,8 +243,12 @@
           };
         },
 
+        get totalPages() { return Math.max(1, Math.ceil(this.dealers.length / this.perPage)); },
+        get paginatedDealers() { const s = (this.currentPage - 1) * this.perPage; return this.dealers.slice(s, s + this.perPage); },
+
         async load() {
           this.loading = true;
+          this.currentPage = 1;
           try {
             const q = new URLSearchParams();
             if (this.search) q.set('search', this.search);

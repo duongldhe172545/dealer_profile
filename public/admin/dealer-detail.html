@@ -15,7 +15,51 @@
     const user = Auth.guard('admin');
     document.addEventListener('DOMContentLoaded', () => { if (user) AdminShell.mount(user); });
   </script>
-  <style>[x-cloak]{display:none!important}</style>
+  <style>
+    [x-cloak]{display:none!important}
+    .fin-card { background:linear-gradient(180deg,#fff,#f8fbff); border:1px solid #e6edf5; border-radius:14px; padding:14px 12px; text-align:center; transition:transform .15s; }
+    .fin-card:hover { transform:translateY(-2px); }
+    .fin-card .lbl { font-size:10.5px; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; margin-bottom:6px; }
+    .fin-card .val { font-size:15px; font-weight:800; font-variant-numeric:tabular-nums; line-height:1.1; }
+    .fin-card.blue    .val { color:#1d4ed8; }
+    .fin-card.emerald .val { color:#047857; }
+    .fin-card.green   .val { color:#15803d; }
+    .fin-card.rose    .val { color:#be123c; }
+    .fin-card.orange  .val { color:#c2410c; }
+
+    .progress-row { display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center; margin-bottom:6px; }
+    .progress-row .name { font-size:13px; color:#475569; font-weight:500; }
+    .progress-row .val  { font-size:16px; font-weight:800; color:#0f172a; min-width:32px; text-align:right; font-variant-numeric:tabular-nums; }
+    .progress-track { height:8px; background:#f1f5f9; border-radius:999px; overflow:hidden; margin-bottom:14px; }
+    .progress-fill  { height:100%; border-radius:inherit; transition:width 0.4s ease; }
+
+    .conversion-box { background:linear-gradient(135deg,#eff6ff,#dbeafe); border:1px solid #bfdbfe; border-radius:14px; padding:16px; margin-top:16px; }
+    .conversion-box .rate { font-size:36px; font-weight:900; color:#1d4ed8; line-height:1; letter-spacing:-0.02em; }
+
+    .order-total-box { background:linear-gradient(135deg,#0f172a,#1e3a8a); color:#fff; border-radius:14px; padding:16px 18px; display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+
+    .cust-card { display:flex; align-items:center; gap:14px; padding:16px; border-radius:14px; border:1px solid transparent; }
+    .cust-card .icon { flex-shrink:0; width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; }
+    .cust-card.blue    { background:linear-gradient(135deg,#eff6ff,#dbeafe); border-color:#bfdbfe; }
+    .cust-card.blue    .icon { background:#fff; color:#1d4ed8; }
+    .cust-card.blue    .val  { color:#1d4ed8; }
+    .cust-card.purple  { background:linear-gradient(135deg,#faf5ff,#ede9fe); border-color:#ddd6fe; }
+    .cust-card.purple  .icon { background:#fff; color:#6d28d9; }
+    .cust-card.purple  .val  { color:#6d28d9; }
+    .cust-card.emerald { background:linear-gradient(135deg,#ecfdf5,#d1fae5); border-color:#a7f3d0; }
+    .cust-card.emerald .icon { background:#fff; color:#047857; }
+    .cust-card.emerald .val  { color:#047857; }
+    .cust-card .body { flex:1; min-width:0; }
+    .cust-card .lbl { font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; }
+    .cust-card .val { font-size:22px; font-weight:900; font-variant-numeric:tabular-nums; margin-top:2px; }
+
+    .pg-table { width:100%; border-collapse:collapse; }
+    .pg-table th { font-size:11px; text-transform:uppercase; color:#64748b; font-weight:700; padding:10px 12px; text-align:left; border-bottom:1px solid #e2e8f0; background:#fafbfd; }
+    .pg-table td { padding:12px; font-size:13px; border-bottom:1px solid #f1f5f9; }
+    .pg-table td.num { text-align:right; font-variant-numeric:tabular-nums; font-weight:600; }
+    .pg-bar { display:block; height:8px; background:#f1f5f9; border-radius:999px; overflow:hidden; }
+    .pg-bar > span { display:block; height:100%; background:linear-gradient(90deg,#0a6fd6,#60a5fa); border-radius:inherit; transition:width 0.4s; }
+  </style>
 </head>
 <body class="min-h-screen bg-slate-50">
   <div id="admin-shell"></div>
@@ -48,11 +92,104 @@
       <!-- Tab nav -->
       <div class="flex gap-1 mb-4 border-b border-slate-200 overflow-x-auto">
         <template x-for="t in tabs" :key="t.key">
-          <button class="px-4 py-2.5 text-sm font-medium whitespace-nowrap" :class="active === t.key ? 'text-brand-700 border-b-2 border-brand-500 font-bold' : 'text-slate-500 hover:text-slate-700'" @click="active = t.key" x-text="t.label"></button>
+          <button class="px-4 py-2.5 text-sm font-medium whitespace-nowrap"
+                  :class="active === t.key ? 'text-brand-700 border-b-2 border-brand-500 font-bold' : 'text-slate-500 hover:text-slate-700'"
+                  @click="switchTab(t.key)" x-text="t.label"></button>
         </template>
       </div>
 
-      <!-- Thông tin -->
+      <!-- Tab: Dashboard -->
+      <section x-show="active === 'dashboard'" class="space-y-4">
+        <!-- Dashboard filter -->
+        <div class="bg-white border border-slate-200 rounded-xl p-3 flex items-center justify-between gap-3 flex-wrap">
+          <span class="text-xs font-bold uppercase text-slate-500 tracking-wider">Bộ lọc dashboard</span>
+          <div class="flex gap-2 items-center flex-wrap">
+            <select x-model="dashYear" @change="onDashFilterChange()" class="px-3 py-2 border border-slate-300 rounded-lg text-sm">
+              <option value="">Tất cả</option>
+              <template x-for="y in yearOptions" :key="y"><option :value="String(y)" x-text="'Năm ' + y"></option></template>
+            </select>
+            <select x-model="dashMonth" @change="onDashFilterChange()" :disabled="!dashYear" class="px-3 py-2 border border-slate-300 rounded-lg text-sm disabled:opacity-50">
+              <option value="">Cả năm</option>
+              <template x-for="m in 12" :key="m"><option :value="String(m).padStart(2,'0')" x-text="'Tháng ' + m"></option></template>
+            </select>
+          </div>
+        </div>
+        <div x-show="dashLoading" class="text-center text-slate-400 py-8">Đang tải dashboard...</div>
+        <div x-show="!dashLoading" class="space-y-4">
+          <!-- Financial 5 cards -->
+          <div class="bg-white border border-slate-200 rounded-xl p-5">
+            <h3 class="text-sm font-bold text-slate-700 mb-3">Tài chính</h3>
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+              <div class="fin-card blue"><div class="lbl">Tổng GT BG</div><div class="val" x-text="Fmt.formatMoney(dash.financial?.doanh_so || 0)"></div></div>
+              <div class="fin-card emerald"><div class="lbl">Tổng GT ĐH</div><div class="val" x-text="Fmt.formatMoney(dash.financial?.doanh_thu || 0)"></div></div>
+              <div class="fin-card green"><div class="lbl">Lợi nhuận</div><div class="val" x-text="Fmt.formatMoney(dash.financial?.loi_nhuan || 0)"></div></div>
+              <div class="fin-card rose"><div class="lbl">Chi phí</div><div class="val" x-text="Fmt.formatMoney(dash.financial?.chi_phi || 0)"></div></div>
+              <div class="fin-card orange"><div class="lbl">Công nợ</div><div class="val" x-text="Fmt.formatMoney(dash.financial?.cong_no || 0)"></div></div>
+            </div>
+          </div>
+
+          <!-- Orders + Quotations -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="bg-white border border-slate-200 rounded-xl p-5">
+              <h3 class="text-sm font-bold text-slate-700 mb-3">Đơn hàng</h3>
+              <div class="order-total-box">
+                <div><div class="text-xs opacity-85 font-semibold">Tổng đơn</div></div>
+                <div class="text-2xl font-black" x-text="dash.orders?.total || 0"></div>
+              </div>
+              <template x-for="item in dashOrderItems" :key="item.key">
+                <div>
+                  <div class="progress-row"><span class="name" x-text="item.label"></span><span class="val" x-text="item.value"></span></div>
+                  <div class="progress-track"><div class="progress-fill" :style="`width: ${item.pct}%; background: linear-gradient(90deg, ${item.color}, ${item.color}cc)`"></div></div>
+                </div>
+              </template>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-xl p-5">
+              <h3 class="text-sm font-bold text-slate-700 mb-3">Báo giá</h3>
+              <template x-for="item in dashQuoteItems" :key="item.key">
+                <div>
+                  <div class="progress-row"><span class="name" x-text="item.label"></span><span class="val" x-text="item.value"></span></div>
+                  <div class="progress-track"><div class="progress-fill" :style="`width: ${item.pct}%; background: linear-gradient(90deg, ${item.color}, ${item.color}cc)`"></div></div>
+                </div>
+              </template>
+              <div class="conversion-box">
+                <div class="flex items-center justify-between gap-2">
+                  <div>
+                    <div class="text-xs text-slate-700 font-bold uppercase">Tỉ lệ chuyển đổi</div>
+                    <div class="text-[11px] text-slate-500 mt-1" x-text="'Chốt / Đã gửi (' + (dash.quotations?.da_chot || 0) + '/' + (dash.quotations?.conversion_base || 0) + ')'"></div>
+                  </div>
+                  <div class="rate" x-text="(dash.quotations?.conversion_rate || 0) + '%'"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Customers + Product groups -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <div class="bg-white border border-slate-200 rounded-xl p-5 lg:col-span-4">
+              <h3 class="text-sm font-bold text-slate-700 mb-3">Khách hàng</h3>
+              <div class="grid gap-3">
+                <div class="cust-card blue"><div class="icon">👤</div><div class="body"><div class="lbl">KH mới</div><div class="val" x-text="dash.customers?.new_in_period || 0"></div></div></div>
+                <div class="cust-card purple"><div class="icon">👥</div><div class="body"><div class="lbl">Tổng KH</div><div class="val" x-text="dash.customers?.total || 0"></div></div></div>
+                <div class="cust-card emerald"><div class="icon">🔄</div><div class="body"><div class="lbl">KH quay lại</div><div class="val" x-text="dash.customers?.returning || 0"></div></div></div>
+              </div>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-xl p-5 lg:col-span-8">
+              <h3 class="text-sm font-bold text-slate-700 mb-3">Nhóm sản phẩm</h3>
+              <table class="pg-table">
+                <thead><tr><th>Nhóm SP</th><th class="num" style="text-align:right">Giá trị</th><th class="num" style="text-align:right">Số đơn</th><th class="num" style="text-align:right">Tỉ trọng</th><th style="min-width:120px">Phân bổ</th></tr></thead>
+                <tbody>
+                  <template x-for="p in (dash.product_groups || [])" :key="p.nhom_sp">
+                    <tr><td class="font-semibold" x-text="p.nhom_sp"></td><td class="num" x-text="Fmt.formatMoney(p.doanh_thu)"></td><td class="num" x-text="p.so_don"></td><td class="num font-bold text-blue-700" x-text="p.ti_trong_pct + '%'"></td><td><div class="pg-bar"><span :style="`width: ${p.ti_trong_pct}%`"></span></div></td></tr>
+                  </template>
+                  <tr x-show="!(dash.product_groups || []).length"><td colspan="5" class="text-center text-slate-400 py-6">Chưa có dữ liệu.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab: Thông tin -->
       <section x-show="active === 'info'" class="bg-white border border-slate-200 rounded-xl p-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 text-sm">
           <div><div class="text-xs text-slate-500 font-semibold uppercase">Tên đại lý</div><div class="font-semibold" x-text="dealer.ten_dai_ly || '—'"></div></div>
@@ -90,18 +227,16 @@
         </div>
       </section>
 
-      <!-- Báo giá -->
+      <!-- Tab: Báo giá -->
       <section x-show="active === 'quotations'" class="bg-white border border-slate-200 rounded-xl overflow-hidden">
         <table class="w-full text-sm">
-          <thead class="bg-slate-50 text-slate-600 border-b border-slate-200">
-            <tr>
-              <th class="px-4 py-2 text-left font-semibold">Số BG</th>
-              <th class="px-4 py-2 text-left font-semibold">Ngày</th>
-              <th class="px-4 py-2 text-left font-semibold">Khách hàng</th>
-              <th class="px-4 py-2 text-right font-semibold">Tổng cộng</th>
-              <th class="px-4 py-2 text-center font-semibold">Trạng thái</th>
-            </tr>
-          </thead>
+          <thead class="bg-slate-50 text-slate-600 border-b border-slate-200"><tr>
+            <th class="px-4 py-2 text-left font-semibold">Số BG</th>
+            <th class="px-4 py-2 text-left font-semibold">Ngày</th>
+            <th class="px-4 py-2 text-left font-semibold">Khách hàng</th>
+            <th class="px-4 py-2 text-right font-semibold">Tổng cộng</th>
+            <th class="px-4 py-2 text-center font-semibold">Trạng thái</th>
+          </tr></thead>
           <tbody class="divide-y divide-slate-100">
             <template x-for="q in quotations" :key="q.id">
               <tr class="hover:bg-slate-50">
@@ -109,9 +244,7 @@
                 <td class="px-4 py-2" x-text="Fmt.formatDate(q.ngay_bao_gia)"></td>
                 <td class="px-4 py-2" x-text="q.customer_name || '—'"></td>
                 <td class="px-4 py-2 text-right font-semibold tabular-nums" x-text="Fmt.formatMoney(q.tong_cong)"></td>
-                <td class="px-4 py-2 text-center">
-                  <span :class="statusClass(q.status)" x-text="statusLabel(q.status)" class="px-2 py-0.5 rounded text-xs font-semibold inline-block"></span>
-                </td>
+                <td class="px-4 py-2 text-center"><span :class="statusClass(q.status)" x-text="statusLabel(q.status)" class="px-2 py-0.5 rounded text-xs font-semibold inline-block"></span></td>
               </tr>
             </template>
             <tr x-show="quotations.length === 0"><td colspan="5" class="px-4 py-12 text-center text-slate-400">Chưa có báo giá nào.</td></tr>
@@ -119,20 +252,18 @@
         </table>
       </section>
 
-      <!-- KH -->
+      <!-- Tab: KH -->
       <section x-show="active === 'customers'" class="bg-white border border-slate-200 rounded-xl overflow-hidden">
         <table class="w-full text-sm">
-          <thead class="bg-slate-50 text-slate-600 border-b border-slate-200">
-            <tr>
-              <th class="px-4 py-2 text-left font-semibold">Mã</th>
-              <th class="px-4 py-2 text-left font-semibold">Tên KH</th>
-              <th class="px-4 py-2 text-left font-semibold">SĐT</th>
-              <th class="px-4 py-2 text-left font-semibold">Email</th>
-              <th class="px-4 py-2 text-center font-semibold">Báo giá</th>
-            </tr>
-          </thead>
+          <thead class="bg-slate-50 text-slate-600 border-b border-slate-200"><tr>
+            <th class="px-4 py-2 text-left font-semibold">Mã</th>
+            <th class="px-4 py-2 text-left font-semibold">Tên KH</th>
+            <th class="px-4 py-2 text-left font-semibold">SĐT</th>
+            <th class="px-4 py-2 text-left font-semibold">Email</th>
+            <th class="px-4 py-2 text-center font-semibold">Báo giá</th>
+          </tr></thead>
           <tbody class="divide-y divide-slate-100">
-            <template x-for="c in customers" :key="c.id">
+            <template x-for="c in customersList" :key="c.id">
               <tr class="hover:bg-slate-50">
                 <td class="px-4 py-2 font-mono text-xs" x-text="c.ma_kh"></td>
                 <td class="px-4 py-2 font-semibold" x-text="c.ten_kh"></td>
@@ -141,31 +272,29 @@
                 <td class="px-4 py-2 text-center tabular-nums" x-text="c.q_count"></td>
               </tr>
             </template>
-            <tr x-show="customers.length === 0"><td colspan="5" class="px-4 py-12 text-center text-slate-400">Chưa có KH nào.</td></tr>
+            <tr x-show="customersList.length === 0"><td colspan="5" class="px-4 py-12 text-center text-slate-400">Chưa có KH nào.</td></tr>
           </tbody>
         </table>
       </section>
 
-      <!-- SP -->
+      <!-- Tab: SP -->
       <section x-show="active === 'products'" class="bg-white border border-slate-200 rounded-xl overflow-hidden">
         <table class="w-full text-sm">
-          <thead class="bg-slate-50 text-slate-600 border-b border-slate-200">
-            <tr>
-              <th class="px-4 py-2 text-left font-semibold">Mã</th>
-              <th class="px-4 py-2 text-left font-semibold">Nhóm</th>
-              <th class="px-4 py-2 text-left font-semibold">Mô tả</th>
-              <th class="px-4 py-2 text-left font-semibold">Cách tính</th>
-              <th class="px-4 py-2 text-right font-semibold">Đơn giá</th>
-              <th class="px-4 py-2 text-center font-semibold">TT</th>
-            </tr>
-          </thead>
+          <thead class="bg-slate-50 text-slate-600 border-b border-slate-200"><tr>
+            <th class="px-4 py-2 text-left font-semibold">Mã</th>
+            <th class="px-4 py-2 text-left font-semibold">Nhóm</th>
+            <th class="px-4 py-2 text-left font-semibold">Mô tả</th>
+            <th class="px-4 py-2 text-left font-semibold">Cách tính</th>
+            <th class="px-4 py-2 text-right font-semibold">Đơn giá</th>
+            <th class="px-4 py-2 text-center font-semibold">TT</th>
+          </tr></thead>
           <tbody class="divide-y divide-slate-100">
-            <template x-for="p in products" :key="p.id">
+            <template x-for="p in productsList" :key="p.id">
               <tr class="hover:bg-slate-50">
                 <td class="px-4 py-2 font-mono text-xs font-bold" x-text="p.ma_sp"></td>
                 <td class="px-4 py-2" x-text="p.nhom_sp || '—'"></td>
                 <td class="px-4 py-2 text-slate-700" x-text="p.mo_ta || '—'"></td>
-                <td class="px-4 py-2 text-xs text-slate-600" x-text="(window.PRICING_MODES[p.cach_tinh_gia] || {}).label || p.cach_tinh_gia"></td>
+                <td class="px-4 py-2 text-xs text-slate-600" x-text="(window.PRICING_MODES?.[p.cach_tinh_gia] || {}).label || p.cach_tinh_gia"></td>
                 <td class="px-4 py-2 text-right tabular-nums font-semibold" x-text="Fmt.formatMoney(p.don_gia_mac_dinh)"></td>
                 <td class="px-4 py-2 text-center">
                   <span x-show="p.active" class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-semibold">Bán</span>
@@ -173,7 +302,7 @@
                 </td>
               </tr>
             </template>
-            <tr x-show="products.length === 0"><td colspan="6" class="px-4 py-12 text-center text-slate-400">Chưa có SP nào.</td></tr>
+            <tr x-show="productsList.length === 0"><td colspan="6" class="px-4 py-12 text-center text-slate-400">Chưa có SP nào.</td></tr>
           </tbody>
         </table>
       </section>
@@ -184,29 +313,87 @@
     function detail() {
       return {
         loading: true, dealer: null, profile: null, images: {},
-        quotations: [], customers: [], products: [], totals: { quotations_count: 0, revenue: 0 },
-        active: 'info', tabs: [
+        quotations: [], customersList: [], productsList: [], totals: { quotations_count: 0, revenue: 0 },
+        active: 'dashboard',
+        tabs: [
+          { key: 'dashboard',  label: '📊 Dashboard' },
           { key: 'info',       label: 'Thông tin & Hồ sơ' },
           { key: 'quotations', label: 'Báo giá' },
           { key: 'customers',  label: 'Khách hàng' },
           { key: 'products',   label: 'Sản phẩm' },
         ],
         Fmt: window.Fmt,
+
+        // Dashboard sub-state
+        dashYear: String(new Date().getFullYear()),
+        dashMonth: '',
+        dashLoading: false,
+        dash: {},
+        yearOptions: Array.from({ length: 6 }, (_, i) => new Date().getFullYear() - i),
+
+        get dashOrderItems() {
+          const o = this.dash.orders || {};
+          const total = o.total || 1;
+          return [
+            { key:'csx', label:'Chờ sản xuất', value:o.cho_san_xuat||0, pct:(o.cho_san_xuat||0)/total*100, color:'#f59e0b' },
+            { key:'sx',  label:'Sản xuất',     value:o.san_xuat||0,     pct:(o.san_xuat||0)/total*100,     color:'#14b8a6' },
+            { key:'ld',  label:'Lắp đặt',      value:o.lap_dat||0,      pct:(o.lap_dat||0)/total*100,      color:'#f97316' },
+            { key:'ht',  label:'Hoàn thiện',    value:o.hoan_thien||0,   pct:(o.hoan_thien||0)/total*100,   color:'#22c55e' },
+          ];
+        },
+        get dashQuoteItems() {
+          const q = this.dash.quotations || {};
+          const total = q.total || 1;
+          return [
+            { key:'nhap',     label:'Nháp',     value:q.nhap||0,     pct:(q.nhap||0)/total*100,     color:'#94a3b8' },
+            { key:'chua_gui', label:'Chưa gửi', value:q.chua_gui||0, pct:(q.chua_gui||0)/total*100, color:'#fbbf24' },
+            { key:'da_gui',   label:'Đã gửi',   value:q.da_gui||0,   pct:(q.da_gui||0)/total*100,   color:'#3b82f6' },
+            { key:'da_chot',  label:'Đã chốt',  value:q.da_chot||0,  pct:(q.da_chot||0)/total*100,  color:'#22c55e' },
+            { key:'da_truot', label:'Đã trượt', value:q.da_truot||0, pct:(q.da_truot||0)/total*100, color:'#ef4444' },
+          ];
+        },
+
         async load() {
           const id = new URLSearchParams(location.search).get('id');
           if (!id) { alert('Thiếu id'); return; }
+          this._dealerId = id;
           try {
             const r = await API.get('/api/admin/dealers/' + id + '/full');
             this.dealer = r.data.dealer;
             this.profile = r.data.profile;
             this.images = r.data.images || {};
             this.quotations = r.data.quotations || [];
-            this.customers = r.data.customers || [];
-            this.products = r.data.products || [];
+            this.customersList = r.data.customers || [];
+            this.productsList = r.data.products || [];
             this.totals = r.data.totals;
           } catch (e) { alert(e.message); }
           finally { this.loading = false; }
+          // Auto-load dashboard
+          this.loadDashboard();
         },
+
+        switchTab(key) {
+          this.active = key;
+        },
+
+        onDashFilterChange() {
+          if (!this.dashYear) this.dashMonth = '';
+          this.loadDashboard();
+        },
+
+        async loadDashboard() {
+          if (!this._dealerId) return;
+          this.dashLoading = true;
+          try {
+            const q = new URLSearchParams();
+            if (this.dashYear) q.set('year', this.dashYear);
+            if (this.dashMonth) q.set('month', this.dashMonth);
+            const r = await API.get('/api/admin/dealers/' + this._dealerId + '/dashboard' + (q.toString() ? '?' + q : ''));
+            this.dash = r.data;
+          } catch (e) { console.error(e); }
+          finally { this.dashLoading = false; }
+        },
+
         get addressFull() {
           return [this.dealer?.address, this.dealer?.district, this.dealer?.province].filter(Boolean).join(', ') || '—';
         },
@@ -218,9 +405,7 @@
         },
         statusLabel(s) { return ({ draft: 'Bản nháp', sent: 'Đã gửi', confirmed: 'Đã chốt', cancelled: 'Đã huỷ' })[s] || s; },
         statusClass(s) {
-          return ({ draft: 'bg-slate-100', sent: 'bg-blue-100 text-blue-700',
-                    confirmed: 'bg-green-100 text-green-700',
-                    cancelled: 'bg-red-100 text-red-700' })[s] || 'bg-slate-100';
+          return ({ draft: 'bg-slate-100', sent: 'bg-blue-100 text-blue-700', confirmed: 'bg-green-100 text-green-700', cancelled: 'bg-red-100 text-red-700' })[s] || 'bg-slate-100';
         },
       };
     }

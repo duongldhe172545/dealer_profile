@@ -37,17 +37,13 @@
       </select>
       <input x-model="filterFrom" @change="load()" type="date" class="px-3 py-2 border border-slate-300 rounded-lg text-sm" title="Từ ngày">
       <input x-model="filterTo" @change="load()" type="date" class="px-3 py-2 border border-slate-300 rounded-lg text-sm" title="Đến ngày">
-      <select x-model.number="filterLimit" @change="load()" class="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
-        <option value="100">100 dòng gần nhất</option>
-        <option value="500">500 dòng</option>
-        <option value="2000">2000 dòng</option>
-      </select>
     </div>
 
     <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
       <table class="w-full text-sm">
         <thead class="bg-slate-50 border-b border-slate-200 text-slate-600">
           <tr>
+            <th class="px-4 py-3 text-center font-semibold w-12">STT</th>
             <th class="px-4 py-3 text-left font-semibold">Thời gian</th>
             <th class="px-4 py-3 text-left font-semibold">Người dùng</th>
             <th class="px-4 py-3 text-left font-semibold">Đại lý</th>
@@ -57,8 +53,9 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
-          <template x-for="row in items" :key="row.id">
+          <template x-for="(row, idx) in paginatedItems" :key="row.id">
             <tr class="hover:bg-slate-50">
+              <td class="px-4 py-3 text-center text-xs text-slate-500 tabular-nums" x-text="(page - 1) * perPage + idx + 1"></td>
               <td class="px-4 py-3 text-xs text-slate-600 whitespace-nowrap" x-text="Fmt.formatDateTime(row.created_at)"></td>
               <td class="px-4 py-3">
                 <div class="font-semibold text-slate-800" x-text="row.username"></div>
@@ -81,13 +78,26 @@
             </tr>
           </template>
           <tr x-show="!loading && items.length === 0">
-            <td colspan="6" class="px-4 py-12 text-center text-slate-400">Chưa có log nào.</td>
+            <td colspan="7" class="px-4 py-12 text-center text-slate-400">Chưa có log nào.</td>
           </tr>
           <tr x-show="loading">
-            <td colspan="6" class="px-4 py-12 text-center text-slate-400">Đang tải...</td>
+            <td colspan="7" class="px-4 py-12 text-center text-slate-400">Đang tải...</td>
           </tr>
         </tbody>
       </table>
+    </div>
+    <!-- Pagination -->
+    <div x-show="!loading && items.length > 0" class="mt-4 flex items-center justify-between gap-4 flex-wrap bg-white border border-slate-200 rounded-xl px-4 py-3">
+      <div class="text-sm text-slate-600">
+        Trang <strong x-text="page"></strong> / <strong x-text="totalPages"></strong>
+        <span class="text-slate-400 ml-2">(<span x-text="items.length"></span> bản ghi)</span>
+      </div>
+      <div class="flex gap-2">
+        <button @click="page = 1" :disabled="page <= 1" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">⇤</button>
+        <button @click="page--" :disabled="page <= 1" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">← Trước</button>
+        <button @click="page++" :disabled="page >= totalPages" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">Sau →</button>
+        <button @click="page = totalPages" :disabled="page >= totalPages" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">⇥</button>
+      </div>
     </div>
   </main>
 
@@ -95,7 +105,8 @@
     function auditPage() {
       return {
         items: [], loading: false,
-        filterAction: '', filterFrom: '', filterTo: '', filterLimit: 100,
+        filterAction: '', filterFrom: '', filterTo: '',
+        page: 1, perPage: 20,
         Fmt: window.Fmt,
         ACTION_MAP: {
           'dealer.create':      { label: 'Tạo đại lý',     cls: 'bg-purple-100 text-purple-700' },
@@ -104,14 +115,20 @@
           'quotation.send':     { label: 'Gửi báo giá',    cls: 'bg-amber-100 text-amber-700' },
           'quotation.confirm':  { label: 'KH chốt báo giá', cls: 'bg-green-100 text-green-700' },
         },
+        get totalPages() { return Math.max(1, Math.ceil(this.items.length / this.perPage)); },
+        get paginatedItems() {
+          const start = (this.page - 1) * this.perPage;
+          return this.items.slice(start, start + this.perPage);
+        },
         async load() {
           this.loading = true;
+          this.page = 1;
           try {
             const q = new URLSearchParams();
             if (this.filterAction) q.set('action', this.filterAction);
             if (this.filterFrom)   q.set('from', this.filterFrom);
             if (this.filterTo)     q.set('to', this.filterTo);
-            q.set('limit', this.filterLimit);
+            q.set('limit', 5000);
             const r = await API.get('/api/admin/audit?' + q.toString());
             this.items = r.data;
           } catch (e) { alert(e.message); }

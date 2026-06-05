@@ -29,6 +29,10 @@ function dealerFull(dealerId) {
   return data;
 }
 
+function dashboardAdmin(filter) {
+  return adminStatsModel.dashboardAdmin(filter);
+}
+
 // Export: trả về CSV string
 function exportCSV(type) {
   let rows = [];
@@ -80,4 +84,4 @@ function toCSV(headers, rows) {
   return '﻿' + lines.join('\n');
 }
 
-module.exports = { overview, quotationsAll, customersAll, productsAll, dealerFull, exportCSV };
+module.exports = { overview, quotationsAll, customersAll, productsAll, dealerFull, dashboardAdmin, exportCSV };

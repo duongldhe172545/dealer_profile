@@ -54,6 +54,7 @@
       <table class="w-full text-sm">
         <thead class="bg-slate-50 border-b border-slate-200 text-slate-600">
           <tr>
+            <th class="px-4 py-3 text-center font-semibold w-12">STT</th>
             <th class="px-4 py-3 text-left font-semibold">Mã SP</th>
             <th class="px-4 py-3 text-left font-semibold">Tên SP</th>
             <th class="px-4 py-3 text-left font-semibold">Nhóm</th>
@@ -65,8 +66,9 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
-          <template x-for="p in products" :key="p.id">
+          <template x-for="(p, idx) in paginatedProducts" :key="p.id">
             <tr class="hover:bg-slate-50">
+              <td class="px-4 py-3 text-center text-xs text-slate-500 tabular-nums" x-text="(currentPage - 1) * perPage + idx + 1"></td>
               <td class="px-4 py-3 font-mono text-xs font-semibold" x-text="p.ma_sp"></td>
               <td class="px-4 py-3 font-semibold text-slate-800" x-text="p.ten_sp || '—'"></td>
               <td class="px-4 py-3" x-text="p.nhom_sp || '—'"></td>
@@ -84,13 +86,26 @@
             </tr>
           </template>
           <tr x-show="!loading && products.length === 0">
-            <td colspan="8" class="px-4 py-12 text-center text-slate-400">Chưa có sản phẩm. Bấm "Thêm sản phẩm" để bắt đầu.</td>
+            <td colspan="9" class="px-4 py-12 text-center text-slate-400">Chưa có sản phẩm. Bấm "Thêm sản phẩm" để bắt đầu.</td>
           </tr>
           <tr x-show="loading">
-            <td colspan="8" class="px-4 py-12 text-center text-slate-400">Đang tải...</td>
+            <td colspan="9" class="px-4 py-12 text-center text-slate-400">Đang tải...</td>
           </tr>
         </tbody>
       </table>
+    </div>
+    <!-- Pagination -->
+    <div x-show="!loading && products.length > 0" class="mt-4 flex items-center justify-between gap-4 flex-wrap bg-white border border-slate-200 rounded-xl px-4 py-3">
+      <div class="text-sm text-slate-600">
+        Trang <strong x-text="currentPage"></strong> / <strong x-text="totalPages"></strong>
+        <span class="text-slate-400 ml-2">(<span x-text="products.length"></span> sản phẩm)</span>
+      </div>
+      <div class="flex gap-2">
+        <button @click="currentPage = 1" :disabled="currentPage <= 1" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">⇤</button>
+        <button @click="currentPage--" :disabled="currentPage <= 1" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">← Trước</button>
+        <button @click="currentPage++" :disabled="currentPage >= totalPages" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">Sau →</button>
+        <button @click="currentPage = totalPages" :disabled="currentPage >= totalPages" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">⇥</button>
+      </div>
     </div>
 
     <!-- Modal create/edit -->
@@ -170,10 +185,14 @@
         search: '', filterGroup: '', filterActive: '',
         formOpen: false, editingId: null, form: emptyForm(),
         PRICING_MODES: window.PRICING_MODES,
+        currentPage: 1, perPage: 20,
         Fmt: window.Fmt,
+        get totalPages() { return Math.max(1, Math.ceil(this.products.length / this.perPage)); },
+        get paginatedProducts() { const s = (this.currentPage - 1) * this.perPage; return this.products.slice(s, s + this.perPage); },
 
         async load() {
           this.loading = true;
+          this.currentPage = 1;
           try {
             const q = new URLSearchParams();
             if (this.search) q.set('search', this.search);

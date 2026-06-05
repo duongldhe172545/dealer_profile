@@ -40,6 +40,7 @@
       <table class="w-full text-sm">
         <thead class="bg-slate-50 border-b border-slate-200 text-slate-600">
           <tr>
+            <th class="px-4 py-3 text-center font-semibold w-12">STT</th>
             <th class="px-4 py-3 text-left font-semibold">Mã KH</th>
             <th class="px-4 py-3 text-left font-semibold">Tên KH</th>
             <th class="px-4 py-3 text-left font-semibold">Người liên hệ</th>
@@ -50,8 +51,9 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
-          <template x-for="c in customers" :key="c.id">
+          <template x-for="(c, idx) in paginatedCustomers" :key="c.id">
             <tr class="hover:bg-slate-50">
+              <td class="px-4 py-3 text-center text-xs text-slate-500 tabular-nums" x-text="(currentPage - 1) * perPage + idx + 1"></td>
               <td class="px-4 py-3 font-mono text-xs" x-text="c.ma_kh"></td>
               <td class="px-4 py-3 font-semibold text-slate-800" x-text="c.ten_kh"></td>
               <td class="px-4 py-3" x-text="c.nguoi_lien_he || '—'"></td>
@@ -67,13 +69,26 @@
             </tr>
           </template>
           <tr x-show="!loading && customers.length === 0">
-            <td colspan="7" class="px-4 py-12 text-center text-slate-400">Chưa có khách hàng. Bấm "Thêm khách hàng" để bắt đầu.</td>
+            <td colspan="8" class="px-4 py-12 text-center text-slate-400">Chưa có khách hàng. Bấm "Thêm khách hàng" để bắt đầu.</td>
           </tr>
           <tr x-show="loading">
-            <td colspan="7" class="px-4 py-12 text-center text-slate-400">Đang tải...</td>
+            <td colspan="8" class="px-4 py-12 text-center text-slate-400">Đang tải...</td>
           </tr>
         </tbody>
       </table>
+    </div>
+    <!-- Pagination -->
+    <div x-show="!loading && customers.length > 0" class="mt-4 flex items-center justify-between gap-4 flex-wrap bg-white border border-slate-200 rounded-xl px-4 py-3">
+      <div class="text-sm text-slate-600">
+        Trang <strong x-text="currentPage"></strong> / <strong x-text="totalPages"></strong>
+        <span class="text-slate-400 ml-2">(<span x-text="customers.length"></span> khách hàng)</span>
+      </div>
+      <div class="flex gap-2">
+        <button @click="currentPage = 1" :disabled="currentPage <= 1" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">⇤</button>
+        <button @click="currentPage--" :disabled="currentPage <= 1" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">← Trước</button>
+        <button @click="currentPage++" :disabled="currentPage >= totalPages" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">Sau →</button>
+        <button @click="currentPage = totalPages" :disabled="currentPage >= totalPages" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">⇥</button>
+      </div>
     </div>
 
     <!-- Modal -->
@@ -147,10 +162,14 @@
         search: '',
         formOpen: false, editingId: null, form: emptyForm(),
         suggestedCode: '',
+        currentPage: 1, perPage: 20,
         Fmt: window.Fmt,
+        get totalPages() { return Math.max(1, Math.ceil(this.customers.length / this.perPage)); },
+        get paginatedCustomers() { const s = (this.currentPage - 1) * this.perPage; return this.customers.slice(s, s + this.perPage); },
 
         async load() {
           this.loading = true;
+          this.currentPage = 1;
           try {
             const q = this.search ? '?search=' + encodeURIComponent(this.search) : '';
             const res = await API.get('/api/dealer/customers' + q);

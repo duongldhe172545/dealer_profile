@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Khách hàng · Admin · Đại Lý Số</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/common.js"></script>
+  <script src="/assets/js/admin-shell.js"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: { brand: { 500:'#0a6fd6', 600:'#0858b3', 700:'#063f7a', 900:'#0b1f3a' } } } } };
+    const user = Auth.guard('admin');
+    document.addEventListener('DOMContentLoaded', () => { if (user) AdminShell.mount(user); });
+  </script>
+  <style>[x-cloak]{display:none!important}</style>
+</head>
+<body class="min-h-screen bg-slate-50">
+  <div id="admin-shell"></div>
+
+  <main class="max-w-7xl mx-auto px-6 py-8" x-data="customersPage()" x-init="load()">
+    <div class="flex items-center justify-between mb-6 gap-4 flex-wrap">
+      <div>
+        <h2 class="text-2xl font-bold text-slate-800">Khách hàng</h2>
+        <p class="text-sm text-slate-500 mt-0.5">Tất cả khách hàng từ mọi đại lý. Highlight KH trùng SĐT giữa các đại lý.</p>
+      </div>
+      <div class="flex gap-2">
+        <button @click="exportCSV()" class="text-sm bg-white border border-slate-300 hover:bg-slate-100 px-3 py-1.5 rounded-lg font-semibold">⬇ Xuất CSV</button>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white border border-slate-200 rounded-xl p-3 mb-4 flex flex-wrap gap-2">
+      <input x-model="search" @input.debounce.400ms="load()" type="text"
+             placeholder="Tìm theo tên / SĐT / email..."
+             class="flex-1 min-w-[200px] px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm">
+      <select x-model="filterDealer" @change="load()" class="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white min-w-[180px]">
+        <option value="">Tất cả đại lý</option>
+        <template x-for="d in dealers" :key="d.id">
+          <option :value="String(d.id)" x-text="d.ten_dai_ly + ' (' + d.dealer_code + ')'"></option>
+        </template>
+      </select>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 border-b border-slate-200 text-slate-600">
+          <tr>
+            <th class="px-4 py-3 text-center font-semibold w-12">STT</th>
+            <th class="px-4 py-3 text-left font-semibold">Mã KH</th>
+            <th class="px-4 py-3 text-left font-semibold">Tên KH</th>
+            <th class="px-4 py-3 text-left font-semibold">Liên hệ</th>
+            <th class="px-4 py-3 text-left font-semibold">SĐT</th>
+            <th class="px-4 py-3 text-left font-semibold">Email</th>
+            <th class="px-4 py-3 text-left font-semibold">Đại lý</th>
+            <th class="px-4 py-3 text-center font-semibold">Số BG</th>
+            <th class="px-4 py-3 text-right font-semibold">Tổng giá trị</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <template x-for="(c, idx) in paginatedItems" :key="c.id">
+            <tr class="hover:bg-slate-50" :class="c.phone_duplicates > 0 ? 'bg-amber-50/60' : ''">
+              <td class="px-4 py-3 text-center text-xs text-slate-500 tabular-nums" x-text="(page - 1) * perPage + idx + 1"></td>
+              <td class="px-4 py-3 font-mono text-xs" x-text="c.ma_kh"></td>
+              <td class="px-4 py-3 font-semibold text-slate-800" x-text="c.ten_kh"></td>
+              <td class="px-4 py-3 text-slate-600" x-text="c.nguoi_lien_he || '—'"></td>
+              <td class="px-4 py-3">
+                <span x-text="c.phone || '—'"></span>
+                <span x-show="c.phone_duplicates > 0" class="ml-1 px-1.5 py-0.5 bg-amber-200 text-amber-900 rounded text-[10px] font-bold" title="SĐT này xuất hiện ở đại lý khác">⚠ trùng</span>
+              </td>
+              <td class="px-4 py-3 text-slate-600" x-text="c.email || '—'"></td>
+              <td class="px-4 py-3">
+                <a :href="'/admin/dealer-detail.html?id=' + c.dealer_id" class="text-brand-700 hover:underline text-xs font-semibold" x-text="c.ten_dai_ly || '—'"></a>
+                <div class="text-[10px] text-slate-500 font-mono" x-text="c.dealer_code || ''"></div>
+              </td>
+              <td class="px-4 py-3 text-center tabular-nums" x-text="c.quotations_count"></td>
+              <td class="px-4 py-3 text-right tabular-nums font-semibold" x-text="Fmt.formatMoney(c.total_value)"></td>
+            </tr>
+          </template>
+          <tr x-show="!loading && filtered.length === 0">
+            <td colspan="9" class="px-4 py-12 text-center text-slate-400">Chưa có khách hàng nào.</td>
+          </tr>
+          <tr x-show="loading">
+            <td colspan="9" class="px-4 py-12 text-center text-slate-400">Đang tải...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div x-show="!loading && filtered.length > 0" class="mt-4 flex items-center justify-between gap-4 flex-wrap bg-white border border-slate-200 rounded-xl px-4 py-3">
+      <div class="text-sm text-slate-600">
+        Trang <strong x-text="page"></strong> / <strong x-text="totalPages"></strong>
+        <span class="text-slate-400 ml-2">(<span x-text="filtered.length"></span> khách hàng)</span>
+      </div>
+      <div class="flex gap-2">
+        <button @click="page = 1" :disabled="page <= 1" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">⇤</button>
+        <button @click="page--" :disabled="page <= 1" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">← Trước</button>
+        <button @click="page++" :disabled="page >= totalPages" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">Sau →</button>
+        <button @click="page = totalPages" :disabled="page >= totalPages" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">⇥</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function customersPage() {
+      return {
+        items: [], dealers: [], loading: false,
+        search: '', filterDealer: '',
+        page: 1, perPage: 20,
+        Fmt: window.Fmt,
+
+        get filtered() {
+          let list = this.items;
+          if (this.filterDealer) list = list.filter(c => String(c.dealer_id) === this.filterDealer);
+          return list;
+        },
+        get totalPages() { return Math.max(1, Math.ceil(this.filtered.length / this.perPage)); },
+        get paginatedItems() {
+          const start = (this.page - 1) * this.perPage;
+          return this.filtered.slice(start, start + this.perPage);
+        },
+
+        async load() {
+          this.loading = true;
+          this.page = 1;
+          try {
+            const q = new URLSearchParams();
+            if (this.search) q.set('search', this.search);
+            q.set('limit', 5000);
+            const r = await API.get('/api/admin/all/customers' + (q.toString() ? '?' + q : ''));
+            this.items = r.data;
+            // Load dealers for filter dropdown (once)
+            if (this.dealers.length === 0) {
+              const dr = await API.get('/api/admin/dealers');
+              this.dealers = dr.data;
+            }
+          } catch (e) { alert(e.message); }
+          finally { this.loading = false; }
+        },
+
+        async exportCSV() {
+          try {
+            const res = await fetch('/api/admin/export/customers', { headers: { 'Authorization': 'Bearer ' + API.getToken() } });
+            if (!res.ok) throw new Error('Export thất bại');
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `khach-hang-${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 500);
+          } catch (e) { alert(e.message); }
+        },
+      };
+    }
+  </script>
+</body>
+</html>

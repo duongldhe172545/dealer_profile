@@ -20,10 +20,12 @@ router.post('/dealers/:id/reset-password', dealerController.resetPassword);
 
 // Stats / Cross-dealer views
 router.get('/stats/overview', statsController.overview);
+router.get('/stats/dashboard', statsController.dashboard);
 router.get('/all/quotations', statsController.quotations);
 router.get('/all/customers', statsController.customers);
 router.get('/all/products', statsController.products);
 router.get('/dealers/:id/full', statsController.dealerDetail);
+router.get('/dealers/:id/dashboard', statsController.dealerDashboard);
 router.get('/export/:type', statsController.exportCSV);
 
 // Tải backup DB (cho admin — Railway free tier không có Backup tab)

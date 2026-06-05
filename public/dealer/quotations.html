@@ -116,6 +116,7 @@
       <table class="qlist">
         <thead>
           <tr>
+            <th class="center" style="width:40px">STT</th>
             <th>Số BG</th>
             <th>Ngày</th>
             <th>Khách hàng</th>
@@ -131,8 +132,9 @@
           </tr>
         </thead>
         <tbody>
-          <template x-for="q in filtered" :key="q.id">
+          <template x-for="(q, idx) in paginatedFiltered" :key="q.id">
             <tr>
+              <td class="center text-xs text-slate-500 tabular-nums" x-text="(currentPage - 1) * perPage + idx + 1"></td>
               <td><span class="font-mono text-xs font-bold" x-text="q.so_bao_gia"></span></td>
               <td x-text="Fmt.formatDate(q.ngay_bao_gia)"></td>
               <td>
@@ -202,13 +204,26 @@
             </tr>
           </template>
           <tr x-show="!loading && filtered.length === 0">
-            <td colspan="12" class="px-4 py-12 text-center text-slate-400">Chưa có báo giá nào. Bấm "Tạo báo giá".</td>
+            <td colspan="14" class="px-4 py-12 text-center text-slate-400">Chưa có báo giá nào. Bấm "Tạo báo giá".</td>
           </tr>
           <tr x-show="loading">
-            <td colspan="12" class="px-4 py-12 text-center text-slate-400">Đang tải...</td>
+            <td colspan="14" class="px-4 py-12 text-center text-slate-400">Đang tải...</td>
           </tr>
         </tbody>
       </table>
+    </div>
+    <!-- Pagination -->
+    <div x-show="!loading && filtered.length > 0" class="mt-4 flex items-center justify-between gap-4 flex-wrap bg-white border border-slate-200 rounded-xl px-4 py-3">
+      <div class="text-sm text-slate-600">
+        Trang <strong x-text="currentPage"></strong> / <strong x-text="totalPages"></strong>
+        <span class="text-slate-400 ml-2">(<span x-text="filtered.length"></span> báo giá)</span>
+      </div>
+      <div class="flex gap-2">
+        <button @click="currentPage = 1" :disabled="currentPage <= 1" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">⇤</button>
+        <button @click="currentPage--" :disabled="currentPage <= 1" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">← Trước</button>
+        <button @click="currentPage++" :disabled="currentPage >= totalPages" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">Sau →</button>
+        <button @click="currentPage = totalPages" :disabled="currentPage >= totalPages" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed">⇥</button>
+      </div>
     </div>
 
     <!-- Modal: Xem nhanh báo giá (iframe embed mode) -->
@@ -250,6 +265,7 @@
         quotations: [], loading: false, error: '', saving: false, exporting: false,
         search: '', filterStatus: '', filterOrderStatus: '',
         filterCustomer: '', filterCustomerObj: null,
+        currentPage: 1, perPage: 20,
         // Modal xem nhanh BG — iframe embed
         viewOpen: false, viewQuote: null,
         Fmt: window.Fmt,
@@ -260,6 +276,8 @@
           if (!this.filterOrderStatus) return this.quotations;
           return this.quotations.filter(q => q.order_status === this.filterOrderStatus);
         },
+        get totalPages() { return Math.max(1, Math.ceil(this.filtered.length / this.perPage)); },
+        get paginatedFiltered() { const s = (this.currentPage - 1) * this.perPage; return this.filtered.slice(s, s + this.perPage); },
 
         async init() {
           const cid = new URLSearchParams(location.search).get('customer_id');
@@ -278,6 +296,7 @@
 
         async load() {
           this.loading = true;
+          this.currentPage = 1;
           try {
             const q = new URLSearchParams();
             if (this.search)         q.set('search', this.search);

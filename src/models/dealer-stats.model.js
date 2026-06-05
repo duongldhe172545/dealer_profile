@@ -187,8 +187,8 @@ function statsFinancial(dealerId, filter) {
     SELECT
       COALESCE(SUM(CASE WHEN status IN ('sent','confirmed','cancelled') THEN tong_cong ELSE 0 END), 0) AS doanh_so,
       COALESCE(SUM(CASE WHEN status='confirmed' THEN tong_cong ELSE 0 END), 0) AS doanh_thu,
-      COALESCE(SUM(CASE WHEN status='confirmed' AND gia_von IS NOT NULL THEN gia_von ELSE 0 END), 0) AS chi_phi,
-      COALESCE(SUM(CASE WHEN status='confirmed' AND gia_von IS NOT NULL THEN tong_cong - gia_von ELSE 0 END), 0) AS loi_nhuan,
+      COALESCE(SUM(CASE WHEN status='confirmed' THEN COALESCE(gia_von, 0) ELSE 0 END), 0) AS chi_phi,
+      COALESCE(SUM(CASE WHEN status='confirmed' THEN tong_cong - COALESCE(gia_von, 0) ELSE 0 END), 0) AS loi_nhuan,
       COALESCE(SUM(CASE WHEN status='confirmed' THEN tong_cong - COALESCE(thanh_toan_thuc, 0) ELSE 0 END), 0) AS cong_no
     FROM quotations
     WHERE dealer_id = @dealer_id ${pf.sql}
@@ -204,8 +204,8 @@ function statsFinancial(dealerId, filter) {
   const FIN_COLS = `
     COALESCE(SUM(CASE WHEN status IN ('sent','confirmed','cancelled') THEN tong_cong ELSE 0 END), 0) AS doanh_so,
     COALESCE(SUM(CASE WHEN status='confirmed' THEN tong_cong ELSE 0 END), 0) AS doanh_thu,
-    COALESCE(SUM(CASE WHEN status='confirmed' AND gia_von IS NOT NULL THEN gia_von ELSE 0 END), 0) AS chi_phi,
-    COALESCE(SUM(CASE WHEN status='confirmed' AND gia_von IS NOT NULL THEN tong_cong - gia_von ELSE 0 END), 0) AS loi_nhuan,
+    COALESCE(SUM(CASE WHEN status='confirmed' THEN COALESCE(gia_von, 0) ELSE 0 END), 0) AS chi_phi,
+    COALESCE(SUM(CASE WHEN status='confirmed' THEN tong_cong - COALESCE(gia_von, 0) ELSE 0 END), 0) AS loi_nhuan,
     COALESCE(SUM(CASE WHEN status='confirmed' THEN tong_cong - COALESCE(thanh_toan_thuc, 0) ELSE 0 END), 0) AS cong_no
   `;
 

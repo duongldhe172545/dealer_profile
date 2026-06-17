@@ -47,14 +47,25 @@ async function downloadDb(req, res, next) {
 
 // Export HTML view — DB browser style (đơn giản như SSMS / DB Browser).
 // Sidebar liệt kê các bảng; main area dump data từng bảng, không format.
-function exportHtml(req, res, next) {
+async function exportHtml(req, res, next) {
   let db = null;
+  let snapshotPath = null;
   try {
     const dbPath = path.resolve(env.dbPath);
     if (!fs.existsSync(dbPath)) {
       return res.status(404).json({ error: 'DB file không tồn tại' });
     }
-    db = new Database(dbPath, { readonly: true });
+    // Backup ra snapshot tạm rồi đọc từ đó (giống downloadDb) để có snapshot
+    // nhất quán, không đọc trực tiếp file đang ghi (WAL) → tránh data lệch.
+    const dir = path.join(path.dirname(dbPath), 'tmp');
+    fs.mkdirSync(dir, { recursive: true });
+    const snapTs = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    snapshotPath = path.join(dir, `dbview-${snapTs}.db`);
+    const sourceDb = new Database(dbPath, { readonly: true });
+    await sourceDb.backup(snapshotPath);
+    sourceDb.close();
+
+    db = new Database(snapshotPath, { readonly: true });
     const tables = db.prepare(
       `SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name`
     ).all().map(r => r.name);
@@ -146,14 +157,21 @@ function exportHtml(req, res, next) {
   </div>
 </body></html>`;
     db.close(); db = null;
+    if (snapshotPath) { unlinkSnapshot(snapshotPath); snapshotPath = null; }
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="db-view-${tsFile}.html"`);
     res.send(html);
   } catch (e) {
     if (db) try { db.close(); } catch {}
+    if (snapshotPath) unlinkSnapshot(snapshotPath);
     next(e);
   }
+}
+
+// Xoá snapshot .db + sidecar WAL/SHM (mở readonly có thể sinh -shm).
+function unlinkSnapshot(p) {
+  for (const ext of ['', '-wal', '-shm']) fs.unlink(p + ext, () => {});
 }
 
 module.exports = { downloadDb, exportHtml };

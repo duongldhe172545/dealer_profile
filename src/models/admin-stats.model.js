@@ -229,7 +229,7 @@ function dealerFull(dealerId) {
 // EXPORT (CSV)
 // ────────────────────────────────────────────────────────────
 
-function quotationsForExport(filter) {
+function quotationsForExport() {
   return db.prepare(`
     SELECT q.so_bao_gia, q.ngay_bao_gia, q.status, q.sent_at, q.sent_method,
            q.tam_tinh, q.chi_phi_van_chuyen, q.chi_phi_lap_dat, q.vat_amount, q.tong_cong,

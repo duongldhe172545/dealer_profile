@@ -292,17 +292,9 @@ function markSent(dealerId, id, { sent_at, sent_method, sent_note }) {
   return info.changes > 0;
 }
 
-function setStatus(dealerId, id, status) {
-  const info = db.prepare(`
-    UPDATE quotations SET status = ?, updated_at = CURRENT_TIMESTAMP
-    WHERE dealer_id = ? AND id = ?
-  `).run(status, dealerId, id);
-  return info.changes > 0;
-}
-
 module.exports = {
   HEADER_FIELDS, ITEM_FIELDS,
-  list, findById, nextNumber, create, update, remove, markSent, setStatus,
+  list, findById, nextNumber, create, update, remove, markSent,
   setOrderStatus, setLogicalStatus, setFinancials,
   getImages, upsertImage, deleteImage, updateImageCaption,
 };

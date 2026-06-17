@@ -79,6 +79,9 @@ CREATE TABLE IF NOT EXISTS dealer_profiles (
   team_caption_kho_xuong TEXT,
   team_caption_doi_ngu_2 TEXT,
   partners_title      TEXT,
+  -- mig 016: màu thương hiệu (whitelabel) cho template hồ sơ/báo giá
+  brand_primary       TEXT,
+  brand_secondary     TEXT,
   selected_template   TEXT NOT NULL DEFAULT 't1' CHECK (selected_template IN ('t1','t2','t3','t4','t5')),
   updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -185,6 +188,22 @@ CREATE TABLE IF NOT EXISTS quotations (
   sent_method             TEXT CHECK (sent_method IN ('zalo', 'email', 'in_giay', 'khac') OR sent_method IS NULL),
   sent_note               TEXT,
 
+  -- mig 013: chiết khấu theo % (tính trên tổng trước chiết khấu)
+  chiet_khau_percent      REAL NOT NULL DEFAULT 0,
+  -- mig 014: override thông tin đại lý hiển thị trên BG + tiêu đề phiếu
+  dealer_name_override    TEXT,
+  dealer_address_override TEXT,
+  dealer_phone_override   TEXT,
+  dealer_email_override   TEXT,
+  quote_title             TEXT,
+  -- mig 015: 2 trục trạng thái (BG + đơn hàng) + tài chính đại lý nhập tay
+  order_status            TEXT,
+  ready_to_send           INTEGER NOT NULL DEFAULT 0,
+  thanh_toan_thuc         INTEGER,
+  gia_von                 INTEGER,
+  -- mig 018: chọn mẫu báo giá (hiện hỗ trợ t1/t2)
+  selected_template       TEXT NOT NULL DEFAULT 't1',
+
   created_at              DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at              DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE (dealer_id, so_bao_gia)
@@ -258,7 +277,11 @@ CREATE TABLE IF NOT EXISTS quotation_adjustments (
   label           TEXT NOT NULL,
   amount          INTEGER NOT NULL DEFAULT 0,
   mode            TEXT NOT NULL DEFAULT 'fixed' CHECK (mode IN ('fixed', 'percent')),
-  value_percent   REAL
+  value_percent   REAL,
+  -- mig 011: dòng điều chỉnh fixed nhập dạng (số bộ × đơn giá)
+  so_bo           INTEGER,
+  don_vi          TEXT,
+  don_gia         INTEGER
 );
 CREATE INDEX IF NOT EXISTS idx_qadj_quotation ON quotation_adjustments(quotation_id);
 

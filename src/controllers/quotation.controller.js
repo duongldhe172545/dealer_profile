@@ -45,13 +45,6 @@ function markSent(req, res, next) {
   catch (err) { next(err); }
 }
 
-function setStatus(req, res, next) {
-  try {
-    const status = (req.body && req.body.status) || '';
-    res.json({ data: quotationService.setStatus(req.dealerId, Number(req.params.id), status, { user: req.user, ip: req.ip }) });
-  } catch (err) { next(err); }
-}
-
 async function uploadImage(req, res, next) {
   try {
     const data = await quotationService.uploadImage(req.dealerId, Number(req.params.id), req.params.slot, req.file);
@@ -143,7 +136,7 @@ async function exportXlsx(req, res, next) {
 
 module.exports = {
   list, getOne, suggestNumber, create, update, remove,
-  markSent, setStatus, setLogicalStatus, setOrderStatus, setFinancials,
+  markSent, setLogicalStatus, setOrderStatus, setFinancials,
   uploadImage, deleteImage, updateImageCaption,
   setImageFromLibrary, exportXlsx,
 };

@@ -28,6 +28,10 @@ module.exports = {
   },
   seedAdmin: {
     username: optional('ADMIN_USERNAME', 'admin'),
-    password: optional('ADMIN_PASSWORD', 'ChangeMe123!'),
+    // Production bắt buộc set ADMIN_PASSWORD (fail-fast nếu thiếu) để không seed
+    // admin bằng mật khẩu mặc định công khai. Dev cho default để chạy local tiện.
+    password: optional('NODE_ENV') === 'production'
+      ? required('ADMIN_PASSWORD')
+      : optional('ADMIN_PASSWORD', 'ChangeMe123!'),
   },
 };

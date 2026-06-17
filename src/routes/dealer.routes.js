@@ -50,7 +50,6 @@ router.get('/quotations/:id', quotationController.getOne);
 router.put('/quotations/:id', quotationController.update);
 router.delete('/quotations/:id', quotationController.remove);
 router.post('/quotations/:id/mark-sent', quotationController.markSent);
-router.patch('/quotations/:id/status', quotationController.setStatus);
 // mig 015: 5 logical status (Nháp/Chưa gửi/Đã gửi/Đã chốt/Đã trượt) + order status + tài chính
 router.patch('/quotations/:id/logical-status', quotationController.setLogicalStatus);
 router.patch('/quotations/:id/order-status',   quotationController.setOrderStatus);

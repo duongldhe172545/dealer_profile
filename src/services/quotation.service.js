@@ -367,18 +367,6 @@ function markSent(dealerId, id, body, ctx) {
   return getById(dealerId, id);
 }
 
-function setStatus(dealerId, id, status, ctx) {
-  if (!VALID_STATUS.includes(status)) throw badRequest('Trạng thái không hợp lệ');
-  const existing = getById(dealerId, id);
-  quotationModel.setStatus(dealerId, id, status);
-  if (status === 'confirmed') {
-    audit.log(ctx, 'quotation.confirm', 'quotation', id, {
-      so_bao_gia: existing.so_bao_gia, tong_cong: existing.tong_cong,
-    });
-  }
-  return getById(dealerId, id);
-}
-
 // Đổi logical status (mig 015) — 5 trạng thái Nháp/Chưa gửi/Đã gửi/Đã chốt/Đã trượt.
 // Khi chuyển sang 'da_truot' (cancelled): order_status auto null hoá (BG huỷ không sản xuất).
 // Khi từ 'da_truot' về status khác: order_status auto set 'cho_san_xuat' nếu đang null.
@@ -491,7 +479,7 @@ function updateImageCaption(dealerId, quotationId, slot, caption) {
 
 module.exports = {
   list, getById, suggestNumber, create, update, remove,
-  markSent, setStatus, setLogicalStatus, setOrderStatus, setFinancials,
+  markSent, setLogicalStatus, setOrderStatus, setFinancials,
   computeLineTotal, computeTotals,
   uploadImage, deleteImage, updateImageCaption, setImageFromLibrary,
   VALID_PRICING, VALID_STATUS, VALID_LOGICAL_STATUS, VALID_ORDER_STATUS,

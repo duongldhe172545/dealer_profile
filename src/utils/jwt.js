@@ -6,7 +6,7 @@ function sign(payload) {
 }
 
 function verify(token) {
-  return jwt.verify(token, env.jwt.secret);
+  return jwt.verify(token, env.jwt.secret, { algorithms: ['HS256'] });
 }
 
 module.exports = { sign, verify };

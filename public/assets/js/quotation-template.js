@@ -391,13 +391,13 @@
             <div class="t2-info-card">
               <div class="t2-info-item"><span class="t2-info-k">Khách hàng</span><span class="t2-info-v">${esc(customer && customer.ten_kh || '—')}</span></div>
               <div class="t2-info-item"><span class="t2-info-k">Mã KH</span><span class="t2-info-v">${esc(customer && customer.ma_kh || '—')}</span></div>
+              <div class="t2-info-item"><span class="t2-info-k">Người phụ trách</span><span class="t2-info-v">${esc(customer && customer.nguoi_lien_he || '—')}</span></div>
               <div class="t2-info-item"><span class="t2-info-k">Điện thoại</span><span class="t2-info-v">${esc(customer && customer.phone || '—')}</span></div>
-              <div class="t2-info-item"><span class="t2-info-k">Email</span><span class="t2-info-v">${esc(customer && customer.email || '—')}</span></div>
             </div>
             <div class="t2-info-card">
-              <div class="t2-info-item"><span class="t2-info-k">Tên công trình</span><span class="t2-info-v">${esc(quotation.ten_cong_trinh || '—')}</span></div>
-              <div class="t2-info-item"><span class="t2-info-k">Địa chỉ</span><span class="t2-info-v">${esc(quotation.dia_chi_cong_trinh || '—')}</span></div>
-              <div class="t2-info-item"><span class="t2-info-k">Người phụ trách</span><span class="t2-info-v">${esc(customer && customer.nguoi_lien_he || '—')}</span></div>
+              <div class="t2-info-item"><span class="t2-info-k">Email</span><span class="t2-info-v">${esc(customer && customer.email || '—')}</span></div>
+              <div class="t2-info-item"><span class="t2-info-k">Địa chỉ KH</span><span class="t2-info-v">${esc(customer && customer.dia_chi || '—')}</span></div>
+              <div class="t2-info-item"><span class="t2-info-k">Tên &amp; địa chỉ công trình</span><span class="t2-info-v">${esc(quotation.dia_chi_cong_trinh || '—')}</span></div>
               <div class="t2-info-item"><span class="t2-info-k">Ghi chú hồ sơ</span><span class="t2-info-v">${esc(quotation.ghi_chu_ho_so || '—')}</span></div>
             </div>
           </div>
@@ -523,11 +523,11 @@
               <div class="q-info-row"><span class="k">Mã KH</span><span class="sep">:</span><span class="v">${esc(customer && customer.ma_kh || '—')}</span></div>
               <div class="q-info-row"><span class="k">Người phụ trách</span><span class="sep">:</span><span class="v">${esc(customer && customer.nguoi_lien_he || '—')}</span></div>
               <div class="q-info-row"><span class="k">Điện thoại</span><span class="sep">:</span><span class="v">${esc(customer && customer.phone || '—')}</span></div>
-              <div class="q-info-row"><span class="k">Email</span><span class="sep">:</span><span class="v">${esc(customer && customer.email || '—')}</span></div>
             </div>
             <div class="q-info-col">
+              <div class="q-info-row"><span class="k">Email</span><span class="sep">:</span><span class="v">${esc(customer && customer.email || '—')}</span></div>
               <div class="q-info-row"><span class="k">Địa chỉ KH</span><span class="sep">:</span><span class="v">${esc(customer && customer.dia_chi || '—')}</span></div>
-              <div class="q-info-row"><span class="k">Địa chỉ công trình</span><span class="sep">:</span><span class="v">${has(quotation.dia_chi_cong_trinh) ? multiLine(quotation.dia_chi_cong_trinh) : '—'}</span></div>
+              <div class="q-info-row"><span class="k">Tên &amp; địa chỉ công trình</span><span class="sep">:</span><span class="v">${has(quotation.dia_chi_cong_trinh) ? multiLine(quotation.dia_chi_cong_trinh) : '—'}</span></div>
               <div class="q-info-row"><span class="k">Ghi chú hồ sơ</span><span class="sep">:</span><span class="v">${has(quotation.ghi_chu_ho_so) ? multiLine(quotation.ghi_chu_ho_so) : '—'}</span></div>
             </div>
           </div>

@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TNT 579 – Hồ Sơ Đại Lý</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,500;0,600;0,700;1,600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #e5e7eb;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 32px;
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  .template {
+    width: 595px;
+    min-height: 842px;
+    background: #f4f5f6;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ─── HEADER ─────────────────────────────────────────── */
+  .header {
+    width: 100%;
+    height: 152px;
+    background: #ffffff;
+    display: flex;
+    align-items: stretch;
+    padding: 16px;
+    gap: 0;
+    border-bottom: 1px solid #d6d9dc;
+  }
+
+  .name-card {
+    display: flex;
+    gap: 12px;
+    flex: 1;
+  }
+
+  .logo-box {
+    width: 120px;
+    min-width: 120px;
+    height: 120px;
+    background: #ffffff;
+    border: 1px solid #fbfcfd;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .logo-box svg { width: 100px; height: 100px; }
+
+  .dealer-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 0;
+    padding-top: 0;
+  }
+
+  .dealer-name {
+    font-size: 22px;
+    font-weight: 700;
+    color: #252627;
+    letter-spacing: -0.35px;
+    line-height: 24px;
+  }
+
+  .dealer-tagline {
+    font-size: 12px;
+    font-weight: 600;
+    color: #e74c00;
+    line-height: 15.6px;
+    margin-top: 8px;
+  }
+
+  .dealer-divider {
+    height: 1px;
+    background: #b9bdc1;
+    margin: 8px 0;
+  }
+
+  .contact-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .contact-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #252627;
+    letter-spacing: -0.33px;
+    line-height: 13.4px;
+  }
+
+  .contact-item svg {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+    color: #8e9499;
+  }
+
+  .qr-box {
+    width: 66px;
+    min-width: 66px;
+    border: 1px solid #d1d5dc;
+    border-radius: 6px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .qr-label {
+    background: #5a5a5a;
+    padding: 4px 6px;
+    font-size: 8px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.006px;
+  }
+
+  .qr-inner {
+    flex: 1;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .qr-image {
+    width: 56px;
+    height: 56px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .qr-image svg { width: 40px; height: 40px; opacity: 0.3; }
+
+  .qr-caption {
+    font-size: 8px;
+    font-weight: 700;
+    color: #e74c00;
+    text-align: center;
+    letter-spacing: -0.15px;
+    line-height: 9.6px;
+  }
+
+  /* ─── KPI BAR ─────────────────────────────────────────── */
+  .kpi-bar {
+    width: 100%;
+    height: 32px;
+    background: #ffffff;
+    display: flex;
+    border-bottom: 1px solid #d6d9dc;
+    border-top: 1px solid #d6d9dc;
+  }
+
+  .kpi-cell {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    border-right: 1px solid #d6d9dc;
+  }
+
+  .kpi-cell:last-child { border-right: none; }
+
+  .kpi-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: #8e9499;
+    text-transform: uppercase;
+  }
+
+  .kpi-value {
+    font-size: 12px;
+    font-weight: 700;
+    color: #f1611b;
+  }
+
+  /* ─── SECTION HEADER ─────────────────────────────────── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px 8px;
+  }
+
+  .section-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    color: #f1611b;
+  }
+
+  .section-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #252627;
+    letter-spacing: 0.05px;
+    white-space: nowrap;
+  }
+
+  .section-divider {
+    flex: 1;
+    height: 1px;
+    background: #b9bdc1;
+  }
+
+  /* ─── CÔNG TRÌNH TIÊU BIỂU ─────────────────────────── */
+  .section-cong-trinh {
+    padding: 0 16px 12px;
+  }
+
+  .gallery-5 {
+    display: flex;
+    gap: 8px;
+    height: 246px;
+  }
+
+  .photo-large {
+    width: 277.5px;
+    min-width: 277.5px;
+    height: 246px;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    background: #d1d5dc;
+    border: 1px solid #d6d9dc;
+  }
+
+  .photo-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .photo-small {
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    background: #d1d5dc;
+    border: 1px solid #d6d9dc;
+  }
+
+  .photo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .photo-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #d1d5dc 0%, #b0b8c1 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .photo-placeholder svg { width: 28px; height: 28px; opacity: 0.3; }
+
+  .photo-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 49px;
+    background: linear-gradient(to bottom, transparent 0%, rgba(28,18,8,0.9) 62%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 6px 10px;
+  }
+
+  .photo-location {
+    font-size: 10px;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 12.2px;
+  }
+
+  .photo-num {
+    font-size: 12px;
+    font-weight: 700;
+    color: #e74c00;
+  }
+
+  /* Large photo specific overlay */
+  .photo-large .photo-overlay {
+    height: 49px;
+  }
+
+  .photo-large .photo-location-main {
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 17px;
+  }
+
+  .photo-tag {
+    position: absolute;
+    bottom: 10px;
+    left: 12px;
+    background: #252627;
+    padding: 4px 8px;
+    display: inline-block;
+  }
+
+  .photo-tag-text {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    font-style: italic;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+    text-transform: uppercase;
+  }
+
+  /* KPI Stats row */
+  .kpi-stats-row {
+    display: flex;
+    gap: 0;
+    margin: 8px 0;
+    border: 1px solid #d6d9dc;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f4f5f6;
+  }
+
+  .kpi-stat-cell {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    border-right: 1px solid #d6d9dc;
+    background: transparent;
+  }
+
+  .kpi-stat-cell:last-child { border-right: none; }
+
+  .kpi-stat-main {
+    font-size: 12px;
+    font-weight: 700;
+    color: #f1611b;
+    line-height: 14.6px;
+  }
+
+  .kpi-stat-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #252627;
+    margin-top: 2px;
+    line-height: 12.2px;
+  }
+
+  .kpi-check { color: #8e9499; }
+
+  /* Feature tags */
+  .feature-tags {
+    display: flex;
+    gap: 0;
+  }
+
+  .feature-tag {
+    flex: 1;
+    background: #fef7f3;
+    border: 1px solid #f7ac87;
+    border-radius: 16px;
+    padding: 4px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .feature-tag-text {
+    font-size: 10px;
+    font-weight: 600;
+    color: #e74c00;
+    line-height: 12.2px;
+  }
+
+  /* ─── SẢN PHẨM CHÍNH ─────────────────────────────────── */
+  .section-san-pham {
+    padding: 0 16px 12px;
+  }
+
+  .gallery-4 {
+    display: flex;
+    gap: 8px;
+    height: 79px;
+  }
+
+  .product-photo {
+    flex: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    background: #d1d5dc;
+    border: 1px solid #d6d9dc;
+  }
+
+  /* ─── BOTTOM ROW ─────────────────────────────────────── */
+  .bottom-row {
+    display: flex;
+    gap: 8px;
+    padding: 0 16px 12px;
+    height: 112px;
+  }
+
+  /* Năng lực nổi bật card */
+  .nang-luc-card {
+    flex: 1;
+    background: #fef7f3;
+    border: 1px solid rgba(247,172,135,0.5);
+    border-radius: 8px;
+    padding: 10px 13px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .nang-luc-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .nang-luc-icon {
+    width: 16px; height: 16px;
+    background: #f1611b;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  .nang-luc-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #e74c00;
+    letter-spacing: 0.05px;
+  }
+
+  .nang-luc-divider {
+    flex: 1;
+    height: 1px;
+    background: #5a5a5a;
+    opacity: 0.3;
+  }
+
+  .nang-luc-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .nang-luc-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #53575a;
+    line-height: 11.9px;
+  }
+
+  .check-icon {
+    width: 12px; height: 12px;
+    flex-shrink: 0;
+    color: #f1611b;
+  }
+
+  /* Ảnh + stats card */
+  .anh-stats-card {
+    width: 277.5px;
+    min-width: 277.5px;
+    background: #ffffff;
+    border: 1px solid #d6d9dc;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+  }
+
+  .anh-left {
+    width: 138.75px;
+    min-width: 138.75px;
+    position: relative;
+    background: #d1d5dc;
+  }
+
+  .stats-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .stat-row {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 10px;
+    border-bottom: 1px solid #f0f1f2;
+  }
+
+  .stat-row:last-child { border-bottom: none; }
+
+  .stat-icon {
+    width: 16px; height: 16px;
+    flex-shrink: 0;
+    color: #8e9499;
+  }
+
+  .stat-value {
+    font-size: 12px;
+    font-weight: 700;
+    color: #e74c00;
+  }
+
+  .stat-label {
+    font-size: 8px;
+    font-weight: 700;
+    color: #767676;
+    text-transform: uppercase;
+    line-height: 9.75px;
+  }
+
+  /* ─── ĐỘI NGŨ / QUOTE / ĐỐI TÁC ─────────────────────── */
+  .bottom-section {
+    padding: 0 16px 0;
+    display: flex;
+    gap: 8px;
+    height: 101px;
+  }
+
+  .quote-block {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .block-heading {
+    font-size: 12px;
+    font-weight: 700;
+    color: #252627;
+    line-height: 16.8px;
+  }
+
+  .quote-box {
+    background: #fef7f3;
+    border: 1px solid rgba(247,172,135,0.5);
+    border-radius: 8px;
+    padding: 10px 13px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+  }
+
+  .quote-text {
+    font-size: 10px;
+    font-weight: 600;
+    font-style: italic;
+    color: #e74c00;
+    letter-spacing: -0.2px;
+    line-height: 13px;
+  }
+
+  .partner-block {
+    width: 164px;
+    min-width: 164px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .partner-logos {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+  }
+
+  .partner-logo {
+    flex: 1;
+    background: #ffffff;
+    border: 1px solid #d6d9dc;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 4px;
+  }
+
+  .partner-logo-placeholder {
+    width: 32px;
+    height: 20px;
+    background: #e5e7eb;
+    border-radius: 2px;
+  }
+
+  /* ─── ICON SVGS ──────────────────────────────────────── */
+  .icon { display: inline-flex; align-items: center; }
+</style>
+</head>
+<body>
+<div class="template">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="name-card">
+      <!-- Logo -->
+      <div class="logo-box">
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="100" height="100" fill="#fff"/>
+          <text x="50" y="62" font-family="Montserrat,sans-serif" font-weight="700" font-size="28" fill="#dd4d00" text-anchor="middle">TNT</text>
+          <text x="50" y="78" font-family="Montserrat,sans-serif" font-weight="700" font-size="11" fill="#dd4d00" text-anchor="middle">579</text>
+          <rect x="10" y="83" width="80" height="2" rx="1" fill="#dd4d00"/>
+        </svg>
+      </div>
+      <!-- Info -->
+      <div class="dealer-info">
+        <div class="dealer-name">TNT 579</div>
+        <div class="dealer-tagline">Kiến tạo không gian mở</div>
+        <div class="dealer-divider"></div>
+        <div class="contact-list">
+          <div class="contact-item">
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="4" r="2"/><path d="M2 10c0-2.2 1.8-4 4-4s4 1.8 4 4"/></svg>
+            Ngọc Thành – Giám đốc
+          </div>
+          <div class="contact-item">
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h8v6H2z"/><path d="M2 3l4 3.5L10 3"/></svg>
+            0986 738 933
+          </div>
+          <div class="contact-item">
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1C4.3 1 3 2.3 3 4c0 2 3 7 3 7s3-5 3-7c0-1.7-1.3-3-3-3z"/><circle cx="6" cy="4" r="1"/></svg>
+            Lô LK 271 – Khu B dịch vụ Yên Nghĩa, Hà Đông, Hà Nội
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- QR -->
+    <div class="qr-box">
+      <div class="qr-label">QR Liên hệ</div>
+      <div class="qr-inner">
+        <div class="qr-image">
+          <svg viewBox="0 0 40 40" fill="none"><rect x="2" y="2" width="14" height="14" rx="1" stroke="#252627" stroke-width="2"/><rect x="5" y="5" width="8" height="8" fill="#252627" rx="0.5"/><rect x="24" y="2" width="14" height="14" rx="1" stroke="#252627" stroke-width="2"/><rect x="27" y="5" width="8" height="8" fill="#252627" rx="0.5"/><rect x="2" y="24" width="14" height="14" rx="1" stroke="#252627" stroke-width="2"/><rect x="5" y="27" width="8" height="8" fill="#252627" rx="0.5"/><rect x="24" y="24" width="4" height="4" fill="#252627"/><rect x="32" y="24" width="4" height="4" fill="#252627"/><rect x="24" y="32" width="4" height="4" fill="#252627"/><rect x="32" y="32" width="4" height="4" fill="#252627"/></svg>
+        </div>
+        <div class="qr-caption">Tư vấn nhanh 24/7</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI BAR -->
+  <div class="kpi-bar">
+    <div class="kpi-cell">
+      <span class="kpi-label">CHÚ THÍCH</span>
+      <span class="kpi-value">KPI 1</span>
+    </div>
+    <div class="kpi-cell">
+      <span class="kpi-label">CHÚ THÍCH</span>
+      <span class="kpi-value">KPI 2</span>
+    </div>
+    <div class="kpi-cell">
+      <span class="kpi-label">CHÚ THÍCH</span>
+      <span class="kpi-value">KPI 3</span>
+    </div>
+  </div>
+
+  <!-- CÔNG TRÌNH TIÊU BIỂU -->
+  <div class="section-header">
+    <svg class="section-icon" viewBox="0 0 20 20" fill="none" stroke="#f1611b" stroke-width="1.5"><path d="M3 10L10 3l7 7v7H3v-7z"/><rect x="7" y="13" width="6" height="7"/></svg>
+    <span class="section-title">Công trình TIÊU BIỂU</span>
+    <div class="section-divider"></div>
+  </div>
+
+  <div class="section-cong-trinh">
+    <!-- Gallery 5: 1 large + 2x2 grid -->
+    <div class="gallery-5">
+      <div class="photo-large">
+        <div class="photo-placeholder">
+          <svg viewBox="0 0 28 28" fill="none" stroke="#fff" stroke-width="1.5"><rect x="2" y="5" width="24" height="18" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M2 19l6-5 5 4 4-3 9 7"/></svg>
+        </div>
+        <!-- Tag -->
+        <div style="position:absolute;bottom:36px;left:12px;background:#252627;padding:3px 8px;">
+          <span style="font-family:'Montserrat',sans-serif;font-size:16px;font-weight:700;font-style:italic;color:#fff;letter-spacing:-0.5px;text-transform:uppercase;">CỬA NHÔM</span>
+        </div>
+        <div class="photo-overlay">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:14px;font-weight:700;color:#fff;">Tuyên quang</span>
+            <span style="font-size:20px;font-weight:700;color:#e74c00;">1</span>
+          </div>
+        </div>
+      </div>
+      <!-- 2x2 grid -->
+      <div class="photo-grid">
+        <div class="photo-small">
+          <div class="photo-placeholder"><svg viewBox="0 0 28 28" fill="none" stroke="#fff" stroke-width="1.5"><rect x="2" y="5" width="24" height="18" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M2 19l6-5 5 4 4-3 9 7"/></svg></div>
+          <div class="photo-overlay"><div style="display:flex;justify-content:space-between;align-items:center;"><span class="photo-location">LONG BIÊN, HN</span><span class="photo-num">3</span></div></div>
+        </div>
+        <div class="photo-small">
+          <div class="photo-placeholder"><svg viewBox="0 0 28 28" fill="none" stroke="#fff" stroke-width="1.5"><rect x="2" y="5" width="24" height="18" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M2 19l6-5 5 4 4-3 9 7"/></svg></div>
+          <div class="photo-overlay"><div style="display:flex;justify-content:space-between;align-items:center;"><span class="photo-location">TRIỀU KHÚC, HN</span><span class="photo-num">2</span></div></div>
+        </div>
+        <div class="photo-small">
+          <div class="photo-placeholder"><svg viewBox="0 0 28 28" fill="none" stroke="#fff" stroke-width="1.5"><rect x="2" y="5" width="24" height="18" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M2 19l6-5 5 4 4-3 9 7"/></svg></div>
+          <div class="photo-overlay"><div style="display:flex;justify-content:space-between;align-items:center;"><span class="photo-location">Vạn Phúc, HN</span><span class="photo-num">4</span></div></div>
+        </div>
+        <div class="photo-small">
+          <div class="photo-placeholder"><svg viewBox="0 0 28 28" fill="none" stroke="#fff" stroke-width="1.5"><rect x="2" y="5" width="24" height="18" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M2 19l6-5 5 4 4-3 9 7"/></svg></div>
+          <div class="photo-overlay"><div style="display:flex;justify-content:space-between;align-items:center;"><span class="photo-location">THANH BÌNH, HN</span><span class="photo-num">5</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI stats row (large) -->
+    <div class="kpi-stats-row" style="margin-top:8px;">
+      <div class="kpi-stat-cell">
+        <div><div class="kpi-stat-main">KPI 1</div><div class="kpi-stat-label">CHÚ THÍCH</div></div>
+        <svg class="kpi-check" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M5 8l2 2 4-4"/></svg>
+      </div>
+      <div class="kpi-stat-cell">
+        <div><div class="kpi-stat-main">KPI 2</div><div class="kpi-stat-label">CHÚ THÍCH</div></div>
+        <svg class="kpi-check" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M5 8l2 2 4-4"/></svg>
+      </div>
+      <div class="kpi-stat-cell">
+        <div><div class="kpi-stat-main">KPI 3</div><div class="kpi-stat-label">CHÚ THÍCH</div></div>
+        <svg class="kpi-check" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M5 8l2 2 4-4"/></svg>
+      </div>
+    </div>
+
+    <!-- Feature tags -->
+    <div class="feature-tags" style="margin-top:6px;gap:8px;">
+      <div class="feature-tag">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#e74c00" stroke-width="1.5"><path d="M6 1l1.2 2.5L10 4l-2 2 .5 2.8L6 7.5 3.5 8.8 4 6 2 4l2.8-.5z"/></svg>
+        <span class="feature-tag-text">Ưu điểm nổi bật 1</span>
+      </div>
+      <div class="feature-tag">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#e74c00" stroke-width="1.5"><path d="M6 1l1.2 2.5L10 4l-2 2 .5 2.8L6 7.5 3.5 8.8 4 6 2 4l2.8-.5z"/></svg>
+        <span class="feature-tag-text">Ưu điểm nổi bật 2</span>
+      </div>
+      <div class="feature-tag">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#e74c00" stroke-width="1.5"><path d="M6 1l1.2 2.5L10 4l-2 2 .5 2.8L6 7.5 3.5 8.8 4 6 2 4l2.8-.5z"/></svg>
+        <span class="feature-tag-text">Ưu điểm nổi bật 3</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SẢN PHẨM CHÍNH -->
+  <div class="section-header" style="padding-top:4px;">
+    <svg class="section-icon" viewBox="0 0 20 20" fill="none" stroke="#f1611b" stroke-width="1.5"><path d="M6 2h8l2 4H4L6 2z"/><path d="M2 6h16v12H2z"/><path d="M8 10h4"/></svg>
+    <span class="section-title">Sản phẩM CHÍNH</span>
+    <div class="section-divider"></div>
+  </div>
+
+  <div class="section-san-pham">
+    <div class="gallery-4">
+      <div class="product-photo">
+        <div class="photo-placeholder"><svg viewBox="0 0 28 28" fill="none" stroke="#fff" stroke-width="1.5"><rect x="2" y="5" width="24" height="18" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M2 19l6-5 5 4 4-3 9 7"/></svg></div>
+        <div class="photo-overlay"><div style="display:flex;justify-content:space-between;align-items:center;"><span class="photo-location">CỬA NHÔM</span><span class="photo-num">1</span></div></div>
+      </div>
+      <div class="product-photo">
+        <div class="photo-placeholder"><svg viewBox="0 0 28 28" fill="none" stroke="#fff" stroke-width="1.5"><rect x="2" y="5" width="24" height="18" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M2 19l6-5 5 4 4-3 9 7"/></svg></div>
+        <div class="photo-overlay"><div style="display:flex;justify-content:space-between;align-items:center;"><span class="photo-location">Kính cường lực</span><span class="photo-num">2</span></div></div>
+      </div>
+      <div class="product-photo">
+        <div class="photo-placeholder"><svg viewBox="0 0 28 28" fill="none" stroke="#fff" stroke-width="1.5"><rect x="2" y="5" width="24" height="18" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M2 19l6-5 5 4 4-3 9 7"/></svg></div>
+        <div class="photo-overlay"><div style="display:flex;justify-content:space-between;align-items:center;"><span class="photo-location">VÁCH KÍNH</span><span class="photo-num">3</span></div></div>
+      </div>
+      <div class="product-photo">
+        <div class="photo-placeholder"><svg viewBox="0 0 28 28" fill="none" stroke="#fff" stroke-width="1.5"><rect x="2" y="5" width="24" height="18" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M2 19l6-5 5 4 4-3 9 7"/></svg></div>
+        <div class="photo-overlay"><div style="display:flex;justify-content:space-between;align-items:center;"><span class="photo-location" style="font-size:8px;">SẮT MỸ THUẬT – INOX</span><span class="photo-num">4</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NĂNG LỰC + ẢNH STATS -->
+  <div class="bottom-row">
+    <!-- Năng lực nổi bật -->
+    <div class="nang-luc-card">
+      <div class="nang-luc-header">
+        <div class="nang-luc-icon"></div>
+        <span class="nang-luc-title">Năng lực NỔI BẬT</span>
+        <div class="nang-luc-divider"></div>
+      </div>
+      <div class="nang-luc-list">
+        <div class="nang-luc-item">
+          <svg class="check-icon" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 6l3 3 5-5"/></svg>
+          Kinh nghiệm thi công thực tế
+        </div>
+        <div class="nang-luc-item">
+          <svg class="check-icon" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 6l3 3 5-5"/></svg>
+          Đội ngũ kỹ thuật lành nghề
+        </div>
+        <div class="nang-luc-item">
+          <svg class="check-icon" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 6l3 3 5-5"/></svg>
+          Quy trình triển khai trọn gói
+        </div>
+        <div class="nang-luc-item">
+          <svg class="check-icon" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 6l3 3 5-5"/></svg>
+          Khả năng đáp ứng công trình
+        </div>
+      </div>
+    </div>
+
+    <!-- Ảnh + 3 stats -->
+    <div class="anh-stats-card">
+      <div class="anh-left">
+        <div class="photo-placeholder" style="height:100%;">
+          <svg viewBox="0 0 28 28" fill="none" stroke="#fff" stroke-width="1.5"><rect x="2" y="5" width="24" height="18" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M2 19l6-5 5 4 4-3 9 7"/></svg>
+        </div>
+        <div class="photo-overlay" style="height:42px;">
+          <div class="photo-location">Ảnh đội ngũ 1</div>
+        </div>
+      </div>
+      <div class="stats-right">
+        <div class="stat-row">
+          <svg class="stat-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M5 7h6M5 10h4"/></svg>
+          <div><div class="stat-value">20+</div><div class="stat-label">NĂM Kinh nghiệm</div></div>
+        </div>
+        <div class="stat-row">
+          <svg class="stat-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="5" r="2"/><circle cx="10" cy="5" r="2"/><path d="M2 13c0-2.2 1.8-4 4-4s4 1.8 4 4"/><path d="M10 9c1.1 0 2 .9 2 2v2"/></svg>
+          <div><div class="stat-value">12+</div><div class="stat-label">QUY MÔ đội ngũ</div></div>
+        </div>
+        <div class="stat-row">
+          <svg class="stat-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3h10v10H3z"/><path d="M3 6h10M6 3v10"/></svg>
+          <div><div class="stat-value">15+</div><div class="stat-label">Dự án / tháng</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ĐỘI NGŨ KỸ THUẬT / QUOTE / ĐỐI TÁC -->
+  <div class="section-header" style="padding-top:0;">
+    <svg class="section-icon" viewBox="0 0 20 20" fill="none" stroke="#f1611b" stroke-width="1.5"><circle cx="7" cy="6" r="2.5"/><circle cx="13" cy="6" r="2.5"/><path d="M2 16c0-2.8 2.2-5 5-5s5 2.2 5 5"/><path d="M13 11c1.4 0 2.5 1.1 2.5 2.5V16"/></svg>
+    <span class="section-title">ĐỘI NGŨ KỸ THUẬT</span>
+    <div class="section-divider"></div>
+  </div>
+
+  <div class="bottom-section">
+    <!-- Quote -->
+    <div class="quote-block">
+      <div class="block-heading">Khách hàng chia sẻ</div>
+      <div class="quote-box">
+        <p class="quote-text">"Tôi chọn vì thấy năng lực thật, ảnh thật, công trình thật và cách tư vấn rất rõ ràng."</p>
+      </div>
+    </div>
+    <!-- Partners -->
+    <div class="partner-block">
+      <div class="block-heading">Đối tác tin cậy</div>
+      <div class="partner-logos">
+        <div class="partner-logo"><div class="partner-logo-placeholder"></div></div>
+        <div class="partner-logo"><div class="partner-logo-placeholder"></div></div>
+        <div class="partner-logo"><div class="partner-logo-placeholder"></div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -5,11 +5,14 @@ const uploadService = require('./upload.service');
 const { badRequest, notFound } = require('../utils/http');
 const { cleanString } = require('../utils/sanitize');
 
-const TEMPLATES = ['t1'];
+const TEMPLATES = ['t1', 't2'];
+// Slot ảnh hồ sơ (mig 019). Nội dung tối đa 10: 1 đội ngũ + 5 công trình + 4 sản phẩm.
+// + thương hiệu: logo, qr, 3 logo đối tác. (doi_ngu_2 cũ đã migrate -> cong_trinh_4)
 const IMAGE_SLOTS = [
-  'logo_dai_ly',
-  'doi_ngu_1', 'doi_ngu_2', 'qr_code',
-  'cong_trinh_1', 'cong_trinh_2', 'cong_trinh_3',
+  'logo_dai_ly', 'qr_code',
+  'doi_ngu_1',
+  'cong_trinh_1', 'cong_trinh_2', 'cong_trinh_3', 'cong_trinh_4', 'cong_trinh_5',
+  'san_pham_1', 'san_pham_2', 'san_pham_3', 'san_pham_4',
   'partner_logo_1', 'partner_logo_2', 'partner_logo_3',
 ];
 

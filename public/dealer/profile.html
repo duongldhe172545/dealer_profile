@@ -231,8 +231,6 @@
               <textarea class="field-textarea" rows="3" x-model="profile.tagline"></textarea></div>
             <div><label class="field-label">Năng lực nổi bật (mỗi dòng 1 ý)</label>
               <textarea class="field-textarea" rows="5" x-model="profile.usp_text"></textarea></div>
-            <div><label class="field-label">Sản phẩm & dịch vụ (mỗi dòng 1 ý)</label>
-              <textarea class="field-textarea" rows="5" x-model="profile.services_text"></textarea></div>
             <div><label class="field-label">Nhận xét / phản hồi khách hàng</label>
               <textarea class="field-textarea" rows="2" x-model="profile.customer_quote"></textarea></div>
           </div>
@@ -273,42 +271,51 @@
           <div class="panel-hd"><h3>Hình ảnh hồ sơ</h3>
             <span class="text-[11px] text-slate-500">Tối đa 5MB/ảnh · JPG, PNG, WEBP</span>
           </div>
-          <div class="panel-bd">
-            <div class="img-grid">
-              <template x-for="slot in imageSlots" :key="slot.key">
-                <div class="img-slot">
-                  <div class="img-slot-label" x-text="slot.label"></div>
-                  <div class="text-[10px] text-slate-500 mb-1.5 italic" x-text="slot.size"></div>
+          <div class="panel-bd space-y-5">
+            <template x-for="grp in imageGroups" :key="grp.name">
+              <div>
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="text-xs font-bold text-slate-700" x-text="grp.name"></span>
+                  <span class="text-[10px] font-normal text-slate-400" x-text="'(' + grp.slots.length + ' ảnh)'"></span>
+                </div>
+                <div class="img-grid">
+                  <template x-for="slot in grp.slots" :key="slot.key">
+                    <div class="img-slot">
+                      <div class="img-slot-label" x-text="slot.label"></div>
+                      <div class="text-[10px] text-slate-500 mb-1.5 italic" x-text="slot.size"></div>
 
-                  <!-- Chưa có ảnh: chỉ nút Chọn ảnh -->
-                  <button x-show="!images[slot.key]" @click="pickFile(slot.key)" type="button" class="img-empty-btn">
-                    <span class="text-2xl leading-none">+</span>
-                    <span class="text-[11px] font-semibold mt-1" x-text="uploading[slot.key] ? 'Đang tải...' : 'Chọn ảnh'"></span>
-                  </button>
+                      <!-- Chưa có ảnh: chỉ nút Chọn ảnh -->
+                      <button x-show="!images[slot.key]" @click="pickFile(slot.key)" type="button" class="img-empty-btn">
+                        <span class="text-2xl leading-none">+</span>
+                        <span class="text-[11px] font-semibold mt-1" x-text="uploading[slot.key] ? 'Đang tải...' : 'Chọn ảnh'"></span>
+                      </button>
 
-                  <!-- Đã có ảnh: thumbnail + nút Đổi / Xoá -->
-                  <div x-show="images[slot.key]">
-                    <div class="img-thumb mb-2"><img :src="images[slot.key]" :alt="slot.label"></div>
-                    <div class="flex gap-1.5">
-                      <button @click="pickFile(slot.key)" type="button"
-                              class="flex-1 text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1.5 rounded font-semibold"
-                              x-text="uploading[slot.key] ? 'Đang tải...' : 'Đổi'"></button>
-                      <button @click="deleteImage(slot.key)" type="button"
-                              class="text-[11px] bg-red-50 hover:bg-red-100 text-red-700 px-2 py-1.5 rounded font-semibold">Xoá</button>
-                    </div>
-                  </div>
+                      <!-- Đã có ảnh: thumbnail + nút Đổi / Xoá -->
+                      <div x-show="images[slot.key]">
+                        <div class="img-thumb mb-2"><img :src="images[slot.key]" :alt="slot.label"></div>
+                        <div class="flex gap-1.5">
+                          <button @click="pickFile(slot.key)" type="button"
+                                  class="flex-1 text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1.5 rounded font-semibold"
+                                  x-text="uploading[slot.key] ? 'Đang tải...' : 'Đổi'"></button>
+                          <button @click="deleteImage(slot.key)" type="button"
+                                  class="text-[11px] bg-red-50 hover:bg-red-100 text-red-700 px-2 py-1.5 rounded font-semibold">Xoá</button>
+                        </div>
 
-                  <!-- Caption (textarea) -->
-                  <template x-if="slot.captionField">
-                    <div class="mt-2">
-                      <label class="text-[10px] text-slate-500 font-semibold">Mô tả ảnh</label>
-                      <textarea x-model="profile[slot.captionField]" rows="2"
-                                class="w-full px-2 py-1.5 mt-0.5 text-[12px] border border-slate-300 rounded outline-none focus:ring-2 focus:ring-brand-500 resize-y leading-snug"></textarea>
+                        <!-- Caption: chỉ hiện khi đã có ảnh -->
+                        <template x-if="slot.captionField">
+                          <div class="mt-2">
+                            <label class="text-[10px] text-slate-500 font-semibold"
+                                   x-text="slot.group === 'Sản phẩm' ? 'Tên sản phẩm' : 'Mô tả ảnh'"></label>
+                            <textarea x-model="profile[slot.captionField]" rows="2"
+                                      class="w-full px-2 py-1.5 mt-0.5 text-[12px] border border-slate-300 rounded outline-none focus:ring-2 focus:ring-brand-500 resize-y leading-snug"></textarea>
+                          </div>
+                        </template>
+                      </div>
                     </div>
                   </template>
                 </div>
-              </template>
-            </div>
+              </div>
+            </template>
           </div>
         </div>
 
@@ -385,19 +392,38 @@
           { key: 'highlights',  label: '3. Điểm nhấn & KPI' },
           { key: 'images',      label: '4. Hình ảnh' },
         ],
+        // Slot ảnh — gom nhóm để form dễ đọc. Tối đa 10 ảnh nội dung:
+        // 1 đội ngũ + 5 công trình + 4 sản phẩm (+ thương hiệu: logo/qr/3 đối tác).
         imageSlots: [
-          { key: 'logo_dai_ly',  label: 'Logo đại lý',           size: 'Vuông 1:1 · ~500×500px' },
-          { key: 'doi_ngu_1',    label: 'Ảnh đội ngũ 1',         size: 'Ngang 4:3 · ~1200×900px',  captionField: 'team_caption_doi_ngu_1' },
-          { key: 'doi_ngu_2',    label: 'Ảnh đội ngũ 2',         size: 'Ngang 4:3 · ~1200×900px',  captionField: 'team_caption_doi_ngu_2' },
-          { key: 'qr_code',      label: 'Mã QR liên hệ',         size: 'Vuông 1:1 · ~500×500px' },
-          { key: 'cong_trinh_1', label: 'Ảnh công trình 1',      size: 'Vuông 1:1 · ~1200×1200px', captionField: 'project_caption1' },
-          { key: 'cong_trinh_2', label: 'Ảnh công trình 2',      size: 'Vuông 1:1 · ~1200×1200px', captionField: 'project_caption2' },
-          { key: 'cong_trinh_3', label: 'Ảnh công trình 3',      size: 'Vuông 1:1 · ~1200×1200px', captionField: 'project_caption3' },
-          { key: 'partner_logo_1', label: 'Logo đối tác 1',      size: 'Vuông 1:1 · nền trắng' },
-          { key: 'partner_logo_2', label: 'Logo đối tác 2',      size: 'Vuông 1:1 · nền trắng' },
-          { key: 'partner_logo_3', label: 'Logo đối tác 3',      size: 'Vuông 1:1 · nền trắng' },
+          // Logo & QR
+          { key: 'logo_dai_ly',  group: 'Logo & QR', label: 'Logo đại lý',  size: 'Vuông 1:1 · ~500×500px' },
+          { key: 'qr_code',      group: 'Logo & QR', label: 'Mã QR liên hệ', size: 'Vuông 1:1 · ~500×500px' },
+          // Công trình (tối đa 5 ảnh)
+          { key: 'cong_trinh_1', group: 'Công trình', label: 'Ảnh công trình 1', size: 'Vuông 1:1 · ~1200×1200px', captionField: 'project_caption1' },
+          { key: 'cong_trinh_2', group: 'Công trình', label: 'Ảnh công trình 2', size: 'Vuông 1:1 · ~1200×1200px', captionField: 'project_caption2' },
+          { key: 'cong_trinh_3', group: 'Công trình', label: 'Ảnh công trình 3', size: 'Vuông 1:1 · ~1200×1200px', captionField: 'project_caption3' },
+          { key: 'cong_trinh_4', group: 'Công trình', label: 'Ảnh công trình 4', size: 'Vuông 1:1 · ~1200×1200px', captionField: 'project_caption4' },
+          { key: 'cong_trinh_5', group: 'Công trình', label: 'Ảnh công trình 5', size: 'Vuông 1:1 · ~1200×1200px', captionField: 'project_caption5' },
+          // Sản phẩm (tối đa 4 ảnh)
+          { key: 'san_pham_1',   group: 'Sản phẩm', label: 'Ảnh sản phẩm 1', size: 'Vuông 1:1 · ~1200×1200px', captionField: 'product_caption1' },
+          { key: 'san_pham_2',   group: 'Sản phẩm', label: 'Ảnh sản phẩm 2', size: 'Vuông 1:1 · ~1200×1200px', captionField: 'product_caption2' },
+          { key: 'san_pham_3',   group: 'Sản phẩm', label: 'Ảnh sản phẩm 3', size: 'Vuông 1:1 · ~1200×1200px', captionField: 'product_caption3' },
+          { key: 'san_pham_4',   group: 'Sản phẩm', label: 'Ảnh sản phẩm 4', size: 'Vuông 1:1 · ~1200×1200px', captionField: 'product_caption4' },
+          // Đội ngũ (1 ảnh)
+          { key: 'doi_ngu_1',    group: 'Đội ngũ', label: 'Ảnh đội ngũ',   size: 'Ngang 4:3 · ~1200×900px', captionField: 'team_caption_doi_ngu_1' },
+          // Đối tác
+          { key: 'partner_logo_1', group: 'Đối tác', label: 'Logo đối tác 1', size: 'Vuông 1:1 · nền trắng' },
+          { key: 'partner_logo_2', group: 'Đối tác', label: 'Logo đối tác 2', size: 'Vuông 1:1 · nền trắng' },
+          { key: 'partner_logo_3', group: 'Đối tác', label: 'Logo đối tác 3', size: 'Vuông 1:1 · nền trắng' },
         ],
-        templateKeys: ['t1'],
+        // Gom imageSlots theo nhóm (thứ tự cố định) để render section trong form.
+        get imageGroups() {
+          const order = ['Logo & QR', 'Công trình', 'Sản phẩm', 'Đội ngũ', 'Đối tác'];
+          const map = {};
+          this.imageSlots.forEach(s => { (map[s.group] = map[s.group] || []).push(s); });
+          return order.filter(g => map[g]).map(g => ({ name: g, slots: map[g] }));
+        },
+        templateKeys: ['t1', 't2'],
         templateLabels: window.ProfileTemplates.labels,
 
         // Tính relative luminance (0=đen, 1=trắng) từ hex color → dùng validate contrast

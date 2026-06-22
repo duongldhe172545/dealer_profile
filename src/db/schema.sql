@@ -75,6 +75,12 @@ CREATE TABLE IF NOT EXISTS dealer_profiles (
   project_caption1    TEXT,
   project_caption2    TEXT,
   project_caption3    TEXT,
+  project_caption4    TEXT,   -- mig 019 — caption công trình 4 (nhận từ đội ngũ 2 cũ)
+  project_caption5    TEXT,   -- mig 019 — caption công trình 5
+  product_caption1    TEXT,   -- mig 019 — caption sản phẩm 1..4
+  product_caption2    TEXT,
+  product_caption3    TEXT,
+  product_caption4    TEXT,
   team_caption_doi_ngu_1 TEXT,
   team_caption_kho_xuong TEXT,
   team_caption_doi_ngu_2 TEXT,
@@ -93,13 +99,10 @@ CREATE TABLE IF NOT EXISTS dealer_profiles (
 CREATE TABLE IF NOT EXISTS dealer_images (
   id              INTEGER PRIMARY KEY AUTOINCREMENT,
   dealer_id       INTEGER NOT NULL REFERENCES dealers(id) ON DELETE CASCADE,
-  slot            TEXT NOT NULL CHECK (slot IN (
-                    'logo_dai_ly', 'avatar_chu', 'hero', 'kho_xuong',
-                    'doi_ngu_1', 'doi_ngu_2', 'qr_code',
-                    'cong_trinh_1', 'cong_trinh_2', 'cong_trinh_3',
-                    'partner_logo_1', 'partner_logo_2', 'partner_logo_3',
-                    'partner_logo_4', 'partner_logo_5'
-                  )),
+  -- mig 019: bỏ CHECK cứng — slot validate ở service (profile.service IMAGE_SLOTS).
+  -- Slot đang dùng: logo_dai_ly, qr_code, doi_ngu_1, cong_trinh_1..5, san_pham_1..4,
+  -- partner_logo_1..3. (doi_ngu_2 cũ đã migrate sang cong_trinh_4.)
+  slot            TEXT NOT NULL,
   url             TEXT NOT NULL,
   public_id       TEXT,
   uploaded_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

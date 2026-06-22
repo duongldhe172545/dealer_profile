@@ -396,7 +396,6 @@
             </div>
             <div class="t2-info-card">
               <div class="t2-info-item"><span class="t2-info-k">Email</span><span class="t2-info-v">${esc(customer && customer.email || '—')}</span></div>
-              <div class="t2-info-item"><span class="t2-info-k">Địa chỉ KH</span><span class="t2-info-v">${esc(customer && customer.dia_chi || '—')}</span></div>
               <div class="t2-info-item"><span class="t2-info-k">Tên &amp; địa chỉ công trình</span><span class="t2-info-v">${esc(quotation.dia_chi_cong_trinh || '—')}</span></div>
               <div class="t2-info-item"><span class="t2-info-k">Ghi chú hồ sơ</span><span class="t2-info-v">${esc(quotation.ghi_chu_ho_so || '—')}</span></div>
             </div>
@@ -526,7 +525,6 @@
             </div>
             <div class="q-info-col">
               <div class="q-info-row"><span class="k">Email</span><span class="sep">:</span><span class="v">${esc(customer && customer.email || '—')}</span></div>
-              <div class="q-info-row"><span class="k">Địa chỉ KH</span><span class="sep">:</span><span class="v">${esc(customer && customer.dia_chi || '—')}</span></div>
               <div class="q-info-row"><span class="k">Tên &amp; địa chỉ công trình</span><span class="sep">:</span><span class="v">${has(quotation.dia_chi_cong_trinh) ? multiLine(quotation.dia_chi_cong_trinh) : '—'}</span></div>
               <div class="q-info-row"><span class="k">Ghi chú hồ sơ</span><span class="sep">:</span><span class="v">${has(quotation.ghi_chu_ho_so) ? multiLine(quotation.ghi_chu_ho_so) : '—'}</span></div>
             </div>

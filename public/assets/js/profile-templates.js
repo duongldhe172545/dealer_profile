@@ -1,238 +1,208 @@
-// Hồ sơ đại lý – Mẫu 1 (Orange Edition)
-// Thiết kế khớp ảnh tham chiếu template1hoso.jfif
-// Font: Be Vietnam Pro (hỗ trợ tiếng Việt đầy đủ)
+// Hồ sơ đại lý – render template (Mẫu 1 + Mẫu 2). Whitelabel theo brand colors.
+// Preview/PDF tự co theo kích thước gốc của từng mẫu (xem profile.html setupAutoFit/printProfile).
 (function (global) {
+  // ════════════════════════════════════════════════════════════════════
+  // Mẫu 1 (THE ANH WINDOWS Style) — FULL: 5 công trình + 4 sản phẩm + 1 đội ngũ
+  // Thiết kế theo Template_ho_so_1/ho_so_1.html. Khổ gốc 1190px (gần vuông).
+  // ════════════════════════════════════════════════════════════════════
   function template1({ dealer = {}, profile = {}, images = {} }) {
     const esc = (v = '') => String(v)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;')
       .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     const lines = (v = '') => String(v).split(/\n+/).map(x => x.trim()).filter(Boolean);
 
-    // ── Colors (tất cả dựa trên 2 màu chủ đạo) ──
-    const C1 = profile.brand_primary   || '#e57a2b';  // cam chủ đạo
-    const C2 = profile.brand_secondary || '#333333';   // tối phụ
-
-    // Màu phái sinh từ C2 (không hardcode)
-    const C2light = C2 + 'cc';   // C2 mờ hơn cho viền, separator
+    const C1 = profile.brand_primary   || '#1a9d44';  // xanh lá accent
+    const C2 = profile.brand_secondary || '#1c1c1c';  // tối (sidebar/bar)
 
     // ── Data ──
-    const code  = dealer.dealer_code || 'ĐL-001';
     const name  = dealer.ten_dai_ly  || 'Tên Đại Lý';
     const tag   = profile.tagline    || 'Thông điệp định vị (tagline)';
-    const phone = dealer.phone       || '0908 123 456';
-    const email = dealer.email       || 'phat.ng@phatdat.vn';
-    const addr  = dealer.address     || '123 Lý Thường Kiệt, Q. Hai Bà Trưng, Hà Nội';
-    const exp   = dealer.years_experience || '8+';
-    const team  = dealer.team_size        || '12';
-    const proj  = dealer.projects_monthly || '35+';
+    const rep   = dealer.chu_dai_ly  || '—';
+    const phone = dealer.phone       || '0900 000 000';
+    const addr  = dealer.address     || 'Địa chỉ đại lý';
+    const exp   = dealer.years_experience || '—';
+    const team  = dealer.team_size        || '—';
+    const proj  = dealer.projects_monthly || '—';
+    const advs = [
+      profile.usp_highlight1 || 'Ưu điểm 1',
+      profile.usp_highlight2 || 'Ưu điểm 2',
+      profile.usp_highlight3 || 'Ưu điểm 3',
+    ];
+    const kpis = [
+      { v: profile.metric1_value || 'KPI 1', l: profile.metric1_label || 'Chú thích' },
+      { v: profile.metric2_value || 'KPI 2', l: profile.metric2_label || 'Chú thích' },
+      { v: profile.metric3_value || 'KPI 3', l: profile.metric3_label || 'Chú thích' },
+    ];
+    const nangluc = lines(profile.usp_text || 'Năng lực nổi bật 1\nNăng lực nổi bật 2\nNăng lực nổi bật 3\nNăng lực nổi bật 4').slice(0, 5);
+    const quote = profile.customer_quote || 'Nhận xét / phản hồi của khách hàng…';
+    const ctCap = i => profile['project_caption' + i] || ('Công trình ' + i);
+    const spCap = i => profile['product_caption' + i] || ('Sản phẩm ' + i);
 
-    const adv1 = profile.usp_highlight1 || 'ƯU ĐIỂM 1';
-    const adv2 = profile.usp_highlight2 || 'ƯU ĐIỂM 2';
-    const adv3 = profile.usp_highlight3 || 'ƯU ĐIỂM 3';
-
-    const kpi1V = profile.metric1_value || 'KPI 1', kpi1L = profile.metric1_label || 'CHÚ THÍCH';
-    const kpi2V = profile.metric2_value || 'KPI 2', kpi2L = profile.metric2_label || 'CHÚ THÍCH';
-    const kpi3V = profile.metric3_value || 'KPI 3', kpi3L = profile.metric3_label || 'CHÚ THÍCH';
-
-    const usps  = lines(profile.usp_text || 'Năng lực nổi bật 1\nNăng lực nổi bật 2\nNăng lực nổi bật 3\nNăng lực nổi bật 4').slice(0, 4);
-    const quote = profile.customer_quote || 'Tôi chọn vì thấy năng lực thật, ảnh thật, công trình thật và cách tư vấn rất rõ ràng.';
-
-    // images
-    const iLogo = images.logo_dai_ly || '', iQR = images.qr_code || '',
-          iP1 = images.cong_trinh_1 || '', iP2 = images.cong_trinh_2 || '', iP3 = images.cong_trinh_3 || '',
-          iT1 = images.doi_ngu_1 || '',
-          iPL1 = images.partner_logo_1 || '', iPL2 = images.partner_logo_2 || '', iPL3 = images.partner_logo_3 || '';
-    const pCap1 = profile.project_caption1 || 'CÔNG TRÌNH 1',
-          pCap2 = profile.project_caption2 || 'CÔNG TRÌNH 2',
-          pCap3 = profile.project_caption3 || 'CÔNG TRÌNH 3';
-    const tCap1 = profile.team_caption_doi_ngu_1 || 'ẢNH ĐỘI NGŨ 1';
-
-    // ── SVG Icons ──
-    const ic = {
-      phone: `<svg style="width:16px;height:16px;flex-shrink:0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-      email: `<svg style="width:16px;height:16px;flex-shrink:0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-      pin: `<svg style="width:16px;height:16px;flex-shrink:0;margin-top:2px" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-      camera: `<svg style="width:20px;height:20px" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-      team: `<svg style="width:20px;height:20px" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-      box: `<svg style="width:20px;height:20px;color:${C1}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-      boxS: `<svg style="width:16px;height:16px;flex-shrink:0;margin-top:2px;color:${C1}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-      check: `<svg style="width:16px;height:16px;flex-shrink:0;margin-top:2px" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    // ── Icons (stroke set qua CSS) ──
+    const ICON = {
+      build: '<svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+      box: '<svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
+      team: '<svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+      chat: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>',
+      brief: '<svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+      check: '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>',
     };
+    const camIcon = '<svg viewBox="0 0 24 24" class="t1-camico"><rect x="2" y="5" width="20" height="15" rx="2"/><circle cx="8" cy="11" r="2.4"/><path d="M2 17l6-5 5 4 3.5-3 5.5 4.5"/></svg>';
 
     // ── Helpers ──
-    const logo = iLogo
-      ? `<img src="${esc(iLogo)}" alt="Logo" style="width:100%;height:100%;object-fit:contain;display:block"/>`
-      : `<div style="text-align:center;font-weight:800;line-height:1.15;color:#fff">
-           <div style="font-size:32px;letter-spacing:-0.05em">${esc(name.substring(0, 3).toUpperCase())}</div>
-           <div style="font-size:14px;font-weight:700;opacity:.85">— ${esc(code.replace(/^ĐL-/, ''))} —</div>
-           <div style="font-size:7px;opacity:.6;letter-spacing:0.08em;margin-top:2px">KIẾN TẠO KHÔNG GIAN MỚI</div>
-         </div>`;
+    const logo = images.logo_dai_ly
+      ? `<img src="${esc(images.logo_dai_ly)}" alt="Logo" class="t1-logo-img">`
+      : `<div class="t1-logo-fb">${esc(name.substring(0, 3).toUpperCase())}</div>`;
 
-    const qr = iQR
-      ? `<img src="${esc(iQR)}" alt="QR" style="width:100%;height:100%;object-fit:contain;display:block"/>`
-      : `<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">
-           <svg style="width:36px;height:36px;color:${C2};opacity:.3" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.75 6.75h.75v.75h-.75zM6.75 16.5h.75v.75h-.75zM16.5 6.75h.75v.75h-.75zM13.5 13.5h.75v.75h-.75zM13.5 19.5h.75v.75h-.75zM19.5 13.5h.75v.75h-.75zM19.5 19.5h.75v.75h-.75zM16.5 16.5h.75v.75h-.75z" stroke-linecap="round" stroke-linejoin="round"/></svg>
-           <div style="font-size:8px;font-weight:600;color:${C2};opacity:.4;text-align:center;line-height:1.2">QR CODE</div>
-         </div>`;
+    const qr = images.qr_code
+      ? `<img src="${esc(images.qr_code)}" alt="QR">`
+      : `<svg viewBox="0 0 25 25" shape-rendering="crispEdges"><rect width="25" height="25" fill="#fff"/><g fill="#1c1c1c"><rect x="0" y="0" width="7" height="7"/><rect x="1" y="1" width="5" height="5" fill="#fff"/><rect x="2" y="2" width="3" height="3"/><rect x="18" y="0" width="7" height="7"/><rect x="19" y="1" width="5" height="5" fill="#fff"/><rect x="20" y="2" width="3" height="3"/><rect x="0" y="18" width="7" height="7"/><rect x="1" y="19" width="5" height="5" fill="#fff"/><rect x="2" y="20" width="3" height="3"/><rect x="10" y="10" width="2" height="2"/><rect x="14" y="12" width="2" height="2"/><rect x="11" y="15" width="2" height="2"/><rect x="16" y="17" width="2" height="2"/><rect x="19" y="11" width="2" height="2"/><rect x="9" y="3" width="1" height="1"/><rect x="13" y="5" width="1" height="1"/></g></svg>`;
 
-    // Photo card with gradient overlay + number
-    const photoCard = (src, n, cap, h) => src
-      ? `<div style="position:relative;border-radius:10px;overflow:hidden;height:${h}">
-           <img src="${esc(src)}" alt="${esc(cap)}" style="width:100%;height:100%;object-fit:cover;display:block"/>
-           <div style="position:absolute;bottom:0;left:0;right:0;padding:10px 12px;background:linear-gradient(to top,rgba(0,0,0,.75) 0%,transparent 100%)">
-             <div style="color:${C1};font-weight:700;font-size:18px;line-height:1">${n}</div>
-             <div style="color:#fff;font-size:12px;font-weight:600;text-transform:uppercase;margin-top:2px">${esc(cap)}</div>
-           </div>
-         </div>`
-      : `<div style="border-radius:10px;height:${h};background:${C2};opacity:.08;border:2px dashed ${C2};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">
-           <div style="color:${C1};font-weight:700;font-size:18px;opacity:1">${n}</div>
-           <div style="color:${C2};font-size:11px;font-weight:600;text-transform:uppercase;opacity:1">${esc(cap)}</div>
-         </div>`;
+    const cell = (src, cap) =>
+      `<div class="t1-cell"><div class="t1-photo${src ? '' : ' ph'}"${src ? ` style="background-image:url('${esc(src)}')"` : ''}>${src ? '' : camIcon}</div><div class="t1-cap">${esc(cap)}</div></div>`;
 
-    // Partner logo cell (dùng rgba cho nền, không dùng opacity trên parent)
     const pLogo = (src) => src
-      ? `<div style="background:${C2}10;height:48px;flex:1;display:flex;align-items:center;justify-content:center;padding:4px;border-radius:6px"><img src="${esc(src)}" style="max-height:100%;max-width:100%;object-fit:contain" alt=""/></div>`
-      : `<div style="background:${C2}10;height:48px;flex:1;display:flex;align-items:center;justify-content:center;padding:4px;border-radius:6px">
-           <div style="text-align:center;font-weight:800;line-height:1;transform:scale(.75);color:${C2}">
-             <div style="font-size:20px;letter-spacing:-0.05em">${esc(name.substring(0, 3).toUpperCase())}</div>
-             <div style="color:${C1};font-size:10px">— ${esc(code.replace(/^ĐL-/, ''))} —</div>
-           </div>
-         </div>`;
+      ? `<div class="t1-plogo"><img src="${esc(src)}" alt=""></div>`
+      : `<div class="t1-plogo"><svg class="t1-plogo-ic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.6"/><path d="M3 17l5-4 4 3 3-2 6 5"/></svg></div>`;
 
-    // ════════════════════════════════════════════════════════════════════
-    return `
-    <div class="profile-page" style="font-family:'Be Vietnam Pro','Inter',system-ui,sans-serif;padding:0">
+    const css = `
+      .t1-root{font-family:'Be Vietnam Pro',system-ui,sans-serif;width:1190px;background:#fff;color:#1d1d1d;position:relative;display:grid;grid-template-columns:234px 1fr;grid-template-rows:234px 1fr;overflow:hidden}
+      .t1-root *{box-sizing:border-box;margin:0;padding:0}
+      .t1-logobox{grid-column:1;grid-row:1;display:flex;align-items:center;justify-content:center;border-right:1px solid #e6e6e6;border-bottom:1px solid #e6e6e6;padding:18px}
+      .t1-logo-img{max-width:178px;max-height:178px;object-fit:contain}
+      .t1-logo-fb{font-family:'Roboto Condensed',sans-serif;font-weight:700;font-size:56px;color:${C1};letter-spacing:-1px}
+      .t1-header{grid-column:2;grid-row:1;position:relative;overflow:hidden;color:#fff;background:repeating-linear-gradient(90deg,rgba(255,255,255,.04) 0 1px,transparent 1px 64px),linear-gradient(115deg,${C2} 0%,${C2}cc 45%,${C2}80 100%)}
+      .t1-htxt{position:relative;z-index:2;padding:34px 38px}
+      .t1-h1{font-family:'Roboto Condensed',sans-serif;font-weight:700;font-size:54px;line-height:1;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px}
+      .t1-sub{font-family:'Roboto Condensed',sans-serif;font-weight:500;font-size:23px;letter-spacing:1.5px;color:#e7e9e6;text-transform:uppercase}
+      .t1-btns{margin-top:20px;display:flex;gap:12px;flex-wrap:wrap}
+      .t1-btn{background:${C1};color:#fff;font-family:'Roboto Condensed',sans-serif;font-weight:700;font-size:15px;letter-spacing:1px;padding:9px 16px;border-radius:4px;text-transform:uppercase}
+      .t1-tri{position:absolute;right:0;bottom:0;width:160px;height:120px;z-index:1;background:${C1};clip-path:polygon(100% 0,100% 100%,18% 100%)}
+      .t1-sidebar{grid-column:1;grid-row:2;background:${C2};color:#fff;padding:22px 22px 26px;display:flex;flex-direction:column}
+      .t1-slabel{font-size:11px;letter-spacing:1.5px;color:#8c8c8c;text-transform:uppercase;font-weight:600}
+      .t1-sval{font-size:18px;font-weight:600;margin-top:3px;word-break:break-word}
+      .t1-sval.sm{font-size:15px;line-height:1.35;font-weight:500}
+      .t1-sblock{padding:13px 0;border-bottom:1px solid rgba(255,255,255,.12)}
+      .t1-sblock:first-of-type{padding-top:0}
+      .t1-stat{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.12)}
+      .t1-num{font-family:'Roboto Condensed',sans-serif;font-weight:700;font-size:22px;line-height:1}
+      .t1-cap2{font-size:11px;letter-spacing:.8px;color:#8c8c8c;text-transform:uppercase;font-weight:600;margin-top:4px}
+      .t1-icosq{width:30px;height:30px;background:${C1};border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+      .t1-icosq svg{width:17px;height:17px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+      .t1-sphoto{margin:18px 0;height:118px;border-radius:5px;background:#3a3f42 center/cover no-repeat;display:flex;align-items:center;justify-content:center;overflow:hidden}
+      .t1-sphoto.ph{background:linear-gradient(135deg,#34393b,#4b5052 45%,#2c3032 70%,#3d4244)}
+      .t1-camico{width:30px;height:30px;stroke:rgba(255,255,255,.5);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+      .t1-kpi{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.12)}
+      .t1-kt{font-size:15px;font-weight:700}
+      .t1-kc{font-size:11px;letter-spacing:1px;color:#8c8c8c;text-transform:uppercase;font-weight:600;margin-top:3px}
+      .t1-check{width:26px;height:26px;border-radius:50%;background:${C1};display:flex;align-items:center;justify-content:center;flex-shrink:0}
+      .t1-check svg{width:14px;height:14px;stroke:#fff;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+      .t1-qr{margin-top:auto;background:${C2};border:2px solid ${C1};border-radius:8px;overflow:hidden}
+      .t1-qrh{background:${C1};font-family:'Roboto Condensed',sans-serif;font-weight:700;font-size:18px;letter-spacing:1px;text-transform:uppercase;color:#fff;text-align:center;padding:9px 10px}
+      .t1-qrbody{padding:14px;text-align:center}
+      .t1-qrbox{background:#fff;width:124px;height:124px;margin:0 auto;border-radius:5px;padding:9px}
+      .t1-qrbox img{display:block;width:100%;height:100%;object-fit:cover;border-radius:2px}
+      .t1-qrbox svg{display:block;width:100%;height:100%}
+      .t1-qrf{font-family:'Roboto Condensed',sans-serif;font-weight:700;font-size:16px;letter-spacing:1px;text-transform:uppercase;margin-top:10px;color:#fff;text-align:center}
+      .t1-main{grid-column:2;grid-row:2;background:#fff;padding:24px 30px 34px;position:relative;display:flex;flex-direction:column}
+      .t1-bar{background:${C2};border-radius:8px;height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 16px 0 20px;color:#fff}
+      .t1-bar h2{font-family:'Roboto Condensed',sans-serif;font-weight:700;font-size:20px;letter-spacing:1px;text-transform:uppercase}
+      .t1-mt{margin-top:24px}
+      .t1-bar-sm{height:42px}
+      .t1-bar-sm h2{font-size:18px}
+      .t1-cell{display:flex;flex-direction:column}
+      .t1-photo{border-radius:5px;background:#dfe3e5 center/cover no-repeat;position:relative;overflow:hidden;flex:1;min-height:84px}
+      .t1-photo.ph{background:linear-gradient(160deg,#dfe7ea,#f4f7f8 45%,#d3dadd 75%,#b3bbc0);display:flex;align-items:center;justify-content:center}
+      .t1-photo.ph .t1-camico{stroke:rgba(0,0,0,.26);width:34px;height:34px}
+      .t1-cap{font-family:'Roboto Condensed',sans-serif;font-weight:700;font-size:15px;letter-spacing:.6px;text-transform:uppercase;text-align:center;padding-top:9px;color:#1d1d1d}
+      .t1-projects{display:flex;gap:14px;height:344px;margin-top:14px}
+      .t1-proj-left{flex:1.32;display:flex}
+      .t1-proj-left .t1-cell{flex:1}
+      .t1-proj-right{flex:2;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:14px}
+      .t1-products{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:14px}
+      .t1-products .t1-photo{height:170px;flex:none}
+      .t1-bottom{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+      .t1-box{background:#ecedee;border-radius:8px;padding:18px 20px;margin-top:8px}
+      .t1-li{display:flex;align-items:center;gap:11px;padding:6px 0;font-size:15px;font-weight:500;color:#2a2a2a}
+      .t1-li svg{width:18px;height:18px;stroke:${C1};fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+      .t1-quote{font-style:italic;font-weight:600;color:${C1};font-size:18px;line-height:1.5;min-height:96px;display:flex;align-items:center}
+      .t1-partners{display:flex;align-items:center;gap:16px;margin-top:auto;padding-top:24px}
+      .t1-pill{background:${C2};color:#fff;border-radius:8px;height:84px;display:flex;align-items:center;padding:0 26px;font-family:'Roboto Condensed',sans-serif;font-weight:700;font-size:22px;letter-spacing:1px;text-transform:uppercase;flex-shrink:0}
+      .t1-logos{flex:1;display:flex;gap:14px;position:relative;z-index:2}
+      .t1-plogo{flex:1;background:#fff;border:1px solid #d8dde4;border-radius:8px;height:84px;display:flex;align-items:center;justify-content:center;padding:10px;overflow:hidden}
+      .t1-plogo img{max-width:100%;max-height:100%;object-fit:contain}
+      .t1-plogo-ic{width:38px;height:38px;stroke:#c2c8cf;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+      .t1-corner{position:absolute;right:0;bottom:0;width:140px;height:104px;z-index:1;background:${C1};clip-path:polygon(100% 0,100% 100%,16% 100%)}
+    `;
 
-      <!-- ═══════ HEADER ═══════ -->
-      <header style="background:${C1};padding:22px 22px 20px;color:#fff;position:relative">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
-          <!-- Logo + Info -->
-          <div style="display:flex;align-items:center;gap:20px;flex:1;min-width:0">
-            <!-- LOGO -->
-            <div style="width:150px;height:150px;flex-shrink:0;display:flex;align-items:center;justify-content:center">
-              ${logo}
-            </div>
-            <div style="min-width:0">
-              <div style="font-size:28px;font-weight:800;line-height:1.15;margin-bottom:5px">${esc(name)}</div>
-              <div style="font-size:14px;font-style:italic;opacity:.88;margin-bottom:14px">${esc(tag)}</div>
-              <div style="display:flex;flex-direction:column;gap:8px;font-size:12px">
-                <div style="display:flex;align-items:center;gap:8px">${ic.phone} ${esc(phone)}</div>
-                <div style="display:flex;align-items:center;gap:8px">${ic.email} ${esc(email)}</div>
-                <div style="display:flex;align-items:flex-start;gap:8px">${ic.pin} <span style="line-height:1.35">${esc(addr)}</span></div>
-              </div>
-            </div>
-          </div>
-          <!-- QR Code -->
-          <div style="display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0">
-            <div style="width:110px;height:110px;display:flex;align-items:center;justify-content:center;overflow:hidden">
-              ${qr}
-            </div>
-            <div style="font-size:10px;font-weight:600;opacity:.8;text-align:center;line-height:1.35;max-width:120px">Quét QR để xem thêm chi tiết</div>
-          </div>
-        </div>
-      </header>
+    return `<div class="profile-page t1-root"><style>${css}</style>
+      <div class="t1-logobox">${logo}</div>
 
-      <!-- ═══════ ADVANTAGES (nền đen = C2) ═══════ -->
-      <section style="padding:16px 22px;background:${C2}">
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
-          ${[adv1, adv2, adv3].map(a => `
-            <div style="background:#fff;border-radius:8px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 1px 3px rgba(0,0,0,.08)">
-              <span style="font-size:13px;font-weight:600;color:${C2}">${esc(a)}</span>
-              ${ic.box}
-            </div>
-          `).join('')}
+      <div class="t1-header">
+        <div class="t1-htxt">
+          <h1 class="t1-h1">${esc(name)}</h1>
+          <div class="t1-sub">${esc(tag)}</div>
+          <div class="t1-btns">${advs.map(a => `<span class="t1-btn">${esc(a)}</span>`).join('')}</div>
         </div>
-      </section>
+        <div class="t1-tri"></div>
+      </div>
 
-      <!-- ═══════ PROJECTS ═══════ -->
-      <section style="padding:18px 22px 20px">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-          <div style="background:${C1};width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff">${ic.camera}</div>
-          <div style="font-size:17px;font-weight:800;color:${C2};text-transform:uppercase;letter-spacing:.02em">CÔNG TRÌNH THỰC TẾ</div>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
-          ${photoCard(iP1, 1, pCap1, '200px')}
-          ${photoCard(iP2, 2, pCap2, '200px')}
-          ${photoCard(iP3, 3, pCap3, '200px')}
-        </div>
-      </section>
-
-      <!-- ═══════ KPIs ═══════ -->
-      <section style="border-top:1px solid ${C2}22;border-bottom:1px solid ${C2}22;background:${C2}08;display:flex">
-        <div style="flex:1;padding:14px 14px 14px 24px;border-right:1px solid ${C2}22">
-          <div style="color:${C1};font-weight:700;font-size:18px;line-height:1.2">${esc(kpi1V)}</div>
-          <div style="font-size:11px;color:${C2};opacity:.55;text-transform:uppercase;font-weight:500;margin-top:2px">${esc(kpi1L)}</div>
-        </div>
-        <div style="flex:1;padding:14px 14px 14px 24px;border-right:1px solid ${C2}22">
-          <div style="color:${C1};font-weight:700;font-size:18px;line-height:1.2">${esc(kpi2V)}</div>
-          <div style="font-size:11px;color:${C2};opacity:.55;text-transform:uppercase;font-weight:500;margin-top:2px">${esc(kpi2L)}</div>
-        </div>
-        <div style="flex:1;padding:14px 14px 14px 24px">
-          <div style="color:${C1};font-weight:700;font-size:18px;line-height:1.2">${esc(kpi3V)}</div>
-          <div style="font-size:11px;color:${C2};opacity:.55;text-transform:uppercase;font-weight:500;margin-top:2px">${esc(kpi3L)}</div>
-        </div>
-      </section>
-
-      <!-- ═══════ TEAM ═══════ -->
-      <section style="padding:18px 22px 20px">
-        <div style="border:1px solid ${C2}1a;border-radius:12px;overflow:hidden;background:#fff">
-          <div style="display:flex;align-items:center;gap:10px;padding:14px 16px">
-            <div style="background:${C1};width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff">${ic.team}</div>
-            <div style="font-size:17px;font-weight:800;color:${C2};text-transform:uppercase;letter-spacing:.02em">ĐỘI NGŨ KỸ THUẬT</div>
-          </div>
-          <div style="display:flex;gap:14px;padding:0 16px 16px">
-            <!-- Stats -->
-            <div style="flex:1;display:flex;flex-direction:column;gap:8px">
-              <div style="display:flex;align-items:center;gap:12px;border:1px solid ${C2}1a;border-radius:8px;padding:12px 14px;background:#fff">
-                <span style="color:${C1};font-weight:700;font-size:17px;min-width:36px;text-align:center">${esc(exp)}</span>
-                <span style="font-size:13px;font-weight:600;color:${C2};text-transform:uppercase">NĂM KINH NGHIỆM</span>
-              </div>
-              <div style="display:flex;align-items:center;gap:12px;border:1px solid ${C2}1a;border-radius:8px;padding:12px 14px;background:#fff">
-                <span style="color:${C1};font-weight:700;font-size:17px;min-width:36px;text-align:center">${esc(team)}</span>
-                <span style="font-size:13px;font-weight:600;color:${C2};text-transform:uppercase">QUY MÔ ĐỘI NGŨ</span>
-              </div>
-              <div style="display:flex;align-items:center;gap:12px;border:1px solid ${C2}1a;border-radius:8px;padding:12px 14px;background:#fff">
-                <span style="color:${C1};font-weight:700;font-size:17px;min-width:36px;text-align:center">${esc(proj)}</span>
-                <span style="font-size:13px;font-weight:600;color:${C2};text-transform:uppercase">DỰ ÁN / THÁNG</span>
-              </div>
-            </div>
-            <!-- Photo (1 ảnh đội ngũ) -->
-            <div style="flex:1.3;display:flex;gap:10px">
-              ${photoCard(iT1, 1, tCap1, '100%')}
-            </div>
+      <aside class="t1-sidebar">
+        <div class="t1-sblock"><div class="t1-slabel">Người đại diện</div><div class="t1-sval">${esc(rep)}</div></div>
+        <div class="t1-sblock"><div class="t1-slabel">Hotline</div><div class="t1-sval">${esc(phone)}</div></div>
+        <div class="t1-sblock"><div class="t1-slabel">Địa chỉ</div><div class="t1-sval sm">${esc(addr)}</div></div>
+        <div class="t1-stat"><div><div class="t1-num">${esc(exp)}</div><div class="t1-cap2">Năm kinh nghiệm</div></div><div class="t1-icosq">${ICON.brief}</div></div>
+        <div class="t1-stat"><div><div class="t1-num">${esc(team)}</div><div class="t1-cap2">Quy mô đội ngũ</div></div><div class="t1-icosq">${ICON.team}</div></div>
+        <div class="t1-stat"><div><div class="t1-num">${esc(proj)}</div><div class="t1-cap2">Dự án / tháng</div></div><div class="t1-icosq">${ICON.build}</div></div>
+        <div class="t1-sphoto${images.doi_ngu_1 ? '' : ' ph'}"${images.doi_ngu_1 ? ` style="background-image:url('${esc(images.doi_ngu_1)}')"` : ''}>${images.doi_ngu_1 ? '' : camIcon}</div>
+        ${kpis.map(k => `<div class="t1-kpi"><div><div class="t1-kt">${esc(k.v)}</div><div class="t1-kc">${esc(k.l)}</div></div><div class="t1-check">${ICON.check}</div></div>`).join('')}
+        <div class="t1-qr">
+          <div class="t1-qrh">QR Liên hệ</div>
+          <div class="t1-qrbody">
+            <div class="t1-qrbox">${qr}</div>
+            <div class="t1-qrf">Tư vấn nhanh 24/7</div>
           </div>
         </div>
-      </section>
+      </aside>
 
-      <!-- ═══════ FOOTER 2-COL ═══════ -->
-      <section style="padding:18px 22px 24px;background:${C2}08;border-top:1px solid ${C2}1a">
-        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px">
-
-          <!-- Col 1: Năng lực nổi bật (nền dùng C2) -->
-          <div style="background:${C2};border-radius:12px;padding:16px 18px;color:#fff;opacity:.85">
-            <div style="font-size:14px;font-weight:800;text-transform:uppercase;margin-bottom:14px;opacity:1">NĂNG LỰC NỔI BẬT</div>
-            <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;opacity:1">
-              ${usps.map(s => `<div style="display:flex;align-items:flex-start;gap:8px">${ic.check} <span style="line-height:1.35">${esc(s)}</span></div>`).join('')}
-            </div>
+      <main class="t1-main">
+        <div class="t1-bar"><h2>Công trình thực tế</h2><div class="t1-icosq">${ICON.build}</div></div>
+        <div class="t1-projects">
+          <div class="t1-proj-left">${cell(images.cong_trinh_1, ctCap(1))}</div>
+          <div class="t1-proj-right">
+            ${cell(images.cong_trinh_2, ctCap(2))}
+            ${cell(images.cong_trinh_3, ctCap(3))}
+            ${cell(images.cong_trinh_4, ctCap(4))}
+            ${cell(images.cong_trinh_5, ctCap(5))}
           </div>
-
-          <!-- Col 3: Khách hàng + Đối tác -->
-          <div style="display:flex;flex-direction:column;gap:14px">
-            <div style="background:${C1};border-radius:12px;padding:16px 18px;color:#fff;flex:1">
-              <div style="font-size:14px;font-weight:800;text-transform:uppercase;margin-bottom:10px">KHÁCH HÀNG CHIA SẺ</div>
-              <div style="font-size:13px;font-style:italic;line-height:1.55">"${esc(quote)}"</div>
-            </div>
-            <div style="background:#fff;border:1px solid ${C2}1a;border-radius:12px;padding:14px 16px">
-              <div style="font-size:13px;font-weight:800;color:${C2};text-transform:uppercase;margin-bottom:10px">ĐỐI TÁC TIN CẬY</div>
-              <div style="display:flex;gap:8px">
-                ${pLogo(iPL1)}${pLogo(iPL2)}${pLogo(iPL3)}
-              </div>
-            </div>
-          </div>
-
         </div>
-      </section>
 
+        <div class="t1-bar t1-mt"><h2>Sản phẩm, dịch vụ</h2><div class="t1-icosq">${ICON.box}</div></div>
+        <div class="t1-products">
+          ${cell(images.san_pham_1, spCap(1))}
+          ${cell(images.san_pham_2, spCap(2))}
+          ${cell(images.san_pham_3, spCap(3))}
+          ${cell(images.san_pham_4, spCap(4))}
+        </div>
+
+        <div class="t1-bottom">
+          <div class="t1-col">
+            <div class="t1-bar t1-bar-sm"><h2>Năng lực đội ngũ</h2><div class="t1-icosq">${ICON.team}</div></div>
+            <div class="t1-box">${nangluc.map(n => `<div class="t1-li">${ICON.check} ${esc(n)}</div>`).join('')}</div>
+          </div>
+          <div class="t1-col">
+            <div class="t1-bar t1-bar-sm"><h2>Khách hàng chia sẻ</h2><div class="t1-icosq">${ICON.chat}</div></div>
+            <div class="t1-box"><div class="t1-quote">"${esc(quote)}"</div></div>
+          </div>
+        </div>
+
+        <div class="t1-partners">
+          <div class="t1-pill">Đối tác tin cậy</div>
+          <div class="t1-logos">${pLogo(images.partner_logo_1)}${pLogo(images.partner_logo_2)}${pLogo(images.partner_logo_3)}</div>
+        </div>
+
+        <div class="t1-corner"></div>
+      </main>
     </div>`;
   }
 

@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>THE ANH WINDOWS - Hồ sơ đại lý</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Roboto+Condensed:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green:#1a9d44;
+    --green-d:#16893a;
+    --ink:#1d1d1d;
+    --bar:#232323;
+    --sidebar:#1c1c1c;
+    --card:#ecedee;
+    --label:#8c8c8c;
+    --line:rgba(255,255,255,.12);
+    --blue:#184f9c;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#3a3a3a;font-family:"Be Vietnam Pro",sans-serif;color:#1d1d1d;-webkit-font-smoothing:antialiased}
+  .cond{font-family:"Roboto Condensed",sans-serif}
+
+  /* ---------- PAGE ---------- */
+  .page{
+    width:1190px;max-width:100%;margin:30px auto;background:#fff;position:relative;
+    display:grid;grid-template-columns:234px 1fr;grid-template-rows:234px 1fr;
+    box-shadow:0 20px 60px rgba(0,0,0,.45);overflow:hidden;
+  }
+
+  /* ---------- LOGO BOX ---------- */
+  .logobox{
+    grid-column:1;grid-row:1;background:#fff;display:flex;align-items:center;justify-content:center;
+    border-right:1px solid #e6e6e6;border-bottom:1px solid #e6e6e6;
+  }
+  .logobox svg{width:150px;height:150px}
+
+  /* ---------- HEADER ---------- */
+  .header{
+    grid-column:2;grid-row:1;position:relative;overflow:hidden;color:#fff;
+    background:
+      repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 1px, transparent 1px 64px),
+      repeating-linear-gradient(0deg, rgba(0,0,0,.06) 0 1px, transparent 1px 70px),
+      linear-gradient(115deg,#5d6b62 0%,#7e8b81 38%,#aab2a8 60%,#cdd2c9 78%,#8a958a 100%);
+    background-size:cover;
+  }
+  .header::before{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(90deg, rgba(18,26,21,.86) 0%, rgba(18,26,21,.55) 45%, rgba(18,26,21,.18) 75%, rgba(18,26,21,.08) 100%);
+  }
+  .header .htxt{position:relative;z-index:2;padding:34px 38px}
+  .header .eyebrow{font-size:13px;letter-spacing:3px;color:#cfd3cf;font-weight:600;text-transform:uppercase}
+  .header h1{font-family:"Roboto Condensed",sans-serif;font-weight:700;font-size:54px;line-height:1;letter-spacing:.5px;margin:8px 0 6px;text-transform:uppercase}
+  .header .sub{font-family:"Roboto Condensed",sans-serif;font-weight:500;font-size:23px;letter-spacing:1.5px;color:#e7e9e6;text-transform:uppercase}
+  .header .btns{margin-top:20px;display:flex;gap:12px}
+  .header .btn{background:var(--green);color:#fff;font-family:"Roboto Condensed",sans-serif;font-weight:700;font-size:15px;letter-spacing:1px;padding:9px 16px;border-radius:4px;text-transform:uppercase}
+  .header .tri{position:absolute;right:0;bottom:0;width:160px;height:120px;z-index:1;
+    background:var(--green);clip-path:polygon(100% 0,100% 100%,18% 100%);}
+  .header .tri2{position:absolute;right:0;bottom:0;width:90px;height:64px;z-index:2;
+    background:#fff;clip-path:polygon(100% 0,100% 100%,30% 100%);opacity:.0}
+
+  /* ---------- SIDEBAR ---------- */
+  .sidebar{
+    grid-column:1;grid-row:2;background:var(--sidebar);color:#fff;padding:22px 22px 26px;display:flex;flex-direction:column;
+  }
+  .s-label{font-size:11px;letter-spacing:1.5px;color:var(--label);text-transform:uppercase;font-weight:600}
+  .s-val{font-size:18px;font-weight:600;margin-top:3px}
+  .s-val.small{font-size:15px;line-height:1.35;font-weight:500}
+  .s-block{padding:13px 0;border-bottom:1px solid var(--line)}
+  .s-block:first-of-type{padding-top:0}
+
+  .stat{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)}
+  .stat .num{font-family:"Roboto Condensed",sans-serif;font-weight:700;font-size:22px;line-height:1}
+  .stat .cap{font-size:11px;letter-spacing:.8px;color:var(--label);text-transform:uppercase;font-weight:600;margin-top:4px}
+  .ico-sq{width:30px;height:30px;background:var(--green);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .ico-sq svg{width:17px;height:17px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+  .s-photo{margin:18px 0;height:118px;border-radius:5px;
+    background:
+      repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 1px, transparent 1px 18px),
+      linear-gradient(135deg,#34393b,#4b5052 45%,#2c3032 70%,#3d4244);
+    position:relative;overflow:hidden;}
+  .s-photo::after{content:"";position:absolute;left:18%;bottom:0;width:64%;height:60%;
+    background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(0,0,0,.25));border-radius:4px}
+
+  .kpi{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line)}
+  .kpi .k-t{font-size:15px;font-weight:700}
+  .kpi .k-c{font-size:11px;letter-spacing:1px;color:var(--label);text-transform:uppercase;font-weight:600;margin-top:3px}
+  .check-c{width:26px;height:26px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .check-c svg{width:14px;height:14px;stroke:#fff;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+
+  .qr{margin-top:auto;background:var(--green);border-radius:8px;padding:14px;text-align:center;margin-top:22px}
+  .qr .qr-h{font-family:"Roboto Condensed",sans-serif;font-weight:700;font-size:18px;letter-spacing:1px;text-transform:uppercase}
+  .qr .qr-box{background:#fff;width:118px;height:118px;margin:12px auto;border-radius:4px;padding:8px}
+  .qr .qr-box svg{width:100%;height:100%;display:block}
+  .qr .qr-f{font-family:"Roboto Condensed",sans-serif;font-weight:700;font-size:16px;letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+
+  /* ---------- MAIN ---------- */
+  .main{grid-column:2;grid-row:2;background:#fff;padding:24px 30px 34px;position:relative}
+
+  .bar{background:var(--bar);border-radius:8px;height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 16px 0 20px;color:#fff}
+  .bar h2{font-family:"Roboto Condensed",sans-serif;font-weight:700;font-size:20px;letter-spacing:1px;text-transform:uppercase}
+  .bar .ico-sq{width:30px;height:30px}
+
+  .photo{border-radius:5px;background-size:cover;background-position:center;position:relative;overflow:hidden}
+  .photo::before{content:"";position:absolute;inset:0;
+    background:
+      repeating-linear-gradient(90deg, rgba(0,0,0,.05) 0 1px, transparent 1px 26px),
+      repeating-linear-gradient(0deg, rgba(0,0,0,.04) 0 1px, transparent 1px 24px);}
+  .cap{font-family:"Roboto Condensed",sans-serif;font-weight:700;font-size:15px;letter-spacing:.6px;text-transform:uppercase;text-align:center;padding-top:9px;color:#1d1d1d}
+
+  /* gradient placeholders */
+  .b-house{background-image:linear-gradient(170deg,#aecbe6 0%,#cfe0ee 30%,#eef2f4 52%,#d2d7d2 72%,#aab1a7 100%)}
+  .b-glass{background-image:linear-gradient(160deg,#9fb3a8 0%,#c2cdbf 35%,#7e8f86 65%,#5c6b62 100%)}
+  .b-white{background-image:linear-gradient(165deg,#bcd4ea 0%,#e7eef3 45%,#cfd4d0 75%,#aab0a8 100%)}
+  .b-brick{background-image:linear-gradient(165deg,#9fb3c4 0%,#caa885 45%,#9c7a59 75%,#6d5640 100%)}
+  .b-class{background-image:linear-gradient(165deg,#a9c6e2 0%,#e9eef2 48%,#d6dadf 78%,#b3bac0 100%)}
+  .b-office{background-image:linear-gradient(160deg,#d6dde2 0%,#eef1f3 45%,#cfd5d8 75%,#a9b1b6 100%)}
+  .b-gate{background-image:linear-gradient(165deg,#a9c2a0 0%,#7e9474 40%,#3c4a3a 72%,#222a21 100%)}
+  .b-alu{background-image:linear-gradient(160deg,#e4e8ea 0%,#f3f5f6 40%,#cfd4d6 72%,#aeb4b7 100%)}
+  .b-temp{background-image:linear-gradient(160deg,#dfe7ea 0%,#f4f7f8 45%,#d3dadd 75%,#b3bbc0 100%)}
+
+  /* projects */
+  .projects{display:flex;gap:14px;height:344px;margin-top:14px}
+  .proj-left{flex:1.32;display:flex;flex-direction:column}
+  .proj-left .photo{flex:1}
+  .proj-right{flex:2;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:14px}
+  .proj-right .cell{display:flex;flex-direction:column}
+  .proj-right .cell .photo{flex:1}
+
+  /* products */
+  .products{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:14px}
+  .products .cell{display:flex;flex-direction:column}
+  .products .cell .photo{height:170px}
+
+  /* bottom cards */
+  .bottom{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+  .box{background:var(--card);border-radius:8px;padding:18px 20px;margin-top:8px}
+  .col .bar{height:42px}
+  .col .bar h2{font-size:18px}
+  .li{display:flex;align-items:center;gap:11px;padding:6px 0;font-size:15px;font-weight:500;color:#2a2a2a}
+  .li svg{width:18px;height:18px;stroke:var(--green);fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+  .quote{font-style:italic;font-weight:600;color:var(--green);font-size:18px;line-height:1.5;min-height:96px;display:flex;align-items:center}
+
+  /* partners */
+  .partners{display:flex;align-items:center;gap:16px;margin-top:22px}
+  .pill{background:var(--bar);color:#fff;border-radius:8px;height:46px;display:flex;align-items:center;padding:0 22px;font-family:"Roboto Condensed",sans-serif;font-weight:700;font-size:19px;letter-spacing:1px;text-transform:uppercase}
+  .logos{margin-left:auto;display:flex;gap:14px}
+  .adg{background:#fff;border:1px solid #d8dde4;border-radius:6px;width:114px;height:62px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+  .adg .row{display:flex;align-items:center;gap:5px}
+  .adg .row svg{width:18px;height:18px}
+  .adg .name{font-family:"Roboto Condensed",sans-serif;font-weight:700;font-size:21px;color:var(--blue);letter-spacing:.5px;line-height:1}
+  .adg .tag{font-size:6px;font-weight:700;letter-spacing:.4px;color:var(--blue)}
+
+  /* page corner triangle */
+  .corner{position:absolute;right:0;bottom:0;width:150px;height:110px;z-index:5;background:var(--green);clip-path:polygon(100% 0,100% 100%,16% 100%)}
+
+  @media(max-width:1230px){.page{transform-origin:top center}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- LOGO -->
+  <div class="logobox">
+    <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+      <!-- T -->
+      <polygon points="8,12 78,12 78,34 8,34" fill="#1a1a1a"/>
+      <polygon points="32,12 78,12 78,34 50,34" fill="#1a9d44"/>
+      <rect x="33" y="34" width="22" height="74" fill="#1a1a1a"/>
+      <!-- A -->
+      <polygon points="70,108 92,12 110,108 92,108 88,86 78,86 74,108" fill="#1a9d44"/>
+      <polygon points="92,12 110,108 92,108 88,86 92,86" fill="#1a1a1a"/>
+      <rect x="80" y="70" width="20" height="12" fill="#1a9d44"/>
+    </svg>
+  </div>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="htxt">
+      <div class="eyebrow">TEMPLATE HỒ SƠ ĐẠI LÝ 3</div>
+      <h1>THE ANH WINDOWS</h1>
+      <div class="sub">Chuyên gia giải pháp cửa cuốn thông minh</div>
+      <div class="btns">
+        <span class="btn">Ưu điểm 1</span>
+        <span class="btn">Ưu điểm 2</span>
+        <span class="btn">Ưu điểm 3</span>
+      </div>
+    </div>
+    <div class="tri"></div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="s-block">
+      <div class="s-label">Người đại diện</div>
+      <div class="s-val">Thế Anh</div>
+    </div>
+    <div class="s-block">
+      <div class="s-label">Hotline</div>
+      <div class="s-val">0986 738 933</div>
+    </div>
+    <div class="s-block">
+      <div class="s-label">Địa chỉ</div>
+      <div class="s-val small">Lô LK 271 - Khu B dịch vụ Yên Nghĩa, Hà Đông, Hà Nội</div>
+    </div>
+
+    <div class="stat">
+      <div>
+        <div class="num">8</div>
+        <div class="cap">Năm kinh nghiệm</div>
+      </div>
+      <div class="ico-sq"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
+    </div>
+    <div class="stat">
+      <div>
+        <div class="num">12</div>
+        <div class="cap">Quy mô đội ngũ</div>
+      </div>
+      <div class="ico-sq"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+    </div>
+    <div class="stat">
+      <div>
+        <div class="num">35+</div>
+        <div class="cap">Dự án / tháng</div>
+      </div>
+      <div class="ico-sq"><svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+    </div>
+
+    <div class="s-photo"></div>
+
+    <div class="kpi">
+      <div><div class="k-t">KPI 1</div><div class="k-c">Chú thích</div></div>
+      <div class="check-c"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+    </div>
+    <div class="kpi">
+      <div><div class="k-t">KPI 2</div><div class="k-c">Chú thích</div></div>
+      <div class="check-c"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+    </div>
+    <div class="kpi">
+      <div><div class="k-t">KPI 2</div><div class="k-c">Chú thích</div></div>
+      <div class="check-c"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+    </div>
+
+    <div class="qr">
+      <div class="qr-h">QR Liên hệ</div>
+      <div class="qr-box">
+        <svg viewBox="0 0 25 25" shape-rendering="crispEdges">
+          <rect width="25" height="25" fill="#fff"/>
+          <g fill="#000">
+            <!-- finder TL -->
+            <rect x="0" y="0" width="7" height="7"/><rect x="1" y="1" width="5" height="5" fill="#fff"/><rect x="2" y="2" width="3" height="3"/>
+            <!-- finder TR -->
+            <rect x="18" y="0" width="7" height="7"/><rect x="19" y="1" width="5" height="5" fill="#fff"/><rect x="20" y="2" width="3" height="3"/>
+            <!-- finder BL -->
+            <rect x="0" y="18" width="7" height="7"/><rect x="1" y="19" width="5" height="5" fill="#fff"/><rect x="2" y="20" width="3" height="3"/>
+            <!-- timing + scattered modules -->
+            <rect x="9" y="0" width="1" height="1"/><rect x="11" y="0" width="1" height="1"/><rect x="13" y="0" width="1" height="1"/><rect x="15" y="0" width="1" height="1"/>
+            <rect x="9" y="2" width="1" height="1"/><rect x="12" y="2" width="1" height="1"/><rect x="15" y="2" width="1" height="1"/>
+            <rect x="10" y="4" width="1" height="1"/><rect x="13" y="4" width="1" height="1"/><rect x="16" y="4" width="1" height="1"/>
+            <rect x="9" y="6" width="1" height="1"/><rect x="11" y="6" width="1" height="1"/><rect x="14" y="6" width="1" height="1"/><rect x="16" y="6" width="1" height="1"/>
+            <rect x="0" y="9" width="1" height="1"/><rect x="2" y="9" width="1" height="1"/><rect x="4" y="9" width="1" height="1"/><rect x="6" y="9" width="1" height="1"/><rect x="8" y="9" width="1" height="1"/><rect x="10" y="9" width="1" height="1"/><rect x="13" y="9" width="1" height="1"/><rect x="16" y="9" width="1" height="1"/><rect x="19" y="9" width="1" height="1"/><rect x="22" y="9" width="1" height="1"/><rect x="24" y="9" width="1" height="1"/>
+            <rect x="1" y="11" width="1" height="1"/><rect x="3" y="11" width="1" height="1"/><rect x="5" y="11" width="1" height="1"/><rect x="9" y="11" width="1" height="1"/><rect x="12" y="11" width="1" height="1"/><rect x="15" y="11" width="1" height="1"/><rect x="18" y="11" width="1" height="1"/><rect x="21" y="11" width="1" height="1"/><rect x="23" y="11" width="1" height="1"/>
+            <rect x="0" y="13" width="1" height="1"/><rect x="2" y="13" width="1" height="1"/><rect x="4" y="13" width="1" height="1"/><rect x="11" y="13" width="1" height="1"/><rect x="14" y="13" width="1" height="1"/><rect x="17" y="13" width="1" height="1"/><rect x="20" y="13" width="1" height="1"/><rect x="24" y="13" width="1" height="1"/>
+            <rect x="1" y="15" width="1" height="1"/><rect x="3" y="15" width="1" height="1"/><rect x="6" y="15" width="1" height="1"/><rect x="9" y="15" width="1" height="1"/><rect x="13" y="15" width="1" height="1"/><rect x="16" y="15" width="1" height="1"/><rect x="19" y="15" width="1" height="1"/><rect x="22" y="15" width="1" height="1"/>
+            <rect x="9" y="18" width="1" height="1"/><rect x="11" y="18" width="1" height="1"/><rect x="14" y="18" width="1" height="1"/><rect x="17" y="18" width="1" height="1"/><rect x="20" y="18" width="1" height="1"/><rect x="23" y="18" width="1" height="1"/>
+            <rect x="10" y="20" width="1" height="1"/><rect x="12" y="20" width="1" height="1"/><rect x="15" y="20" width="1" height="1"/><rect x="18" y="20" width="1" height="1"/><rect x="21" y="20" width="1" height="1"/><rect x="24" y="20" width="1" height="1"/>
+            <rect x="9" y="22" width="1" height="1"/><rect x="11" y="22" width="1" height="1"/><rect x="13" y="22" width="1" height="1"/><rect x="16" y="22" width="1" height="1"/><rect x="19" y="22" width="1" height="1"/><rect x="22" y="22" width="1" height="1"/>
+            <rect x="10" y="24" width="1" height="1"/><rect x="14" y="24" width="1" height="1"/><rect x="17" y="24" width="1" height="1"/><rect x="20" y="24" width="1" height="1"/><rect x="23" y="24" width="1" height="1"/>
+          </g>
+        </svg>
+      </div>
+      <div class="qr-f">Tư vấn nhanh 24/7</div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- CÔNG TRÌNH THỰC TẾ -->
+    <div class="bar">
+      <h2>Công trình thực tế</h2>
+      <div class="ico-sq"><svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+    </div>
+
+    <div class="projects">
+      <div class="proj-left">
+        <div class="photo b-house"></div>
+        <div class="cap">Nghệ An</div>
+      </div>
+      <div class="proj-right">
+        <div class="cell"><div class="photo b-glass"></div><div class="cap">Hoài Đức, HN</div></div>
+        <div class="cell"><div class="photo b-white"></div><div class="cap">Thanh Bình, HN</div></div>
+        <div class="cell"><div class="photo b-brick"></div><div class="cap">Triều Khúc, HN</div></div>
+        <div class="cell"><div class="photo b-class"></div><div class="cap">Long Biên, HN</div></div>
+      </div>
+    </div>
+
+    <!-- SẢN PHẨM, DỊCH VỤ -->
+    <div class="bar" style="margin-top:24px">
+      <h2>Sản phẩm, dịch vụ</h2>
+      <div class="ico-sq"><svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>
+    </div>
+
+    <div class="products">
+      <div class="cell"><div class="photo b-office"></div><div class="cap">Vách kính</div></div>
+      <div class="cell"><div class="photo b-gate"></div><div class="cap">Sắt mỹ thuật</div></div>
+      <div class="cell"><div class="photo b-alu"></div><div class="cap">Cửa nhôm</div></div>
+      <div class="cell"><div class="photo b-temp"></div><div class="cap">Kính cường lực</div></div>
+    </div>
+
+    <!-- BOTTOM CARDS -->
+    <div class="bottom">
+      <div class="col">
+        <div class="bar">
+          <h2>Năng lực đội ngũ</h2>
+          <div class="ico-sq"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        </div>
+        <div class="box">
+          <div class="li"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Kinh nghiệm thi công thực tế</div>
+          <div class="li"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Đội ngũ kỹ thuật lành nghề</div>
+          <div class="li"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Quy trình triển khai trọn gói</div>
+          <div class="li"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Khả năng đáp ứng công trình</div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="bar">
+          <h2>Khách hàng chia sẻ</h2>
+          <div class="ico-sq"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></div>
+        </div>
+        <div class="box">
+          <div class="quote">"Tôi chọn vì thấy năng lực thật, ảnh thật, công trình thật và cách tư vấn rất rõ ràng."</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PARTNERS -->
+    <div class="partners">
+      <div class="pill">Đối tác tin cậy</div>
+      <div class="logos">
+        <div class="adg">
+          <div class="row">
+            <svg viewBox="0 0 24 24" fill="#184f9c"><path d="M12 2 3 6v6c0 5 3.8 8.5 9 10 5.2-1.5 9-5 9-10V6l-9-4z" opacity=".25"/><path d="M12 4 6 7v5c0 1.5 1 3 6 5 0-3 0-7 0-13z" fill="#184f9c"/></svg>
+            <span class="name">ADG</span>
+          </div>
+          <span class="tag">TẬP ĐOÀN AUSTDOOR</span>
+        </div>
+        <div class="adg">
+          <div class="row">
+            <svg viewBox="0 0 24 24" fill="#184f9c"><path d="M12 2 3 6v6c0 5 3.8 8.5 9 10 5.2-1.5 9-5 9-10V6l-9-4z" opacity=".25"/><path d="M12 4 6 7v5c0 1.5 1 3 6 5 0-3 0-7 0-13z" fill="#184f9c"/></svg>
+            <span class="name">ADG</span>
+          </div>
+          <span class="tag">TẬP ĐOÀN AUSTDOOR</span>
+        </div>
+        <div class="adg">
+          <div class="row">
+            <svg viewBox="0 0 24 24" fill="#184f9c"><path d="M12 2 3 6v6c0 5 3.8 8.5 9 10 5.2-1.5 9-5 9-10V6l-9-4z" opacity=".25"/><path d="M12 4 6 7v5c0 1.5 1 3 6 5 0-3 0-7 0-13z" fill="#184f9c"/></svg>
+            <span class="name">ADG</span>
+          </div>
+          <span class="tag">TẬP ĐOÀN AUSTDOOR</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <div class="corner"></div>
+</div>
+</body>
+</html>

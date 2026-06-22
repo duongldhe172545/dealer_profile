@@ -14,7 +14,7 @@
   const escMulti = s => esc(s).replace(/\r?\n/g, '<br>');
 
   // Tách 1 chuỗi nhiều dòng thành mảng dòng đã trim, bỏ dòng trống.
-  // Dùng cho usp_text / services_text / commitments_text ở profile.
+  // Dùng cho usp_text (năng lực) ở profile.
   const lines = s => String(s || '').split(/\r?\n/).map(x => x.trim()).filter(Boolean);
 
   // Render text user nhập:

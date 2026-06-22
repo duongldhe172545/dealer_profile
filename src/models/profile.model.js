@@ -1,9 +1,8 @@
 const db = require('../config/database');
 
 const PROFILE_FIELDS = [
-  'tagline', 'usp_text', 'services_text', 'commitments_text',
-  'customer_quote', 'cta_text',
-  'badge1', 'badge2', 'badge3',
+  'tagline', 'usp_text',
+  'customer_quote',
   'usp_highlight1', 'usp_highlight2', 'usp_highlight3',
   'metric1_value', 'metric1_label',
   'metric2_value', 'metric2_label',
@@ -11,8 +10,7 @@ const PROFILE_FIELDS = [
   'project_caption1', 'project_caption2', 'project_caption3',
   'project_caption4', 'project_caption5',                       // mig 019 — công trình 4/5
   'product_caption1', 'product_caption2', 'product_caption3', 'product_caption4',  // mig 019 — sản phẩm 1..4
-  'team_caption_doi_ngu_1', 'team_caption_kho_xuong', 'team_caption_doi_ngu_2',
-  'partners_title',
+  'team_caption_doi_ngu_1',
   'selected_template',
   'brand_primary',
   'brand_secondary',

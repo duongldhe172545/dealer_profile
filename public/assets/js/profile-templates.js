@@ -34,20 +34,18 @@
     const kpi2V = profile.metric2_value || 'KPI 2', kpi2L = profile.metric2_label || 'CHÚ THÍCH';
     const kpi3V = profile.metric3_value || 'KPI 3', kpi3L = profile.metric3_label || 'CHÚ THÍCH';
 
-    const services = lines(profile.services_text || 'Dòng sản phẩm nổi bật 1\nDòng sản phẩm nổi bật 2\nDòng sản phẩm nổi bật 3\nDịch vụ nổi bật 1\nDịch vụ nổi bật 2\nDịch vụ nổi bật 3').slice(0, 6);
     const usps  = lines(profile.usp_text || 'Năng lực nổi bật 1\nNăng lực nổi bật 2\nNăng lực nổi bật 3\nNăng lực nổi bật 4').slice(0, 4);
     const quote = profile.customer_quote || 'Tôi chọn vì thấy năng lực thật, ảnh thật, công trình thật và cách tư vấn rất rõ ràng.';
 
     // images
     const iLogo = images.logo_dai_ly || '', iQR = images.qr_code || '',
           iP1 = images.cong_trinh_1 || '', iP2 = images.cong_trinh_2 || '', iP3 = images.cong_trinh_3 || '',
-          iT1 = images.doi_ngu_1 || '', iT2 = images.doi_ngu_2 || '',
+          iT1 = images.doi_ngu_1 || '',
           iPL1 = images.partner_logo_1 || '', iPL2 = images.partner_logo_2 || '', iPL3 = images.partner_logo_3 || '';
     const pCap1 = profile.project_caption1 || 'CÔNG TRÌNH 1',
           pCap2 = profile.project_caption2 || 'CÔNG TRÌNH 2',
           pCap3 = profile.project_caption3 || 'CÔNG TRÌNH 3';
-    const tCap1 = profile.team_caption_doi_ngu_1 || 'ẢNH ĐỘI NGŨ 1',
-          tCap2 = profile.team_caption_doi_ngu_2 || 'ẢNH ĐỘI NGŨ 2';
+    const tCap1 = profile.team_caption_doi_ngu_1 || 'ẢNH ĐỘI NGŨ 1';
 
     // ── SVG Icons ──
     const ic = {

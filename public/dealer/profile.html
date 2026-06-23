@@ -35,6 +35,10 @@
     .preview-stage .profile-page {
       transform: scale(var(--pv-scale, 1));
       transform-origin: top center;
+      /* KHÔNG cho flex co .profile-page nhỏ lại → giữ đúng khổ gốc của mẫu
+         (vd Mẫu 3 = 1180px), rồi transform mới co cho vừa khung. Nếu để flex bóp
+         thì layout bên trong bị méo (Mẫu 3 root là block nên dễ bị co hơn Mẫu 1 grid). */
+      flex-shrink: 0;
       margin-bottom: calc(var(--pv-pageh, 1123px) * -1 * (1 - var(--pv-scale, 1)));
       /* Khi xem trước: co theo content, không ép full A4 */
       min-height: 0 !important;
@@ -423,7 +427,7 @@
           this.imageSlots.forEach(s => { (map[s.group] = map[s.group] || []).push(s); });
           return order.filter(g => map[g]).map(g => ({ name: g, slots: map[g] }));
         },
-        templateKeys: ['t1', 't2'],
+        templateKeys: ['t1', 't2', 't3'],
         templateLabels: window.ProfileTemplates.labels,
 
         // Tính relative luminance (0=đen, 1=trắng) từ hex color → dùng validate contrast

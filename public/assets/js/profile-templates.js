@@ -461,10 +461,236 @@
     </div>`;
   }
 
+  // ════════════════════════════════════════════════════════════════════
+  // Mẫu 3 (TRƯỜNG THỊNH Style) — FULL: 5 công trình + 4 sản phẩm + 1 đội ngũ
+  // Thiết kế theo Template_ho_so_3/template_ho_so_3.html. Khổ gốc 1180px.
+  // Header tối + logo, thanh contact, body 2 cột. Whitelabel theo brand colors.
+  // ════════════════════════════════════════════════════════════════════
+  function template3({ dealer = {}, profile = {}, images = {} }) {
+    const esc = (v = '') => String(v)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    const lines = (v = '') => String(v).split(/\n+/).map(x => x.trim()).filter(Boolean);
+
+    const C1 = profile.brand_primary   || '#1d54ac';  // xanh dương accent
+    const C2 = profile.brand_secondary || '#16356b';  // navy tối
+
+    // ── Data ──
+    const name  = dealer.ten_dai_ly  || 'Tên Đại Lý';
+    const tag   = profile.tagline    || 'Thông điệp định vị (tagline)';
+    const rep   = dealer.chu_dai_ly  || '—';
+    const phone = dealer.phone       || '0900 000 000';
+    const addr  = dealer.address     || 'Địa chỉ đại lý';
+    const exp   = dealer.years_experience || '—';
+    const team  = dealer.team_size        || '—';
+    const proj  = dealer.projects_monthly || '—';
+    const advs = [
+      profile.usp_highlight1 || 'Ưu điểm 1',
+      profile.usp_highlight2 || 'Ưu điểm 2',
+      profile.usp_highlight3 || 'Ưu điểm 3',
+    ];
+    const kpis = [
+      { v: profile.metric1_value || 'KPI 1', l: profile.metric1_label || 'Chú thích' },
+      { v: profile.metric2_value || 'KPI 2', l: profile.metric2_label || 'Chú thích' },
+      { v: profile.metric3_value || 'KPI 3', l: profile.metric3_label || 'Chú thích' },
+    ];
+    const nangluc = lines(profile.usp_text || 'Năng lực nổi bật 1\nNăng lực nổi bật 2\nNăng lực nổi bật 3\nNăng lực nổi bật 4').slice(0, 4);
+    const quote = profile.customer_quote || 'Nhận xét / phản hồi của khách hàng…';
+    const ctCap = i => profile['project_caption' + i] || ('Công trình ' + i);
+    const spCap = i => profile['product_caption' + i] || ('Sản phẩm ' + i);
+
+    const ICON = {
+      brief: '<svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+      team: '<svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+      build: '<svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+      check: '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>',
+      kcheck: '<svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+    };
+    const camIcon = '<svg class="t3-cam" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><circle cx="9" cy="12" r="2.4"/><path d="M3 16l5-4 4 3 3-2 6 5"/></svg>';
+
+    const logo = images.logo_dai_ly
+      ? `<img src="${esc(images.logo_dai_ly)}" alt="Logo">`
+      : `<div class="t3-logo-fb">${esc(name.substring(0, 3).toUpperCase())}</div>`;
+
+    const qr = images.qr_code
+      ? `<img src="${esc(images.qr_code)}" alt="QR">`
+      : `<svg viewBox="0 0 25 25" shape-rendering="crispEdges"><rect width="25" height="25" fill="#fff"/><g fill="${C1}"><rect x="0" y="0" width="7" height="7"/><rect x="1" y="1" width="5" height="5" fill="#fff"/><rect x="2" y="2" width="3" height="3"/><rect x="18" y="0" width="7" height="7"/><rect x="19" y="1" width="5" height="5" fill="#fff"/><rect x="20" y="2" width="3" height="3"/><rect x="0" y="18" width="7" height="7"/><rect x="1" y="19" width="5" height="5" fill="#fff"/><rect x="2" y="20" width="3" height="3"/><rect x="10" y="10" width="2" height="2"/><rect x="14" y="12" width="2" height="2"/><rect x="11" y="15" width="2" height="2"/><rect x="16" y="17" width="2" height="2"/><rect x="19" y="11" width="2" height="2"/><rect x="9" y="3" width="1" height="1"/><rect x="13" y="5" width="1" height="1"/></g></svg>`;
+
+    const photo = (src, cap) =>
+      `<div class="t3-ph${src ? '' : ' t3-ph-e'}"${src ? ` style="background-image:url('${esc(src)}')"` : ''}>${src ? '' : camIcon}<span class="t3-tag">${esc(cap)}</span></div>`;
+
+    const pLogo = (src) => src
+      ? `<div class="t3-adg"><img src="${esc(src)}" alt=""></div>`
+      : `<div class="t3-adg"><svg class="t3-adg-ic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.6"/><path d="M3 17l5-4 4 3 3-2 6 5"/></svg></div>`;
+
+    const css = `
+      .t3-root{font-family:'Be Vietnam Pro',system-ui,sans-serif;width:1180px;background:#e7e9ed;color:#222;position:relative;overflow:hidden}
+      .t3-root *{box-sizing:border-box;margin:0;padding:0}
+      .t3-top{position:relative;height:340px;color:#fff;overflow:hidden;background:repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 1px,transparent 1px 74px),repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0 1px,transparent 1px 55px),linear-gradient(115deg,${C2} 0%,${C2}d9 52%,${C2}a6 100%)}
+      .t3-logo-tail{position:absolute;left:262px;top:30px;width:150px;height:212px;background:${C1};z-index:3;clip-path:polygon(0 0,100% 0,52% 100%,0 100%);opacity:.95}
+      .t3-logo-wrap{position:absolute;left:32px;top:30px;z-index:5}
+      .t3-logo{width:250px;height:250px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+      .t3-logo img{max-width:250px;max-height:250px;object-fit:contain}
+      .t3-logo-fb{font-family:'Roboto Condensed',sans-serif;font-weight:700;font-size:64px;color:${C1}}
+      .t3-topcenter{position:absolute;left:470px;top:58px;right:236px;z-index:6}
+      .t3-h1{font-family:'Roboto Condensed',sans-serif;font-weight:700;font-size:56px;line-height:.96;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;text-shadow:0 3px 14px rgba(0,0,0,.45)}
+      .t3-slogan{font-family:'Roboto Condensed',sans-serif;font-weight:500;font-size:25px;letter-spacing:2px;color:#eaf0f8;text-transform:uppercase;text-shadow:0 2px 10px rgba(0,0,0,.4)}
+      .t3-adbtns{margin-top:22px;display:flex;gap:14px;flex-wrap:wrap}
+      .t3-adbtn{border:2px solid rgba(255,255,255,.7);background:rgba(255,255,255,.08);color:#fff;font-family:'Roboto Condensed',sans-serif;font-weight:700;font-size:17px;letter-spacing:1px;padding:9px 20px;border-radius:8px;text-transform:uppercase}
+      .t3-qr{position:absolute;right:32px;top:116px;width:196px;background:#fff;border-radius:12px;overflow:hidden;z-index:20;box-shadow:0 12px 30px rgba(0,0,0,.35)}
+      .t3-qh{background:${C1};color:#fff;text-align:center;font-family:'Roboto Condensed',sans-serif;font-weight:700;font-size:18px;letter-spacing:1px;padding:8px;text-transform:uppercase}
+      .t3-qb{padding:14px 14px 10px;display:flex;justify-content:center}
+      .t3-qbox{width:166px;height:166px;border-radius:4px;overflow:hidden}
+      .t3-qbox img{width:100%;height:100%;object-fit:cover;display:block}
+      .t3-qbox svg{width:100%;height:100%;display:block}
+      .t3-qf{color:${C2};text-align:center;font-family:'Roboto Condensed',sans-serif;font-weight:700;font-size:18px;letter-spacing:1px;padding:0 0 12px;text-transform:uppercase}
+      .t3-contact{background:${C2};color:#fff;display:flex;align-items:center;padding:18px 34px;position:relative;z-index:4}
+      .t3-ci{padding-right:46px}
+      .t3-ci .l{font-family:'Roboto Condensed',sans-serif;font-weight:700;font-size:15px;letter-spacing:2px;color:rgba(255,255,255,.62);text-transform:uppercase;margin-bottom:3px}
+      .t3-ci .v{font-weight:700;font-size:21px}
+      .t3-ci.addr{flex:1}
+      .t3-ci.addr .v{font-weight:600;font-size:20px}
+      .t3-ci.owner{padding-right:230px}
+      .t3-body{padding:24px;display:grid;grid-template-columns:1.72fr 1fr;gap:22px;align-items:start}
+      .t3-col{display:flex;flex-direction:column;gap:22px}
+      .t3-card{border-radius:18px;padding:22px}
+      .t3-card.white{background:#fff;box-shadow:0 6px 18px rgba(20,40,80,.07)}
+      .t3-card.gray{background:linear-gradient(135deg,#888d95,#71767e)}
+      .t3-ttl{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+      .t3-ttl h2{font-family:'Roboto Condensed',sans-serif;font-weight:700;font-size:28px;letter-spacing:2px;text-transform:uppercase;white-space:nowrap}
+      .t3-ttl .ln{flex:1;height:2px;background:currentColor;opacity:.4}
+      .t3-card.white .t3-ttl{color:${C2}}
+      .t3-card.gray .t3-ttl{color:#fff}
+      .t3-ph{position:relative;border-radius:12px;overflow:hidden;background:#dfe3e8 center/cover no-repeat}
+      .t3-ph.t3-ph-e{display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#e3e7ec,#cfd5db)}
+      .t3-cam{width:42px;height:42px;stroke:#aab2bb;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+      .t3-tag{position:absolute;left:14px;bottom:14px;z-index:2;background:linear-gradient(135deg,${C1},${C2});color:#fff;font-weight:700;font-size:16px;padding:7px 16px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+      .t3-proj-r1{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+      .t3-proj-r1 .t3-ph{height:250px}
+      .t3-proj-r2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+      .t3-proj-r2 .t3-ph{height:360px}
+      .t3-nltop{display:grid;grid-template-columns:0.85fr 1.15fr;gap:18px;margin-bottom:18px}
+      .t3-nlphoto{border-radius:12px;min-height:222px;position:relative;overflow:hidden;background:#33383c center/cover no-repeat;display:flex;align-items:center;justify-content:center}
+      .t3-checks{background:#edf4fc;border-radius:12px;padding:18px 22px;display:flex;flex-direction:column;justify-content:center;gap:14px}
+      .t3-li{display:flex;align-items:center;gap:12px;font-weight:700;font-size:18px;color:${C1}}
+      .t3-li svg{width:20px;height:20px;stroke:${C1};fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+      .t3-stats{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid rgba(255,255,255,.28);color:#fff}
+      .t3-stat{display:flex;align-items:center;gap:12px;padding:18px 16px 4px;border-right:1px solid rgba(255,255,255,.22)}
+      .t3-stat:last-child{border-right:0}
+      .t3-stat .lab{font-family:'Roboto Condensed',sans-serif;font-weight:700;font-size:15px;line-height:1.1;letter-spacing:1px;text-transform:uppercase;color:#eef0f3}
+      .t3-stat .num{font-family:'Roboto Condensed',sans-serif;font-weight:700;font-size:32px;margin-left:auto;line-height:1;color:#fff}
+      .t3-stat svg{width:26px;height:26px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:.85;flex-shrink:0}
+      .t3-share{display:flex;align-items:center;gap:24px;padding:6px 10px}
+      .t3-share .lab{font-family:'Roboto Condensed',sans-serif;font-weight:700;font-size:22px;letter-spacing:1px;color:#5b6068;text-transform:uppercase;line-height:1.15;white-space:nowrap}
+      .t3-share .dv{width:2px;align-self:stretch;background:#c4c8cf}
+      .t3-share .q{font-style:italic;font-weight:700;font-size:20px;color:${C1};line-height:1.5}
+      .t3-kpicard{background:#eef3fb;border-radius:18px;padding:8px 24px;box-shadow:0 6px 18px rgba(20,40,80,.07)}
+      .t3-kpi{display:flex;align-items:center;justify-content:space-between;padding:22px 0;border-bottom:1px solid #dde4ef}
+      .t3-kpi:last-child{border-bottom:0}
+      .t3-kpi .ck{font-family:'Roboto Condensed',sans-serif;font-weight:500;font-size:18px;letter-spacing:1px;color:#7a808a;text-transform:uppercase}
+      .t3-kpi .rt{display:flex;align-items:center;gap:12px}
+      .t3-kpi .kn{font-family:'Roboto Condensed',sans-serif;font-weight:700;font-size:26px;color:${C1};letter-spacing:1px}
+      .t3-kpi svg{width:28px;height:28px;stroke:${C1};fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+      .t3-prods{display:flex;flex-direction:column;gap:16px}
+      .t3-prods .t3-ph{height:152px}
+      .t3-adgs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+      .t3-adg{background:#fff;border:1.5px solid #c9d3e6;border-radius:8px;height:74px;display:flex;align-items:center;justify-content:center;padding:8px;overflow:hidden}
+      .t3-adg img{max-width:100%;max-height:100%;object-fit:contain}
+      .t3-adg-ic{width:30px;height:30px;stroke:#c2c8cf;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+    `;
+
+    return `<div class="profile-page t3-root"><style>${css}</style>
+
+      <div class="t3-top">
+        <div class="t3-logo-tail"></div>
+        <div class="t3-logo-wrap"><div class="t3-logo">${logo}</div></div>
+        <div class="t3-topcenter">
+          <h1 class="t3-h1">${esc(name)}</h1>
+          <div class="t3-slogan">${esc(tag)}</div>
+          <div class="t3-adbtns">${advs.map(a => `<span class="t3-adbtn">${esc(a)}</span>`).join('')}</div>
+        </div>
+      </div>
+
+      <div class="t3-qr">
+        <div class="t3-qh">QR Liên hệ</div>
+        <div class="t3-qb"><div class="t3-qbox">${qr}</div></div>
+        <div class="t3-qf">Tư vấn 24/7</div>
+      </div>
+
+      <div class="t3-contact">
+        <div class="t3-ci"><div class="l">Hotline</div><div class="v">${esc(phone)}</div></div>
+        <div class="t3-ci addr"><div class="l">Địa chỉ</div><div class="v">${esc(addr)}</div></div>
+        <div class="t3-ci owner"><div class="l">Chủ đại lý</div><div class="v">${esc(rep)}</div></div>
+      </div>
+
+      <div class="t3-body">
+        <div class="t3-col">
+          <div class="t3-card white">
+            <div class="t3-ttl"><span class="ln"></span><h2>Công trình thực tế</h2><span class="ln"></span></div>
+            <div class="t3-proj-r1">
+              ${photo(images.cong_trinh_1, ctCap(1))}
+              ${photo(images.cong_trinh_2, ctCap(2))}
+            </div>
+            <div class="t3-proj-r2">
+              ${photo(images.cong_trinh_3, ctCap(3))}
+              ${photo(images.cong_trinh_4, ctCap(4))}
+              ${photo(images.cong_trinh_5, ctCap(5))}
+            </div>
+          </div>
+
+          <div class="t3-card gray">
+            <div class="t3-ttl"><span class="ln"></span><h2>Năng lực đội ngũ</h2><span class="ln"></span></div>
+            <div class="t3-nltop">
+              <div class="t3-nlphoto" ${images.doi_ngu_1 ? `style="background-image:url('${esc(images.doi_ngu_1)}')"` : ''}>${images.doi_ngu_1 ? '' : camIcon}</div>
+              <div class="t3-checks">
+                ${nangluc.map(n => `<div class="t3-li">${ICON.check} ${esc(n)}</div>`).join('')}
+              </div>
+            </div>
+            <div class="t3-stats">
+              <div class="t3-stat"><span class="lab">Năm kinh nghiệm</span><span class="num">${esc(exp)}</span>${ICON.brief}</div>
+              <div class="t3-stat"><span class="lab">Quy mô đội ngũ</span><span class="num">${esc(team)}</span>${ICON.team}</div>
+              <div class="t3-stat"><span class="lab">Dự án / tháng</span><span class="num">${esc(proj)}</span>${ICON.build}</div>
+            </div>
+          </div>
+
+          <div class="t3-share">
+            <div class="lab">Khách hàng<br>chia sẻ</div>
+            <div class="dv"></div>
+            <div class="q">"${esc(quote)}"</div>
+          </div>
+        </div>
+
+        <div class="t3-col">
+          <div class="t3-kpicard">
+            ${kpis.map(k => `<div class="t3-kpi"><span class="ck">${esc(k.l)}</span><span class="rt"><span class="kn">${esc(k.v)}</span>${ICON.kcheck}</span></div>`).join('')}
+          </div>
+
+          <div class="t3-card gray">
+            <div class="t3-ttl"><span class="ln"></span><h2>Sản phẩm</h2><span class="ln"></span></div>
+            <div class="t3-prods">
+              ${photo(images.san_pham_1, spCap(1))}
+              ${photo(images.san_pham_2, spCap(2))}
+              ${photo(images.san_pham_3, spCap(3))}
+              ${photo(images.san_pham_4, spCap(4))}
+            </div>
+          </div>
+
+          <div class="t3-card gray">
+            <div class="t3-ttl"><span class="ln"></span><h2>Đối tác</h2><span class="ln"></span></div>
+            <div class="t3-adgs">
+              ${pLogo(images.partner_logo_1)}${pLogo(images.partner_logo_2)}${pLogo(images.partner_logo_3)}
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>`;
+  }
+
   // ── Public API ──
   global.ProfileTemplates = {
-    renderers: { t1: template1, t2: template2 },
-    labels: { t1: 'Mẫu 1', t2: 'Mẫu 2' },
+    renderers: { t1: template1, t2: template2, t3: template3 },
+    labels: { t1: 'Mẫu 1', t2: 'Mẫu 2', t3: 'Mẫu 3' },
     render(key, data) {
       return (this.renderers[key] || this.renderers.t1)(data);
     },

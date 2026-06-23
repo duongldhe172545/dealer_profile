@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TRƯỜNG THỊNH - Hồ sơ đại lý</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Roboto+Condensed:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blue:#1d54ac;--blue-br:#2563c4;--navy:#16356b;--gray:#7e828a;--gray-d:#5b6068;
+    --body:#e7e9ed;--ink:#222;--navy-ink:#18305c;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#3a3a3a;font-family:"Be Vietnam Pro",sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+  .page{width:1180px;max-width:100%;margin:30px auto;background:var(--body);position:relative;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+  svg{display:block}
+
+  /* ---------- HEADER ---------- */
+  .top{position:relative;height:340px;color:#fff;overflow:hidden}
+  .glass{position:absolute;inset:0;width:100%;height:100%}
+  .top::after{content:"";position:absolute;inset:0;background:linear-gradient(96deg,rgba(11,24,52,.94) 0%,rgba(14,30,66,.7) 26%,rgba(18,40,86,.28) 52%,rgba(20,44,92,.06) 100%)}
+
+  .logo-tail{position:absolute;left:262px;top:30px;width:150px;height:212px;background:var(--blue);z-index:3;clip-path:polygon(0 0,100% 0,52% 100%,0 100%);opacity:.95}
+  .logo-wrap{position:absolute;left:32px;top:30px;z-index:5}
+  .logo{width:250px;height:250px;background:#fff;border-radius:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  .logo svg{width:185px;height:185px}
+
+  .top-center{position:absolute;left:470px;top:34px;right:236px;z-index:6}
+  .eyebrow{font-weight:700;font-size:15px;letter-spacing:4px;color:#a9c2ea;text-transform:uppercase}
+  .top-center h1{font-family:"Roboto Condensed";font-weight:700;font-size:58px;line-height:.95;letter-spacing:1px;text-transform:uppercase;margin:6px 0 4px;white-space:nowrap;text-shadow:0 3px 14px rgba(0,0,0,.45)}
+  .slogan{font-family:"Roboto Condensed";font-weight:500;font-size:26px;letter-spacing:2px;color:#eaf0f8;text-transform:uppercase;white-space:nowrap;text-shadow:0 2px 10px rgba(0,0,0,.4)}
+  .ad-btns{margin-top:22px;display:flex;gap:14px}
+  .ad-btn{border:2px solid rgba(255,255,255,.7);background:rgba(255,255,255,.06);color:#fff;font-family:"Roboto Condensed";font-weight:700;font-size:17px;letter-spacing:1px;padding:9px 20px;border-radius:8px;text-transform:uppercase;white-space:nowrap;backdrop-filter:blur(2px)}
+
+  .qr{position:absolute;right:32px;top:170px;width:196px;background:#fff;border-radius:12px;overflow:hidden;z-index:20;box-shadow:0 12px 30px rgba(0,0,0,.35)}
+  .qr .qh{background:var(--blue);color:#fff;text-align:center;font-family:"Roboto Condensed";font-weight:700;font-size:18px;letter-spacing:1px;padding:8px;text-transform:uppercase}
+  .qr .qb{padding:12px 14px 8px}
+  .qr .qb svg{width:100%;height:auto}
+  .qr .qf{color:var(--navy);text-align:center;font-family:"Roboto Condensed";font-weight:700;font-size:18px;letter-spacing:1px;padding:0 0 12px;text-transform:uppercase}
+
+  .contact{background:var(--navy);color:#fff;display:flex;align-items:center;padding:18px 34px;position:relative;z-index:4}
+  .ci{padding-right:46px}
+  .ci .l{font-family:"Roboto Condensed";font-weight:700;font-size:15px;letter-spacing:2px;color:#a9c2ea;text-transform:uppercase;margin-bottom:3px}
+  .ci .v{font-weight:700;font-size:21px}
+  .ci.addr{flex:1}.ci.addr .v{font-weight:600;font-size:20px}
+  .ci.owner{padding-right:220px}
+
+  /* ---------- BODY ---------- */
+  .body{padding:24px;display:grid;grid-template-columns:1.72fr 1fr;gap:22px;align-items:start}
+  .col{display:flex;flex-direction:column;gap:22px}
+  .card{border-radius:18px;padding:22px}
+  .card.white{background:#fff;box-shadow:0 6px 18px rgba(20,40,80,.07)}
+  .card.gray{background:linear-gradient(135deg,#888d95,#71767e)}
+
+  .ttl{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+  .ttl h2{font-family:"Roboto Condensed";font-weight:700;font-size:30px;letter-spacing:2px;text-transform:uppercase;white-space:nowrap}
+  .ttl .ln{flex:1;height:2px;background:currentColor;opacity:.4;position:relative}
+  .ttl .ln.l::after{content:"";position:absolute;right:0;top:50%;width:8px;height:8px;background:currentColor;transform:translate(2px,-50%) rotate(45deg)}
+  .ttl .ln.r::before{content:"";position:absolute;left:0;top:50%;width:8px;height:8px;background:currentColor;transform:translate(-2px,-50%) rotate(45deg)}
+  .white .ttl{color:var(--navy)}.gray .ttl{color:#fff}
+
+  .ph{position:relative;border-radius:12px;overflow:hidden;background:#dfe3e8}
+  .ph svg{position:absolute;inset:0;width:100%;height:100%}
+  .tag{position:absolute;left:14px;bottom:14px;z-index:2;background:linear-gradient(135deg,#2660bd,#163f86);color:#fff;font-weight:700;font-size:17px;padding:7px 16px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+
+  .proj-r1{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+  .proj-r1 .ph{height:280px}
+  .proj-r2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+  .proj-r2 .ph{height:420px}
+
+  .nl-top{display:grid;grid-template-columns:0.85fr 1.15fr;gap:18px;margin-bottom:18px}
+  .nl-photo{border-radius:12px;min-height:222px;position:relative;overflow:hidden;background:#33383c}
+  .nl-photo svg{position:absolute;inset:0;width:100%;height:100%}
+  .checks{background:#edf4fc;border-radius:12px;padding:18px 22px;display:flex;flex-direction:column;justify-content:center;gap:15px}
+  .li{display:flex;align-items:center;gap:12px;font-weight:700;font-size:18px;color:var(--blue);white-space:nowrap}
+  .li svg{width:20px;height:20px;stroke:var(--blue-br);fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+
+  .stats{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid rgba(255,255,255,.28);color:#fff}
+  .stat{display:flex;align-items:center;gap:12px;padding:18px 18px 4px;border-right:1px solid rgba(255,255,255,.22)}
+  .stat:last-child{border-right:0}
+  .stat .lab{font-family:"Roboto Condensed";font-weight:700;font-size:16px;line-height:1.1;letter-spacing:1px;text-transform:uppercase;color:#eef0f3}
+  .stat .num{font-family:"Roboto Condensed";font-weight:700;font-size:34px;margin-left:auto;line-height:1;color:#16294d}
+  .stat svg{width:26px;height:26px;stroke:#bcd4ff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+  .share{display:flex;align-items:center;gap:24px;padding:6px 10px}
+  .share .lab{font-family:"Roboto Condensed";font-weight:700;font-size:22px;letter-spacing:1px;color:#5b6068;text-transform:uppercase;line-height:1.15;white-space:nowrap}
+  .share .dv{width:2px;align-self:stretch;background:#c4c8cf}
+  .share .q{font-style:italic;font-weight:700;font-size:21px;color:var(--blue);line-height:1.5}
+
+  .kpi-card{background:#eef3fb;border-radius:18px;padding:8px 24px;box-shadow:0 6px 18px rgba(20,40,80,.07)}
+  .kpi{display:flex;align-items:center;justify-content:space-between;padding:22px 0;border-bottom:1px solid #dde4ef}
+  .kpi:last-child{border-bottom:0}
+  .kpi .ck{font-family:"Roboto Condensed";font-weight:500;font-size:19px;letter-spacing:1px;color:#7a808a;text-transform:uppercase}
+  .kpi .rt{display:flex;align-items:center;gap:12px}
+  .kpi .kn{font-family:"Roboto Condensed";font-weight:700;font-size:28px;color:var(--blue);letter-spacing:1px}
+  .kpi svg{width:30px;height:30px;stroke:var(--blue-br);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+  .prods{display:flex;flex-direction:column;gap:16px}
+  .prods .ph{height:160px}
+
+  .adgs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  .adg{background:#fff;border:1.5px solid #c9d3e6;border-radius:8px;height:74px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+  .adg .row{display:flex;align-items:center;gap:5px}
+  .adg .row svg{width:20px;height:22px}
+  .adg .nm{font-family:"Roboto Condensed";font-weight:700;font-size:23px;color:var(--blue);letter-spacing:.5px;line-height:1}
+  .adg .tg{font-size:7px;font-weight:700;letter-spacing:.3px;color:var(--blue)}
+
+  @media(max-width:1230px){.page{transform-origin:top center}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ============ HEADER ============ -->
+  <div class="top">
+    <svg class="glass" viewBox="0 0 1180 340" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <linearGradient id="gsky2" x1="0" y1="0" x2=".4" y2="1">
+          <stop offset="0" stop-color="#6e8ab4"/><stop offset="1" stop-color="#33497a"/>
+        </linearGradient>
+        <pattern id="mull" width="74" height="55" patternUnits="userSpaceOnUse">
+          <rect width="74" height="55" fill="none" stroke="#1e2d49" stroke-width="2.2"/>
+        </pattern>
+      </defs>
+      <rect width="1180" height="340" fill="url(#gsky2)"/>
+      <g opacity=".55">
+        <rect x="370" y="0" width="74" height="55" fill="#94abce"/>
+        <rect x="592" y="55" width="74" height="55" fill="#a3b8d8"/>
+        <rect x="888" y="0" width="74" height="55" fill="#8aa3c8"/>
+        <rect x="962" y="110" width="74" height="55" fill="#aabddb"/>
+        <rect x="740" y="55" width="74" height="55" fill="#859ec4"/>
+        <rect x="1036" y="55" width="74" height="55" fill="#9fb4d4"/>
+        <rect x="518" y="0" width="74" height="55" fill="#809ac0"/>
+        <rect x="814" y="165" width="74" height="55" fill="#92a9cd"/>
+        <rect x="666" y="220" width="74" height="55" fill="#7d97bf"/>
+        <rect x="444" y="110" width="74" height="55" fill="#9cb1d2"/>
+        <rect x="1110" y="0" width="74" height="55" fill="#aec0dd"/>
+      </g>
+      <rect width="1180" height="340" fill="url(#mull)"/>
+      <polygon points="640,0 1180,0 1180,150 520,340 360,340" fill="#aebfdb" opacity=".10"/>
+      <polygon points="980,0 1180,0 1180,90" fill="#cdd9ee" opacity=".10"/>
+      <rect x="0" y="300" width="1180" height="40" fill="#22344f" opacity=".5"/>
+    </svg>
+
+    <div class="logo-tail"></div>
+    <div class="logo-wrap">
+      <div class="logo">
+        <svg viewBox="0 0 120 110">
+          <polygon points="6,42 60,12 114,42 114,54 6,54" fill="#1d54ac"/>
+          <polygon points="14,42 60,17 106,42 60,33" fill="#3f74cf"/>
+          <rect x="14" y="54" width="92" height="54" fill="#15397c"/>
+          <rect x="18" y="58" width="84" height="46" fill="#eef2f8"/>
+          <!-- left glass door -->
+          <rect x="22" y="62" width="26" height="42" fill="#1d54ac"/>
+          <rect x="25" y="65" width="20" height="36" fill="#c2d6f1"/>
+          <line x1="35" y1="65" x2="35" y2="101" stroke="#1d54ac" stroke-width="2"/>
+          <!-- center white pillars (TT) -->
+          <rect x="52" y="58" width="6" height="46" fill="#15397c"/>
+          <rect x="62" y="58" width="6" height="46" fill="#15397c"/>
+          <!-- right roller shutter -->
+          <rect x="72" y="62" width="30" height="42" fill="#cdd8e8"/>
+          <g stroke="#9aa9bf" stroke-width="2"><line x1="72" y1="68" x2="102" y2="68"/><line x1="72" y1="74" x2="102" y2="74"/><line x1="72" y1="80" x2="102" y2="80"/><line x1="72" y1="86" x2="102" y2="86"/><line x1="72" y1="92" x2="102" y2="92"/><line x1="72" y1="98" x2="102" y2="98"/></g>
+          <rect x="72" y="60" width="30" height="4" fill="#1d54ac"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="top-center">
+      <div class="eyebrow">Template Hồ Sơ Đại Lý 4</div>
+      <h1>Trường Thịnh</h1>
+      <div class="slogan">Trọn chữ tín - Vững niềm tin</div>
+      <div class="ad-btns"><span class="ad-btn">Ưu điểm 1</span><span class="ad-btn">Ưu điểm 2</span><span class="ad-btn">Ưu điểm 3</span></div>
+    </div>
+  </div>
+
+  <!-- QR (overlaps header + contact) -->
+  <div class="qr">
+    <div class="qh">QR Liên hệ</div>
+    <div class="qb">
+      <svg viewBox="0 0 25 25" shape-rendering="crispEdges">
+        <rect width="25" height="25" fill="#fff"/>
+        <g fill="#1d54ac">
+          <rect x="0" y="0" width="7" height="7"/><rect x="1" y="1" width="5" height="5" fill="#fff"/><rect x="2" y="2" width="3" height="3"/>
+          <rect x="18" y="0" width="7" height="7"/><rect x="19" y="1" width="5" height="5" fill="#fff"/><rect x="20" y="2" width="3" height="3"/>
+          <rect x="0" y="18" width="7" height="7"/><rect x="1" y="19" width="5" height="5" fill="#fff"/><rect x="2" y="20" width="3" height="3"/>
+          <rect x="9" y="0" width="1" height="1"/><rect x="11" y="0" width="1" height="1"/><rect x="13" y="0" width="1" height="1"/><rect x="15" y="0" width="1" height="1"/>
+          <rect x="9" y="2" width="1" height="1"/><rect x="12" y="2" width="1" height="1"/><rect x="15" y="2" width="1" height="1"/>
+          <rect x="10" y="4" width="1" height="1"/><rect x="13" y="4" width="1" height="1"/><rect x="16" y="4" width="1" height="1"/>
+          <rect x="9" y="6" width="1" height="1"/><rect x="11" y="6" width="1" height="1"/><rect x="14" y="6" width="1" height="1"/><rect x="16" y="6" width="1" height="1"/>
+          <rect x="0" y="9" width="1" height="1"/><rect x="2" y="9" width="1" height="1"/><rect x="4" y="9" width="1" height="1"/><rect x="6" y="9" width="1" height="1"/><rect x="8" y="9" width="1" height="1"/><rect x="10" y="9" width="1" height="1"/><rect x="13" y="9" width="1" height="1"/><rect x="16" y="9" width="1" height="1"/><rect x="19" y="9" width="1" height="1"/><rect x="22" y="9" width="1" height="1"/><rect x="24" y="9" width="1" height="1"/>
+          <rect x="1" y="11" width="1" height="1"/><rect x="3" y="11" width="1" height="1"/><rect x="5" y="11" width="1" height="1"/><rect x="9" y="11" width="1" height="1"/><rect x="12" y="11" width="1" height="1"/><rect x="15" y="11" width="1" height="1"/><rect x="18" y="11" width="1" height="1"/><rect x="21" y="11" width="1" height="1"/><rect x="23" y="11" width="1" height="1"/>
+          <rect x="0" y="13" width="1" height="1"/><rect x="2" y="13" width="1" height="1"/><rect x="4" y="13" width="1" height="1"/><rect x="11" y="13" width="1" height="1"/><rect x="14" y="13" width="1" height="1"/><rect x="17" y="13" width="1" height="1"/><rect x="20" y="13" width="1" height="1"/><rect x="24" y="13" width="1" height="1"/>
+          <rect x="1" y="15" width="1" height="1"/><rect x="3" y="15" width="1" height="1"/><rect x="6" y="15" width="1" height="1"/><rect x="9" y="15" width="1" height="1"/><rect x="13" y="15" width="1" height="1"/><rect x="16" y="15" width="1" height="1"/><rect x="19" y="15" width="1" height="1"/><rect x="22" y="15" width="1" height="1"/>
+          <rect x="9" y="18" width="1" height="1"/><rect x="11" y="18" width="1" height="1"/><rect x="14" y="18" width="1" height="1"/><rect x="17" y="18" width="1" height="1"/><rect x="20" y="18" width="1" height="1"/><rect x="23" y="18" width="1" height="1"/>
+          <rect x="10" y="20" width="1" height="1"/><rect x="12" y="20" width="1" height="1"/><rect x="15" y="20" width="1" height="1"/><rect x="18" y="20" width="1" height="1"/><rect x="21" y="20" width="1" height="1"/><rect x="24" y="20" width="1" height="1"/>
+          <rect x="9" y="22" width="1" height="1"/><rect x="11" y="22" width="1" height="1"/><rect x="13" y="22" width="1" height="1"/><rect x="16" y="22" width="1" height="1"/><rect x="19" y="22" width="1" height="1"/><rect x="22" y="22" width="1" height="1"/>
+          <rect x="10" y="24" width="1" height="1"/><rect x="14" y="24" width="1" height="1"/><rect x="17" y="24" width="1" height="1"/><rect x="20" y="24" width="1" height="1"/><rect x="23" y="24" width="1" height="1"/>
+        </g>
+      </svg>
+    </div>
+    <div class="qf">Tư vấn 24/7</div>
+  </div>
+
+  <!-- ============ CONTACT BAR ============ -->
+  <div class="contact">
+    <div class="ci"><div class="l">Hotline</div><div class="v">0986 738 933</div></div>
+    <div class="ci addr"><div class="l">Địa chỉ</div><div class="v">Lô LK 271 - Khu B dịch vụ Yên Nghĩa, Hà Đông, Hà Nội</div></div>
+    <div class="ci owner"><div class="l">Chủ đại lý</div><div class="v">Trường Thịnh</div></div>
+  </div>
+
+  <!-- ============ BODY ============ -->
+  <div class="body">
+
+    <!-- LEFT -->
+    <div class="col">
+
+      <div class="card white">
+        <div class="ttl"><span class="ln l"></span><h2>Công trình thực tế</h2><span class="ln r"></span></div>
+        <div class="proj-r1">
+          <div class="ph">
+            <svg viewBox="0 0 400 280" preserveAspectRatio="xMidYMid slice">
+              <defs><linearGradient id="skyTQ" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bcd6ee"/><stop offset="1" stop-color="#e7eef4"/></linearGradient>
+              <pattern id="wTQ" width="24" height="22" patternUnits="userSpaceOnUse"><rect width="24" height="22" fill="#f3f5f3"/><rect x="3" y="3" width="18" height="15" fill="#4a5568"/></pattern></defs>
+              <rect width="400" height="280" fill="url(#skyTQ)"/>
+              <rect y="205" width="400" height="75" fill="#c9ccc8"/><rect y="203" width="400" height="4" fill="#b3b6b2"/>
+              <rect x="3" y="232" width="394" height="3" fill="#e8b94a" opacity=".5"/>
+              <g><rect x="42" y="148" width="8" height="58" fill="#6e5135"/><circle cx="46" cy="146" r="24" fill="#5f7d4f"/><circle cx="30" cy="158" r="16" fill="#6b8a58"/><circle cx="60" cy="156" r="16" fill="#54734a"/></g>
+              <rect x="78" y="92" width="150" height="113" fill="#f4f5f3"/>
+              <rect x="84" y="100" width="138" height="98" fill="url(#wTQ)"/>
+              <rect x="210" y="66" width="120" height="139" fill="#e9ebe8"/>
+              <rect x="216" y="76" width="108" height="120" fill="url(#wTQ)"/>
+              <rect x="330" y="110" width="46" height="95" fill="#dde0dc"/>
+              <g><rect x="250" y="175" width="74" height="26" rx="8" fill="#e4e7ea"/><rect x="263" y="166" width="46" height="16" rx="6" fill="#eef0f2"/><circle cx="267" cy="201" r="8" fill="#2b2f33"/><circle cx="309" cy="201" r="8" fill="#2b2f33"/></g>
+            </svg>
+            <span class="tag">Tuyên Quang</span>
+          </div>
+          <div class="ph">
+            <svg viewBox="0 0 400 280" preserveAspectRatio="xMidYMid slice">
+              <defs><linearGradient id="skyNA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b7c8da"/><stop offset="1" stop-color="#e9dfce"/></linearGradient>
+              <pattern id="wNA" width="22" height="40" patternUnits="userSpaceOnUse"><rect width="22" height="40" fill="#cf9a5a" opacity=".0"/><rect x="2" y="2" width="18" height="36" fill="#3c4a5c"/><rect x="2" y="2" width="18" height="20" fill="#5a6b80"/></pattern></defs>
+              <rect width="400" height="280" fill="url(#skyNA)"/>
+              <rect y="210" width="400" height="70" fill="#c7c3ba"/>
+              <g><rect x="44" y="120" width="9" height="92" fill="#5a4830"/><circle cx="48" cy="118" r="30" fill="#557049"/><circle cx="28" cy="135" r="20" fill="#688a55"/><circle cx="70" cy="132" r="20" fill="#4c6a42"/></g>
+              <rect x="120" y="60" width="250" height="150" fill="#f0ece4"/>
+              <rect x="128" y="100" width="234" height="105" fill="url(#wNA)"/>
+              <rect x="128" y="96" width="234" height="6" fill="#cdbfa6"/>
+              <rect x="120" y="55" width="250" height="10" fill="#e2dccf"/>
+              <g fill="#f2b24a" opacity=".55"><rect x="140" y="150" width="40" height="55"/><rect x="200" y="150" width="40" height="55"/><rect x="260" y="150" width="40" height="55"/></g>
+              <rect x="128" y="100" width="234" height="105" fill="url(#wNA)"/>
+            </svg>
+            <span class="tag">Nghệ An</span>
+          </div>
+        </div>
+        <div class="proj-r2">
+          <div class="ph">
+            <svg viewBox="0 0 300 420" preserveAspectRatio="xMidYMid slice">
+              <defs><linearGradient id="skyTK" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#aebfce"/><stop offset="1" stop-color="#dfe3e0"/></linearGradient>
+              <pattern id="wTK" width="26" height="30" patternUnits="userSpaceOnUse"><rect width="26" height="30" fill="none"/><rect x="3" y="3" width="20" height="24" fill="#39414f"/><rect x="3" y="3" width="20" height="11" fill="#566b86"/></pattern></defs>
+              <rect width="300" height="420" fill="url(#skyTK)"/>
+              <rect y="360" width="300" height="60" fill="#c4c7c3"/>
+              <rect x="40" y="60" width="220" height="300" fill="#dfd7c8"/>
+              <rect x="40" y="60" width="74" height="300" fill="#e7e1d3"/>
+              <rect x="114" y="60" width="80" height="300" fill="#b9694e"/>
+              <rect x="194" y="60" width="66" height="300" fill="#cfd2cf"/>
+              <rect x="48" y="92" width="58" height="250" fill="url(#wTK)"/>
+              <rect x="122" y="92" width="64" height="250" fill="url(#wTK)"/>
+              <rect x="200" y="92" width="52" height="250" fill="url(#wTK)"/>
+              <rect x="40" y="318" width="220" height="42" fill="#2f343b"/>
+              <rect x="52" y="326" width="90" height="28" fill="#c9742f"/>
+              <rect x="152" y="326" width="98" height="28" fill="#5c6470"/>
+            </svg>
+            <span class="tag">Triều Khúc</span>
+          </div>
+          <div class="ph">
+            <svg viewBox="0 0 300 420" preserveAspectRatio="xMidYMid slice">
+              <defs><linearGradient id="skyTB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fb6ce"/><stop offset="1" stop-color="#e3e6e3"/></linearGradient>
+              <pattern id="wTB" width="30" height="34" patternUnits="userSpaceOnUse"><rect width="30" height="34" fill="none"/><rect x="4" y="4" width="22" height="26" fill="#46566c"/><rect x="4" y="4" width="22" height="12" fill="#6f86a0"/></pattern></defs>
+              <rect width="300" height="420" fill="url(#skyTB)"/>
+              <rect y="365" width="300" height="55" fill="#c6c9c5"/>
+              <rect x="58" y="40" width="184" height="325" fill="#f4f5f3"/>
+              <rect x="58" y="40" width="184" height="325" fill="#eef0ee"/>
+              <rect x="70" y="72" width="160" height="272" fill="url(#wTB)"/>
+              <g fill="#d9dcd9"><rect x="64" y="120" width="172" height="7"/><rect x="64" y="190" width="172" height="7"/><rect x="64" y="260" width="172" height="7"/></g>
+              <g stroke="#b9bcb9" stroke-width="2"><line x1="78" y1="120" x2="78" y2="150"/><line x1="222" y1="120" x2="222" y2="150"/></g>
+              <rect x="58" y="40" width="184" height="12" fill="#e4e6e3"/>
+              <rect x="116" y="318" width="68" height="47" fill="#33383f"/>
+            </svg>
+            <span class="tag">Thanh Bình</span>
+          </div>
+          <div class="ph">
+            <svg viewBox="0 0 300 420" preserveAspectRatio="xMidYMid slice">
+              <defs><linearGradient id="skyLB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a7c1da"/><stop offset="1" stop-color="#e2e6e4"/></linearGradient>
+              <pattern id="wLB" width="28" height="32" patternUnits="userSpaceOnUse"><rect width="28" height="32" fill="none"/><rect x="4" y="4" width="20" height="24" fill="#42526a"/><rect x="4" y="4" width="20" height="11" fill="#6b83a0"/></pattern></defs>
+              <rect width="300" height="420" fill="url(#skyLB)"/>
+              <rect y="360" width="300" height="60" fill="#c4c7c3"/>
+              <rect x="50" y="55" width="200" height="305" fill="#f4f5f3"/>
+              <rect x="50" y="48" width="200" height="40" fill="#cdd8e2"/>
+              <polygon points="50,48 250,48 250,30 150,18 50,30" fill="#b9c6d2"/>
+              <rect x="62" y="98" width="176" height="246" fill="url(#wLB)"/>
+              <g fill="#dfe2df"><rect x="56" y="150" width="188" height="7"/><rect x="56" y="220" width="188" height="7"/><rect x="56" y="290" width="188" height="7"/></g>
+              <rect x="50" y="320" width="200" height="40" fill="#8d7f6a"/>
+              <g><rect x="150" y="330" width="70" height="26" rx="7" fill="#2c3034"/><circle cx="166" cy="356" r="8" fill="#1a1d20"/><circle cx="206" cy="356" r="8" fill="#1a1d20"/></g>
+            </svg>
+            <span class="tag">Long Biên</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card gray">
+        <div class="ttl"><span class="ln l"></span><h2>Năng lực đội ngũ</h2><span class="ln r"></span></div>
+        <div class="nl-top">
+          <div class="nl-photo">
+            <svg viewBox="0 0 360 300" preserveAspectRatio="xMidYMid slice">
+              <rect width="360" height="300" fill="#3a4146"/>
+              <rect y="225" width="360" height="75" fill="#2b3034"/>
+              <g stroke="#565d62" stroke-width="3"><line x1="250" y1="20" x2="250" y2="225"/><line x1="268" y1="20" x2="268" y2="225"/><line x1="286" y1="20" x2="286" y2="225"/><line x1="304" y1="20" x2="304" y2="225"/><line x1="322" y1="20" x2="322" y2="225"/><line x1="340" y1="20" x2="340" y2="225"/></g>
+              <rect x="232" y="60" width="14" height="165" fill="#6b7378"/>
+              <rect x="40" y="150" width="200" height="20" fill="#71797e"/>
+              <rect x="60" y="170" width="14" height="70" fill="#5b6267"/><rect x="210" y="170" width="14" height="70" fill="#5b6267"/>
+              <!-- workers -->
+              <g fill="#d3d7da"><circle cx="92" cy="118" r="13"/><path d="M74 175 Q92 132 110 175 Z"/></g>
+              <g fill="#c3c8cc"><circle cx="150" cy="110" r="13"/><path d="M132 168 Q150 124 168 168 Z"/></g>
+              <g fill="#d3d7da"><circle cx="200" cy="120" r="12"/><path d="M184 175 Q200 136 216 175 Z"/></g>
+              <rect x="40" y="146" width="200" height="5" fill="#878f94"/>
+              <rect x="30" y="120" width="20" height="120" fill="#5f676c" opacity=".7"/>
+            </svg>
+          </div>
+          <div class="checks">
+            <div class="li"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Kinh nghiệm thi công thực tế</div>
+            <div class="li"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Đội ngũ kỹ thuật lành nghề</div>
+            <div class="li"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Quy trình triển khai trọn gói</div>
+            <div class="li"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Khả năng đáp ứng công trình</div>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="stat"><span class="lab">Năm kinh<br>nghiệm</span><span class="num">8</span><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
+          <div class="stat"><span class="lab">Quy mô<br>đội ngũ</span><span class="num">12</span><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+          <div class="stat"><span class="lab">Dự án /<br>tháng</span><span class="num">35+</span><svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+        </div>
+      </div>
+
+      <div class="share">
+        <div class="lab">Khách hàng<br>chia sẻ</div>
+        <div class="dv"></div>
+        <div class="q">"Tôi chọn vì thấy năng lực thật, ảnh thật, công trình thật và cách tư vấn rất rõ ràng."</div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="col">
+
+      <div class="kpi-card">
+        <div class="kpi"><span class="ck">Chú thích</span><span class="rt"><span class="kn">KPI 1</span><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span></div>
+        <div class="kpi"><span class="ck">Chú thích</span><span class="rt"><span class="kn">KPI 2</span><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span></div>
+        <div class="kpi"><span class="ck">Chú thích</span><span class="rt"><span class="kn">KPI 3</span><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span></div>
+      </div>
+
+      <div class="card gray">
+        <div class="ttl"><span class="ln l"></span><h2>Sản phẩm</h2><span class="ln r"></span></div>
+        <div class="prods">
+          <div class="ph">
+            <svg viewBox="0 0 400 190" preserveAspectRatio="xMidYMid slice">
+              <defs><pattern id="slat" width="22" height="11" patternUnits="userSpaceOnUse"><rect width="22" height="11" fill="#cbd0d5"/><rect y="9" width="22" height="2" fill="#9aa0a6"/></pattern></defs>
+              <rect width="400" height="190" fill="#d9dce0"/>
+              <rect x="36" y="6" width="328" height="184" fill="#aab0b6"/>
+              <rect x="50" y="6" width="300" height="170" fill="url(#slat)"/>
+              <rect x="36" y="6" width="328" height="10" fill="#878d93"/>
+              <rect y="174" width="400" height="16" fill="#bdc1c5"/>
+              <g><rect x="40" y="120" width="14" height="56" fill="#f0c419"/><rect x="40" y="120" width="14" height="10" fill="#222"/><rect x="40" y="142" width="14" height="10" fill="#222"/><rect x="40" y="164" width="14" height="10" fill="#222"/></g>
+              <g><rect x="346" y="120" width="14" height="56" fill="#f0c419"/><rect x="346" y="120" width="14" height="10" fill="#222"/><rect x="346" y="142" width="14" height="10" fill="#222"/><rect x="346" y="164" width="14" height="10" fill="#222"/></g>
+            </svg>
+            <span class="tag">Cửa nhôm</span>
+          </div>
+          <div class="ph">
+            <svg viewBox="0 0 400 190" preserveAspectRatio="xMidYMid slice">
+              <rect width="400" height="190" fill="#e7eaec"/>
+              <rect y="0" width="400" height="34" fill="#eef1f3"/>
+              <rect y="150" width="400" height="40" fill="#d3d7da"/>
+              <rect x="150" y="36" width="100" height="120" fill="#cdd8de" opacity=".5" stroke="#9aa6ad" stroke-width="3"/>
+              <line x1="200" y1="36" x2="200" y2="156" stroke="#9aa6ad" stroke-width="2"/>
+              <rect x="193" y="92" width="5" height="22" fill="#7c8990"/><rect x="202" y="92" width="5" height="22" fill="#7c8990"/>
+              <rect x="70" y="50" width="9" height="42" fill="#2f3439"/><rect x="321" y="50" width="9" height="42" fill="#2f3439"/>
+              <g fill="#5f7d4f"><rect x="300" y="120" width="26" height="30"/><circle cx="305" cy="118" r="10"/><circle cx="320" cy="118" r="10"/><circle cx="313" cy="108" r="10"/></g>
+              <rect x="298" y="148" width="30" height="6" fill="#7a5a3a"/>
+            </svg>
+            <span class="tag">Cửa kính</span>
+          </div>
+          <div class="ph">
+            <svg viewBox="0 0 400 190" preserveAspectRatio="xMidYMid slice">
+              <rect width="400" height="190" fill="#dcd6cd"/>
+              <rect x="120" y="0" width="160" height="190" fill="#cfc8bd"/>
+              <rect x="128" y="8" width="144" height="182" fill="#3b4148"/>
+              <rect x="136" y="16" width="60" height="174" fill="#474e56"/>
+              <rect x="204" y="16" width="60" height="174" fill="#474e56"/>
+              <rect x="144" y="30" width="44" height="80" fill="#6d7780" opacity=".6"/>
+              <rect x="212" y="30" width="44" height="80" fill="#6d7780" opacity=".6"/>
+              <line x1="200" y1="8" x2="200" y2="190" stroke="#2c3137" stroke-width="3"/>
+              <rect x="190" y="95" width="6" height="34" fill="#aeb4ba"/><rect x="204" y="95" width="6" height="34" fill="#aeb4ba"/>
+              <g fill="#eef1f3" opacity=".8"><rect x="40" y="14" width="70" height="6"/><rect x="290" y="14" width="70" height="6"/></g>
+            </svg>
+            <span class="tag">Cửa thép</span>
+          </div>
+          <div class="ph">
+            <svg viewBox="0 0 400 190" preserveAspectRatio="xMidYMid slice">
+              <defs><linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bcd6ee"/><stop offset="1" stop-color="#dde7ee"/></linearGradient></defs>
+              <rect width="400" height="190" fill="url(#skyG)"/>
+              <rect y="150" width="400" height="40" fill="#5f7d4f"/>
+              <rect x="20" y="40" width="46" height="150" fill="#eef0ee"/><rect x="334" y="40" width="46" height="150" fill="#eef0ee"/>
+              <rect x="20" y="34" width="46" height="10" fill="#d9dcd9"/><rect x="334" y="34" width="46" height="10" fill="#d9dcd9"/>
+              <rect x="66" y="56" width="268" height="134" fill="#23262b"/>
+              <rect x="74" y="64" width="252" height="118" fill="#2b2f35"/>
+              <g stroke="#caa64a" stroke-width="2.5"><line x1="90" y1="64" x2="90" y2="182"/><line x1="110" y1="64" x2="110" y2="182"/><line x1="290" y1="64" x2="290" y2="182"/><line x1="310" y1="64" x2="310" y2="182"/></g>
+              <circle cx="160" cy="120" r="34" fill="none" stroke="#caa64a" stroke-width="3"/><circle cx="160" cy="120" r="16" fill="#caa64a" opacity=".5"/>
+              <circle cx="240" cy="120" r="34" fill="none" stroke="#caa64a" stroke-width="3"/><circle cx="240" cy="120" r="16" fill="#caa64a" opacity=".5"/>
+              <line x1="200" y1="56" x2="200" y2="190" stroke="#1c1f23" stroke-width="3"/>
+            </svg>
+            <span class="tag">Cửa sắt</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card gray">
+        <div class="ttl"><span class="ln l"></span><h2>Đối tác</h2><span class="ln r"></span></div>
+        <div class="adgs">
+          <div class="adg"><div class="row"><svg viewBox="0 0 22 24"><rect x="3" y="3" width="16" height="18" rx="2" fill="none" stroke="#1d54ac" stroke-width="2"/><path d="M7 16l4-9 4 9" fill="none" stroke="#1d54ac" stroke-width="2"/><line x1="8.5" y1="13" x2="13.5" y2="13" stroke="#1d54ac" stroke-width="2"/></svg><span class="nm">ADG</span></div><span class="tg">TẬP ĐOÀN AUSTDOOR</span></div>
+          <div class="adg"><div class="row"><svg viewBox="0 0 22 24"><rect x="3" y="3" width="16" height="18" rx="2" fill="none" stroke="#1d54ac" stroke-width="2"/><path d="M7 16l4-9 4 9" fill="none" stroke="#1d54ac" stroke-width="2"/><line x1="8.5" y1="13" x2="13.5" y2="13" stroke="#1d54ac" stroke-width="2"/></svg><span class="nm">ADG</span></div><span class="tg">TẬP ĐOÀN AUSTDOOR</span></div>
+          <div class="adg"><div class="row"><svg viewBox="0 0 22 24"><rect x="3" y="3" width="16" height="18" rx="2" fill="none" stroke="#1d54ac" stroke-width="2"/><path d="M7 16l4-9 4 9" fill="none" stroke="#1d54ac" stroke-width="2"/><line x1="8.5" y1="13" x2="13.5" y2="13" stroke="#1d54ac" stroke-width="2"/></svg><span class="nm">ADG</span></div><span class="tg">TẬP ĐOÀN AUSTDOOR</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

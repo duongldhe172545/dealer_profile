@@ -5,7 +5,7 @@ const uploadService = require('./upload.service');
 const { badRequest, notFound } = require('../utils/http');
 const { cleanString } = require('../utils/sanitize');
 
-const TEMPLATES = ['t1', 't2'];
+const TEMPLATES = ['t1', 't2', 't3'];
 // Slot ảnh hồ sơ (mig 019). Nội dung tối đa 10: 1 đội ngũ + 5 công trình + 4 sản phẩm.
 // + thương hiệu: logo, qr, 3 logo đối tác. (doi_ngu_2 cũ đã migrate -> cong_trinh_4)
 const IMAGE_SLOTS = [

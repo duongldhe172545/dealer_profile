@@ -223,6 +223,10 @@
                   <div class="px-3 py-1.5 rounded border border-slate-200 text-slate-600">Nền trắng + xám</div>
                 </div>
               </div>
+              <!-- Cảnh báo 2 màu quá giống nhau (khó phân biệt nhấn/phụ) -->
+              <template x-if="profile.brand_primary && profile.brand_secondary && _brandContrast() < 1.6">
+                <p class="text-[10px] text-amber-600 mt-2">⚠️ Màu chính và màu phụ quá giống nhau — nên chọn 2 màu khác biệt rõ để hồ sơ không bị "chìm" một tông.</p>
+              </template>
             </div>
           </div>
         </div>
@@ -438,6 +442,12 @@
           const b = parseInt(hex.slice(5,7), 16) / 255;
           const toL = c => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
           return 0.2126 * toL(r) + 0.7152 * toL(g) + 0.0722 * toL(b);
+        },
+
+        // Tương phản giữa màu chính & phụ (tái dùng helper trong profile-templates.js)
+        _brandContrast() {
+          const CR = window.ProfileTemplates && window.ProfileTemplates.contrastRatio;
+          return CR ? CR(this.profile.brand_primary, this.profile.brand_secondary) : 21;
         },
 
         _plainText(value) {
@@ -764,11 +774,6 @@
             delete this.images[slot];
           } catch (e) { this.error = e.message; }
           finally { this.uploading[slot] = false; }
-        },
-
-        defaultPartnersTitle() {
-          const name = (this.dealer && this.dealer.ten_dai_ly || '').trim() || 'Đại lý';
-          return `${name} là đối tác chiến lược uy tín của nhiều thương hiệu lớn`;
         },
 
         // ----- Điều hướng giữa 4 tab -----

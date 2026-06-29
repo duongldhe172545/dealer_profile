@@ -1,6 +1,43 @@
-// Hồ sơ đại lý – render template (Mẫu 1 + Mẫu 2). Whitelabel theo brand colors.
+// Hồ sơ đại lý – render template (Mẫu 1/2/3). Whitelabel theo brand colors.
 // Preview/PDF tự co theo kích thước gốc của từng mẫu (xem profile.html setupAutoFit/printProfile).
+//
+// ════════════════════════ LUẬT MÀU (đọc trước khi sửa template) ════════════════════════
+// Mỗi template chỉ có 2 màu do đại lý chọn: C1 = brand_primary, C2 = brand_secondary.
+//   • C1 (chính)  → ĐIỂM NHẤN: title bar, tiêu đề mục, icon, nút/chip, viền+đầu QR,
+//                   tag trên ảnh, số liệu nhấn, gạch chân.
+//   • C2 (phụ)    → MẢNG NỀN LỚN thương hiệu: header tối, thanh liên hệ, sidebar, pill.
+//   • NEUTRAL CỐ ĐỊNH (xám) → KHÔNG bao giờ nhuộm theo brand: nền trang, card trắng/xám,
+//                   ô ảnh placeholder, chữ body. Dùng thang xám trung tính.
+//   • NỀN PANEL NHẠT cần tô (ô năng lực, card KPI, ô quote, chip ưu điểm, viền đối tác)
+//                   → SINH TẠI CHỖ từ brand bằng brandTint(C1, ratio). TUYỆT ĐỐI không
+//                   hardcode 1 màu xanh/cam cụ thể (đó là lý do đổi màu bị "lố").
+//   Quy ước ratio dùng trong file: tintBg≈.06 (nền panel), tintLine≈.16 (kẻ trong panel),
+//   tintEdge≈.34 (viền thấy rõ). Tất cả là hex đặc → render đồng nhất PDF/web.
+// ═══════════════════════════════════════════════════════════════════════════════════════
 (function (global) {
+  // ── Helpers màu dùng chung cho mọi template + cho picker (profile.html) ──
+  function _hx2rgb(hex) {
+    const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(String(hex || ''));
+    return m ? { r: parseInt(m[1], 16), g: parseInt(m[2], 16), b: parseInt(m[3], 16) } : null;
+  }
+  // Trộn màu brand lên nền trắng theo tỉ lệ (0..1) → hex đặc. ratio nhỏ = nhạt.
+  function brandTint(hex, ratio) {
+    const c = _hx2rgb(hex);
+    if (!c) return '#ffffff';
+    const f = (n) => Math.round(255 * (1 - ratio) + n * ratio).toString(16).padStart(2, '0');
+    return `#${f(c.r)}${f(c.g)}${f(c.b)}`;
+  }
+  function _lum(c) {
+    const f = (x) => { x /= 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); };
+    return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b);
+  }
+  // Tỉ lệ tương phản WCAG giữa 2 hex (1 = giống hệt, 21 = đen/trắng).
+  function contrastRatio(a, b) {
+    const x = _hx2rgb(a), y = _hx2rgb(b);
+    if (!x || !y) return 1;
+    const l1 = _lum(x), l2 = _lum(y);
+    return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+  }
   // ════════════════════════════════════════════════════════════════════
   // Mẫu 1 (THE ANH WINDOWS Style) — FULL: 5 công trình + 4 sản phẩm + 1 đội ngũ
   // Thiết kế theo Template_ho_so_1/ho_so_1.html. Khổ gốc 1190px (gần vuông).
@@ -13,6 +50,7 @@
 
     const C1 = profile.brand_primary   || '#1a9d44';  // xanh lá accent
     const C2 = profile.brand_secondary || '#1c1c1c';  // tối (sidebar/bar)
+    const tintBg = brandTint(C1, 0.06), tintEdge = brandTint(C1, 0.30);  // panel nhạt theo brand
 
     // ── Data ──
     const name  = dealer.ten_dai_ly  || 'Tên Đại Lý';
@@ -122,7 +160,7 @@
       .t1-products{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:14px}
       .t1-products .t1-photo{height:170px;flex:none}
       .t1-bottom{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
-      .t1-box{background:#ecedee;border-radius:8px;padding:18px 20px;margin-top:8px}
+      .t1-box{background:${tintBg};border:1px solid ${tintEdge};border-radius:8px;padding:18px 20px;margin-top:8px}
       .t1-li{display:flex;align-items:center;gap:11px;padding:6px 0;font-size:15px;font-weight:500;color:#2a2a2a}
       .t1-li svg{width:18px;height:18px;stroke:${C1};fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
       .t1-quote{font-style:italic;font-weight:600;color:${C1};font-size:18px;line-height:1.5;min-height:96px;display:flex;align-items:center}
@@ -220,6 +258,7 @@
 
     const C1 = profile.brand_primary   || '#f1611b';  // accent (cam)
     const C2 = profile.brand_secondary || '#252627';  // chữ đậm
+    const tintBg = brandTint(C1, 0.07), tintEdge = brandTint(C1, 0.40);  // panel nhạt theo brand
 
     // ── Data ──
     const code  = dealer.dealer_code || '';
@@ -315,13 +354,13 @@
       .t2-loc{font-size:${s(10)}px;font-weight:700;color:#fff;line-height:1.2}
       .t2-large .t2-loc{font-size:${s(14)}px}
       .t2-feats{display:flex;gap:${s(8)}px;margin-top:${s(6)}px}
-      .t2-feat{flex:1;background:#fef7f3;border:1px solid #f7ac87;border-radius:${s(16)}px;padding:${s(5)}px ${s(6)}px;display:flex;align-items:center;justify-content:center;gap:${s(6)}px}
+      .t2-feat{flex:1;background:${tintBg};border:1px solid ${tintEdge};border-radius:${s(16)}px;padding:${s(5)}px ${s(6)}px;display:flex;align-items:center;justify-content:center;gap:${s(6)}px}
       .t2-feat svg{width:${s(12)}px;height:${s(12)}px;flex-shrink:0}
       .t2-feattxt{font-size:${s(10)}px;font-weight:600;color:${C1};text-align:center;line-height:1.2}
       .t2-gal4{display:flex;gap:${s(8)}px;height:${s(86)}px}
       .t2-gal4 .t2-photo{flex:1}
       .t2-brow{display:flex;gap:${s(8)}px;padding:0 ${s(16)}px ${s(12)}px;min-height:${s(112)}px}
-      .t2-nlcard{flex:1;background:#fef7f3;border:1px solid rgba(247,172,135,.5);border-radius:${s(8)}px;padding:${s(10)}px ${s(13)}px;display:flex;flex-direction:column;gap:${s(8)}px}
+      .t2-nlcard{flex:1;background:${tintBg};border:1px solid ${tintEdge};border-radius:${s(8)}px;padding:${s(10)}px ${s(13)}px;display:flex;flex-direction:column;gap:${s(8)}px}
       .t2-nlhdr{display:flex;align-items:center;gap:${s(6)}px}
       .t2-nlicon{width:${s(16)}px;height:${s(16)}px;background:${C1};border-radius:${s(4)}px;flex-shrink:0}
       .t2-nltitle{font-size:${s(12)}px;font-weight:700;color:${C1};text-transform:uppercase}
@@ -340,7 +379,7 @@
       .t2-bsec{display:flex;gap:${s(8)}px;padding:0 ${s(16)}px ${s(16)}px;min-height:${s(101)}px}
       .t2-qblock{flex:1;display:flex;flex-direction:column;gap:${s(6)}px}
       .t2-bhead{font-size:${s(12)}px;font-weight:700;color:${C2}}
-      .t2-qbox{background:#fef7f3;border:1px solid rgba(247,172,135,.5);border-radius:${s(8)}px;padding:${s(10)}px ${s(13)}px;flex:1;display:flex;align-items:center}
+      .t2-qbox{background:${tintBg};border:1px solid ${tintEdge};border-radius:${s(8)}px;padding:${s(10)}px ${s(13)}px;flex:1;display:flex;align-items:center}
       .t2-qtext{font-size:${s(10)}px;font-weight:600;font-style:italic;color:${C1};line-height:1.35}
       .t2-pblock{width:${s(164)}px;min-width:${s(164)}px;display:flex;flex-direction:column;gap:${s(6)}px}
       .t2-plogos{display:flex;gap:${s(4)}px;flex:1}
@@ -474,6 +513,7 @@
 
     const C1 = profile.brand_primary   || '#1d54ac';  // xanh dương accent
     const C2 = profile.brand_secondary || '#16356b';  // navy tối
+    const tintBg = brandTint(C1, 0.06), tintLine = brandTint(C1, 0.16), tintEdge = brandTint(C1, 0.34);  // panel nhạt theo brand
 
     // ── Data ──
     const name  = dealer.ten_dai_ly  || 'Tên Đại Lý';
@@ -554,7 +594,7 @@
       .t3-body{padding:24px;display:grid;grid-template-columns:1.72fr 1fr;gap:22px;align-items:start}
       .t3-col{display:flex;flex-direction:column;gap:22px}
       .t3-card{border-radius:18px;padding:22px}
-      .t3-card.white{background:#fff;box-shadow:0 6px 18px rgba(20,40,80,.07)}
+      .t3-card.white{background:#fff;box-shadow:0 6px 18px rgba(0,0,0,.06)}
       .t3-card.gray{background:linear-gradient(135deg,#888d95,#71767e)}
       .t3-ttl{display:flex;align-items:center;gap:16px;margin-bottom:20px}
       .t3-ttl h2{font-family:'Roboto Condensed',sans-serif;font-weight:700;font-size:28px;letter-spacing:2px;text-transform:uppercase;white-space:nowrap}
@@ -571,7 +611,7 @@
       .t3-proj-r2 .t3-ph{height:360px}
       .t3-nltop{display:grid;grid-template-columns:0.85fr 1.15fr;gap:18px;margin-bottom:18px}
       .t3-nlphoto{border-radius:12px;min-height:222px;position:relative;overflow:hidden;background:#33383c center/cover no-repeat;display:flex;align-items:center;justify-content:center}
-      .t3-checks{background:#edf4fc;border-radius:12px;padding:18px 22px;display:flex;flex-direction:column;justify-content:center;gap:14px}
+      .t3-checks{background:${tintBg};border-radius:12px;padding:18px 22px;display:flex;flex-direction:column;justify-content:center;gap:14px}
       .t3-li{display:flex;align-items:center;gap:12px;font-weight:700;font-size:18px;color:${C1}}
       .t3-li svg{width:20px;height:20px;stroke:${C1};fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
       .t3-stats{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid rgba(255,255,255,.28);color:#fff}
@@ -584,8 +624,8 @@
       .t3-share .lab{font-family:'Roboto Condensed',sans-serif;font-weight:700;font-size:22px;letter-spacing:1px;color:#5b6068;text-transform:uppercase;line-height:1.15;white-space:nowrap}
       .t3-share .dv{width:2px;align-self:stretch;background:#c4c8cf}
       .t3-share .q{font-style:italic;font-weight:700;font-size:20px;color:${C1};line-height:1.5}
-      .t3-kpicard{background:#eef3fb;border-radius:18px;padding:8px 24px;box-shadow:0 6px 18px rgba(20,40,80,.07)}
-      .t3-kpi{display:flex;align-items:center;justify-content:space-between;padding:22px 0;border-bottom:1px solid #dde4ef}
+      .t3-kpicard{background:${tintBg};border-radius:18px;padding:8px 24px;box-shadow:0 6px 18px rgba(0,0,0,.06)}
+      .t3-kpi{display:flex;align-items:center;justify-content:space-between;padding:22px 0;border-bottom:1px solid ${tintLine}}
       .t3-kpi:last-child{border-bottom:0}
       .t3-kpi .ck{font-family:'Roboto Condensed',sans-serif;font-weight:500;font-size:18px;letter-spacing:1px;color:#7a808a;text-transform:uppercase}
       .t3-kpi .rt{display:flex;align-items:center;gap:12px}
@@ -594,7 +634,7 @@
       .t3-prods{display:flex;flex-direction:column;gap:16px}
       .t3-prods .t3-ph{height:152px}
       .t3-adgs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-      .t3-adg{background:#fff;border:1.5px solid #c9d3e6;border-radius:8px;height:74px;display:flex;align-items:center;justify-content:center;padding:8px;overflow:hidden}
+      .t3-adg{background:#fff;border:1.5px solid ${tintEdge};border-radius:8px;height:74px;display:flex;align-items:center;justify-content:center;padding:8px;overflow:hidden}
       .t3-adg img{max-width:100%;max-height:100%;object-fit:contain}
       .t3-adg-ic{width:30px;height:30px;stroke:#c2c8cf;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
     `;
@@ -694,5 +734,6 @@
     render(key, data) {
       return (this.renderers[key] || this.renderers.t1)(data);
     },
+    brandTint, contrastRatio,   // dùng lại ở picker (profile.html)
   };
 })(window);

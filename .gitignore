@@ -18,3 +18,8 @@ coverage/
 # Template HTML cũ sếp đưa (chỉ tham khảo, không deploy)
 Báo giá.html
 ho_so_template.html
+
+# Tài liệu / file nhị phân tham khảo — giữ local, không đẩy lên repo code
+Dealer color application/
+Dealer color application.zip
+PROJECT_BRIEF_DAI_LY_SO.docx

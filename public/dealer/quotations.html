@@ -243,7 +243,7 @@
             <div class="font-bold text-slate-800 truncate">
               Báo giá <span x-text="viewQuote?.so_bao_gia || ''" class="text-brand-600"></span>
             </div>
-            <div class="text-xs text-slate-500 truncate" x-text="viewQuote?.ten_kh || ''"></div>
+            <div class="text-xs text-slate-500 truncate" x-text="viewQuote?.customer_name || ''"></div>
           </div>
           <div class="flex items-center gap-2 shrink-0">
             <a x-show="viewQuote" :href="viewQuote ? ('/dealer/quotation-edit.html?id=' + viewQuote.id) : '#'"

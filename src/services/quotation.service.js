@@ -376,6 +376,10 @@ function setLogicalStatus(dealerId, id, logical_status, ctx) {
   }
   const existing = getById(dealerId, id);
   const map = LOGICAL_TO_DB[logical_status];
+  // Đẩy sang Đã gửi / Đã chốt → bắt buộc có ít nhất 1 dòng SP (giống markSent)
+  if ((map.status === 'sent' || map.status === 'confirmed') && (!existing.items || !existing.items.length)) {
+    throw badRequest('Báo giá chưa có dòng sản phẩm nào — không thể chuyển sang "Đã gửi" / "Đã chốt"');
+  }
   quotationModel.setLogicalStatus(dealerId, id, map.status, map.ready_to_send);
   // Sync order_status với status BG
   if (logical_status === 'da_truot') {

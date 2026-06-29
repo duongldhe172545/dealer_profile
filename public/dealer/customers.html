@@ -45,6 +45,7 @@
             <th class="px-4 py-3 text-left font-semibold">Tên KH</th>
             <th class="px-4 py-3 text-left font-semibold">Người liên hệ</th>
             <th class="px-4 py-3 text-left font-semibold">SĐT</th>
+            <th class="px-4 py-3 text-left font-semibold">Email</th>
             <th class="px-4 py-3 text-left font-semibold">Địa chỉ</th>
             <th class="px-4 py-3 text-center font-semibold">Báo giá</th>
             <th class="px-4 py-3 text-right font-semibold">Thao tác</th>
@@ -58,6 +59,7 @@
               <td class="px-4 py-3 font-semibold text-slate-800" x-text="c.ten_kh"></td>
               <td class="px-4 py-3" x-text="c.nguoi_lien_he || '—'"></td>
               <td class="px-4 py-3" x-text="c.phone || '—'"></td>
+              <td class="px-4 py-3 text-slate-600 text-xs" x-text="c.email || '—'"></td>
               <td class="px-4 py-3 text-slate-600 text-xs" x-text="c.dia_chi || '—'"></td>
               <td class="px-4 py-3 text-center tabular-nums" x-text="c.quotations_count"></td>
               <td class="px-4 py-3 text-right space-x-2">
@@ -69,10 +71,10 @@
             </tr>
           </template>
           <tr x-show="!loading && customers.length === 0">
-            <td colspan="8" class="px-4 py-12 text-center text-slate-400">Chưa có khách hàng. Bấm "Thêm khách hàng" để bắt đầu.</td>
+            <td colspan="9" class="px-4 py-12 text-center text-slate-400">Chưa có khách hàng. Bấm "Thêm khách hàng" để bắt đầu.</td>
           </tr>
           <tr x-show="loading">
-            <td colspan="8" class="px-4 py-12 text-center text-slate-400">Đang tải...</td>
+            <td colspan="9" class="px-4 py-12 text-center text-slate-400">Đang tải...</td>
           </tr>
         </tbody>
       </table>

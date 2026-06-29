@@ -149,7 +149,7 @@ function productsAll({ search, limit = 200 } = {}) {
     params.kw = `%${search}%`;
   }
   return db.prepare(`
-    SELECT p.id, p.ma_sp, p.nhom_sp, p.mo_ta, p.dvt_mac_dinh, p.cach_tinh_gia,
+    SELECT p.id, p.ma_sp, p.ten_sp, p.nhom_sp, p.mo_ta, p.dvt_mac_dinh, p.cach_tinh_gia,
            p.don_gia_mac_dinh, p.active, p.dealer_id,
            d.dealer_code, d.ten_dai_ly
     FROM products p

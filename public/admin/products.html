@@ -14,13 +14,7 @@
     tailwind.config = { theme: { extend: { colors: { brand: { 500:'#0a6fd6', 600:'#0858b3', 700:'#063f7a', 900:'#0b1f3a' } } } } };
     const user = Auth.guard('admin');
     document.addEventListener('DOMContentLoaded', () => { if (user) AdminShell.mount(user); });
-    window.PRICING_MODES = {
-      'gia_co_dinh':   { label: 'Giá cố định' },
-      'theo_m2':       { label: 'Theo m²' },
-      'theo_md':       { label: 'Theo md' },
-      'theo_m2_he_so': { label: 'Theo m² + hệ số' },
-      'theo_chieu_rong': { label: 'Theo chiều rộng' },
-    };
+    // PRICING_MODES dùng map chuẩn từ common.js (đã nạp ở trên) — khớp enum DB (so_luong/kich_thuoc/dien_tich/dai/can).
   </script>
   <style>[x-cloak]{display:none!important}</style>
 </head>
@@ -69,6 +63,7 @@
           <tr>
             <th class="px-4 py-3 text-center font-semibold w-12">STT</th>
             <th class="px-4 py-3 text-left font-semibold">Mã SP</th>
+            <th class="px-4 py-3 text-left font-semibold">Tên SP</th>
             <th class="px-4 py-3 text-left font-semibold">Nhóm</th>
             <th class="px-4 py-3 text-left font-semibold">Mô tả</th>
             <th class="px-4 py-3 text-left font-semibold">ĐVT</th>
@@ -83,6 +78,7 @@
             <tr class="hover:bg-slate-50" :class="!p.active ? 'opacity-60' : ''">
               <td class="px-4 py-3 text-center text-xs text-slate-500 tabular-nums" x-text="(page - 1) * perPage + idx + 1"></td>
               <td class="px-4 py-3 font-mono text-xs font-bold" x-text="p.ma_sp"></td>
+              <td class="px-4 py-3 font-semibold text-slate-800" x-text="p.ten_sp || '—'"></td>
               <td class="px-4 py-3 text-slate-700" x-text="p.nhom_sp || '—'"></td>
               <td class="px-4 py-3 text-slate-600 max-w-[300px] truncate" :title="p.mo_ta" x-text="p.mo_ta || '—'"></td>
               <td class="px-4 py-3 text-xs" x-text="p.dvt_mac_dinh || '—'"></td>
@@ -99,10 +95,10 @@
             </tr>
           </template>
           <tr x-show="!loading && filtered.length === 0">
-            <td colspan="9" class="px-4 py-12 text-center text-slate-400">Chưa có sản phẩm nào.</td>
+            <td colspan="10" class="px-4 py-12 text-center text-slate-400">Chưa có sản phẩm nào.</td>
           </tr>
           <tr x-show="loading">
-            <td colspan="9" class="px-4 py-12 text-center text-slate-400">Đang tải...</td>
+            <td colspan="10" class="px-4 py-12 text-center text-slate-400">Đang tải...</td>
           </tr>
         </tbody>
       </table>
